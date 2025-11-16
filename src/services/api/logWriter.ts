@@ -95,6 +95,7 @@ class Logger {
       })
       .join("\n");
   }
+  // eslint-disable-next-line complexity
   getBinary(): Uint8Array {
     const buffer: number[] = [];
     const writeByte = (v: number) => buffer.push(v & 0xff);

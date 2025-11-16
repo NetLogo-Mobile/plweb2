@@ -4,6 +4,7 @@ import type { Ref } from "vue";
 import i18n from "./i18n/i18n";
 import { useI18n } from "vue-i18n";
 
+// eslint-disable-next-line max-lines-per-function
 export default async function postComment(
   comment: Ref<string>,
   isLoading: Ref<boolean>,

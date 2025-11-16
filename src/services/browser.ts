@@ -1,7 +1,9 @@
-// Whitelist-based browser support check using project's browserslist (.browserslistrc):
+// This file is created by chatgpt, and isnot used in the project.
+// Mabybe useful in the future.
 // ios_saf >= 12, android >= 6, chrome >= 60, firefox >= 60, edge >= 80
 // @see browserslistrc
-export default function isUnsupportedBrowser(): boolean {
+// eslint-disable-next-line max-lines-per-function, complexity
+function isUnsupportedBrowser() {
   if (typeof navigator === "undefined") return false;
 
   const ua = navigator.userAgent || navigator.vendor || "";
@@ -73,3 +75,5 @@ export default function isUnsupportedBrowser(): boolean {
   // If none of the whitelist rules matched, treat as unsupported (conservative)
   return true;
 }
+
+export default isUnsupportedBrowser;

@@ -9,8 +9,7 @@
  * @returns {void}
  * @exports
  */
-// @ts-expect-error ignore
-function parse(text: any, ignoreSize: boolean = false) {
+function parse(text: any, _ignoreSize: boolean = false) {
   return text;
 }
 

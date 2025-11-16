@@ -153,6 +153,7 @@ function fillInTemplate(data: string, message: PMessage) {
 }
 
 // 处理加载事件
+// eslint-disable-next-line max-lines-per-function
 const handleLoad = async (noTemplates = true) => {
   if (!storageManager.getObj("userInfo").value?.id) return;
   if (loading.value) return; // Lock
@@ -177,6 +178,7 @@ const handleLoad = async (noTemplates = true) => {
       Emitter.emit("warning", t('ui.messages.noMore'), 2);
     }
 
+    // eslint-disable-next-line complexity
     const defaultItems = messages.map((message) => {
       const template = templates.find((t: any) => t.ID === message.TemplateID);
 

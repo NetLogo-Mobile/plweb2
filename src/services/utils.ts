@@ -166,6 +166,7 @@ export function decodeHrefToQueryObj(base64Input: string) {
  * @see i18n.ts
  * @returns 格式化后的日期文本 Formatted date text
  */
+// eslint-disable-next-line max-lines-per-function
 export function formatDate(
   id: string,
   showRelative?: boolean,
@@ -241,6 +242,7 @@ export function removeToken(obj: any) {
           key === "Token" ||
           key === "AuthCode"
         ) {
+          // eslint-disable-next-line max-depth
           if (obj[key]) obj[key] = `${obj[key].slice(0, 6)}******`;
         } else if (typeof obj[key] === "object") {
           removeToken(obj[key]);

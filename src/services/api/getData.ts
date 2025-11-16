@@ -19,6 +19,7 @@ import { getPath } from "../utils.ts";
  * @param body - 作为JSON发送的请求负载。 The request payload to be sent as JSON.
  * @returns 一个Promise，该Promise将解析为响应数据，或者如果中断了流，则解析为结果的钩子。 A promise that resolves with the response data, or with the result of the hooks if they interrupt the flow.
  */
+// eslint-disable-next-line max-lines-per-function
 export async function getData(path: string, body: unknown) {
   const userInfo = sm.getObj("userAuthInfo");
   if (userInfo.status === "empty" || userInfo.status === "expired") {
@@ -87,6 +88,7 @@ export async function getData(path: string, body: unknown) {
  * @param arg2 - 密码或者API认证码，取决于IsToken。The password or API auth code, depending on `is_token`.
  * @returns 成功时返回服务器响应数据，失败时发出错误事件。A promise that resolves to the server response data if successful, or emits an error event on failure.
  */
+// eslint-disable-next-line max-lines-per-function
 export async function login(
   arg1: string | null,
   arg2: string | null,

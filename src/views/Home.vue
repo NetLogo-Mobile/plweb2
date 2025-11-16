@@ -150,15 +150,16 @@ async function loadPageData(response: any) {
   Emitter.emit("updateTagConfig", response.Data.ContentTags);
   blocks.value = [...response.Data.Library.Blocks];
   const userData = response.Data.User;
-  user.value.avatarUrl.length >= 30 ||
-    (user.value = {
+  if (user.value.avatarUrl.length < 30) {
+    user.value = {
       coins: userData.Gold,
       gems: userData.Diamond,
       level: userData.Level,
       username: userData.Nickname || t("user.clickToLogin"),
       avatarUrl: getUserUrl(userData),
       ID: userData.ID,
-    });
+    };
+  }
 
   window.$Logger.logPageView({
     pageLink: "/Account/Login/",

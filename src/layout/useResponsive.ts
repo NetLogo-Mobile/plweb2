@@ -22,6 +22,7 @@ const breakpoints = {
  * <My :param="fontsize"></My>
  * ```
  */
+// eslint-disable-next-line max-lines-per-function
 export function useResponsive() {
   const width = ref(window.innerWidth);
 

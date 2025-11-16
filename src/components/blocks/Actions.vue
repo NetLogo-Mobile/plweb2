@@ -29,8 +29,6 @@
 
 <script setup>
 import getPath from "@services/getPath";
-import { useI18n } from "vue-i18n";
-const { t } = useI18n();
 // 本模块只是界面，没有具体的业务逻辑
 //  This module is just a UI component without specific business logic
 </script>

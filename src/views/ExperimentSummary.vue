@@ -265,7 +265,7 @@ function copy(text: string) {
       Emitter.emit("error", "failed to copy text", 2, e);
     });
 }
-
+// eslint-disable-next-line max-lines-per-function
 function copySubject() {
   let list = [
     { label: t("expeSummary.copyID") },
@@ -275,6 +275,7 @@ function copySubject() {
   if (data.value.User.ID === storageManager.getObj("userInfo")?.value?.id) {
     list.push({ label: t("expeSummary.changeCover") });
   }
+  // eslint-disable-next-line max-lines-per-function
   showActionSheet(list, (idx) => {
     if (idx === 0) {
       copy(data.value.ID);
@@ -292,6 +293,7 @@ function copySubject() {
         const input = document.createElement("input");
         input.type = "file";
         input.accept = "image/*";
+        // eslint-disable-next-line max-lines-per-function
         input.onchange = async (e: any) => {
           try {
             const file = e.target.files && e.target.files[0];
