@@ -80,6 +80,7 @@ export default {
       "发生未知错误，可以尝试刷新页面，或者在设置内打卡显示错误查看详细信息",
     networkError: "网络错误，请检查您的网络连接",
     serverError: "服务器发生错误，请稍后再试",
+    contentFilter: "您输入的内容\"...{word}...\"中包含不适合词句",
   },
   expeSummary: {
     enterExp: "进入实验 ",
@@ -117,5 +118,19 @@ export default {
     blackHole: "黑洞",
     friends: "好友",
     notifications: "通知",
+  },
+  ui: {
+    messages: {
+      noMore: "没有更多了",
+      followSuccess: "关注成功",
+      unfollowSuccess: "取关成功",
+      rateLimitExceeded: "频率过快",
+    },
+    labels: {
+      my: "我的",
+      circuitExp: "电学实验",
+      astrophysicsExp: "天体物理实验",
+      electromagneticsExp: "电与磁实验",
+    },
   },
 };

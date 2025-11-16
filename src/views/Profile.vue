@@ -111,7 +111,7 @@
                   v-model:value="comment"
                   style="text-align: left"
                   type="text"
-                  placeholder="发布一条友善的言论"
+                  :placeholder="t('comments.placeholder')"
                   show-count
                   :maxlength="300"
                   :loading="isLoading"

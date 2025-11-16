@@ -25,7 +25,7 @@ onActivated(() => {
   });
 });
 
-const { locale } = useI18n();
+const { locale, t } = useI18n();
 
 interface NotificationItem {
   id: string;
@@ -174,7 +174,7 @@ const handleLoad = async (noTemplates = true) => {
 
     if (messages.length === 0) {
       noMore.value = true;
-      Emitter.emit("warning", "没有更多了", 2);
+      Emitter.emit("warning", t('ui.messages.noMore'), 2);
     }
 
     const defaultItems = messages.map((message) => {

@@ -11,7 +11,7 @@
         <!-- 阻止冒泡，使得只有点击遮罩才关闭 -->
         <!-- Prevents bubbling, so that only clicking on the overlay will close it -->
         <p class="username">{{ name }}</p>
-        <p class="snt">{{ snt || "这个人很神秘，什么也么有写" }}</p>
+        <p class="snt">{{ snt || t('user.noSignature') }}</p>
       </div>
       <div class="stats">
         <div class="stat-item">
@@ -120,7 +120,7 @@ async function followUser() {
     Action: 1,
   });
   if (re.Status === 200) {
-    Emitter.emit("success", "关注成功", 2);
+    Emitter.emit("success", t('ui.messages.followSuccess'), 2);
     isFollowing.value = true;
   } else {
     if (re.Status === 400 && re.Data === "TargetID") {
@@ -143,7 +143,7 @@ async function unfollowUser() {
     Action: 0,
   });
   if (re.Status === 200) {
-    Emitter.emit("success", "取关成功", 2);
+    Emitter.emit("success", t('ui.messages.unfollowSuccess'), 2);
     isFollowing.value = false;
   } else {
     Emitter.emit("error", re.Message, 2);

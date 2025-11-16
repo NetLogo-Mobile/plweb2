@@ -81,6 +81,7 @@ export default {
       "An unknown error occurred, you can try refreshing the page,or use the settings to enable error display for more details",
     networkError: "Network error, please check your connection",
     serverError: "Server error, please try again later",
+    contentFilter: "The content you entered \"...{word}...\" contains inappropriate words",
   },
   expeSummary: {
     enterExp: "Enter experience ",
@@ -118,5 +119,19 @@ export default {
     blackHole: "Black Hole",
     friends: "Friends",
     notifications: "Notifications",
+  },
+  ui: {
+    messages: {
+      noMore: "No more",
+      followSuccess: "Follow successful",
+      unfollowSuccess: "Unfollow successful",
+      rateLimitExceeded: "Too frequent requests",
+    },
+    labels: {
+      my: "My",
+      circuitExp: "Circuit Experiment",
+      astrophysicsExp: "Astrophysics Experiment",
+      electromagneticsExp: "Electromagnetics Experiment",
+    },
   },
 };

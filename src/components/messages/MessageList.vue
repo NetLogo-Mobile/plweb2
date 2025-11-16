@@ -128,7 +128,7 @@ const handleLoad = async () => {
   skip.value += 20;
   if (_length < 20) {
     noMore.value = true;
-    Emitter.emit("warning", "没有更多了", 1);
+    Emitter.emit("warning", t('ui.messages.noMore'), 1);
   }
   await nextTick();
 };

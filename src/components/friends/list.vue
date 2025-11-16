@@ -22,6 +22,7 @@ import { ref } from "vue";
 import { getData } from "@services/api/getData.ts";
 import Emitter from "@services/eventEmitter";
 import infiniteScroll from "../utils/infiniteScroll.vue";
+import { useI18n } from "vue-i18n";
 
 interface User {
   User: any;
@@ -40,6 +41,7 @@ let skip = ref(0);
 let noMore = ref(false);
 let hasInformed = ref(false);
 const items = ref<User[]>([]);
+const { t } = useI18n();
 // Vue对于Ref会自动处理数据竞争问题
 // Vue automatically handles data race issues with Ref.
 
@@ -48,7 +50,7 @@ async function handleLoad() {
   if (loading.value) return; // Serves as a "lock"
   loading.value = true;
   if (noMore.value) {
-    if (!hasInformed.value) Emitter.emit("warning", "没有更多了", 1);
+    if (!hasInformed.value) Emitter.emit("warning", t('ui.messages.noMore'), 1);
     hasInformed.value = true;
     return;
   }
