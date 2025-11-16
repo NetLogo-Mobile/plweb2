@@ -60,7 +60,6 @@ const jump = () => {
 .container {
   position: relative;
   border-radius: 8px;
-  position: relative;
   color: #fff;
   height: calc(100% - 95px);
   display: flex;

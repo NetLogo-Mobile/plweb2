@@ -35,7 +35,6 @@
             class="btns"
             style="
               display: flex;
-              justify-content: center;
               justify-content: space-around;
             "
           >

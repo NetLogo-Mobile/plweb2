@@ -137,9 +137,8 @@ import Block from "../components/blocks/Block.vue";
 import postComment from "@services/postComment.ts";
 import BiLayout from "../layout/BiLayout.vue";
 import "../layout/BiLayout.css";
-import { getCoverUrl, getUserUrl } from "@services/utils.ts";
+import { getCoverUrl, getUserUrl, EncodeAPITargetLink } from "@services/utils.ts";
 import { useI18n } from "vue-i18n";
-import { EncodeAPITargetLink } from "@services/utils.ts";
 import showActionSheet from "@popup/actionSheet.ts";
 import Emitter from "@services/eventEmitter.ts";
 
@@ -324,8 +323,7 @@ function copyUser() {
   flex-direction: column;
   gap: 5px;
   overflow-y: auto;
-  padding-bottom: 50px;
-  padding: 10px;
+  padding: 10px 10px 50px;
   background-color: rgba(128, 128, 128, 0.05);
   border-radius: 6px;
 }
