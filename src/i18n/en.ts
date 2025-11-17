@@ -81,7 +81,8 @@ export default {
       "An unknown error occurred, you can try refreshing the page,or use the settings to enable error display for more details",
     networkError: "Network error, please check your connection",
     serverError: "Server error, please try again later",
-    contentFilter: "The content you entered \"...{word}...\" contains inappropriate words",
+    contentFilter:
+      'The content you entered "...{word}..." contains inappropriate words',
   },
   expeSummary: {
     enterExp: "Enter experience ",

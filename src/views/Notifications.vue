@@ -58,7 +58,6 @@ onMounted(checkLogin);
 </script>
 
 <style scoped>
-
 .item {
   box-sizing: border-box;
   height: calc(100dvh - 150px);

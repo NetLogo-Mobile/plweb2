@@ -20,7 +20,8 @@ export default {
       "Sie müssen sich anmelden, um auf diese Seite zuzugreifen, oder Sie können dieses Pop-up schließen",
     terms:
       "Bitte lesen und akzeptieren Sie unsere <a href='http://www.turtlesim.com/products/Term-Of-Use.txt' target='_blank'>Nutzungsbedingungen</a> und <a href='https://turtlesim.com/products/Privacy-Policy.txt' target='_blank'>Datenschutzrichtlinie</a>",
-    reLogin: "Melden Sie sich erneut an, um die neueste Konfiguration zu aktivieren",
+    reLogin:
+      "Melden Sie sich erneut an, um die neueste Konfiguration zu aktivieren",
     reLoginContent:
       "Die Konfiguration muss erneut aktiviert werden, oder Sie können dieses Pop-up schließen",
   },
@@ -74,14 +75,16 @@ export default {
     baned: "Gesperrt",
   },
   messagesI18n: {
-    errorOnDelete: "Fehler beim Löschen der Nachricht, bitte versuchen Sie es später",
+    errorOnDelete:
+      "Fehler beim Löschen der Nachricht, bitte versuchen Sie es später",
   },
   errors: {
     unknownError:
       "Es ist ein unbekannter Fehler aufgetreten. Versuchen Sie, die Seite zu aktualisieren, oder aktivieren Sie die Fehleranzeige in den Einstellungen",
     networkError: "Netzwerkfehler, bitte überprüfen Sie Ihre Verbindung",
     serverError: "Serverfehler, bitte versuchen Sie es später",
-    contentFilter: "Der eingegebene Inhalt \"...{word}...\" enthält unangemessene Wörter",
+    contentFilter:
+      'Der eingegebene Inhalt "...{word}..." enthält unangemessene Wörter',
   },
   expeSummary: {
     enterExp: "Experiment eingeben ",

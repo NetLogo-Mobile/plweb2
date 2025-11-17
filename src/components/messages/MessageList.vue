@@ -72,7 +72,7 @@ async function deleteMsg(message: PMessageItem) {
     });
     // 删除未成功，加回列表原有位置
     // if the delete failed, add the removed item back to the original position
-      if (re.Status !== 200 && index !== -1 && removed[0]) {
+    if (re.Status !== 200 && index !== -1 && removed[0]) {
       items.value.splice(index, 0, removed[0]);
       showMessage("error", t("messagesI18n.errorOnDelete"), { duration: 2000 });
     }

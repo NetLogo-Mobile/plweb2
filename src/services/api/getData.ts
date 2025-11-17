@@ -45,14 +45,16 @@ export async function getData(path: string, body: unknown) {
   }).then((response) => {
     if (!response.ok) {
       window.$ErrorLogger.writeLog(
-        `API请求失败: ${path}, 状态码: ${response.status}`
+        `API请求失败: ${path}, 状态码: ${response.status}`,
       );
       return response.json().then(() => {
         // 这里的错误处理仅处理API本身非2xx的错误，及服务器本身出了问题
         // 而Response.data中的错误是API本身的错误（如权限不足、参数错误等），需要在调用API时处理
         // This error handling only deals with non-2xx errors from the API itself, and server issues.
         // Errors in Response.data are API-specific errors (like insufficient permissions, parameter errors
-        showMessage("error", "无法与服务器通讯，请稍候再试", { duration: 5000 });
+        showMessage("error", "无法与服务器通讯，请稍候再试", {
+          duration: 5000,
+        });
       });
     }
     return response.json().then((data) => {
@@ -61,7 +63,7 @@ export async function getData(path: string, body: unknown) {
           removeToken({
             res: data,
             info: userInfo,
-          })
+          }),
         );
       }
       const afterRes = afterRequest(data);
@@ -92,7 +94,7 @@ export async function getData(path: string, body: unknown) {
 export async function login(
   arg1: string | null,
   arg2: string | null,
-  is_token = false
+  is_token = false,
 ): Promise<{
   Status: number;
   Message: string;
@@ -131,7 +133,9 @@ export async function login(
     window.$ErrorLogger.writeLog(Device);
     if (!response.ok) {
       return response.json().then(() => {
-          showMessage("error", "无法与服务器通讯，请稍候再试", { duration: 5000 });
+        showMessage("error", "无法与服务器通讯，请稍候再试", {
+          duration: 5000,
+        });
       });
     }
     return response.json().then((data) => {
@@ -142,7 +146,7 @@ export async function login(
             token: data.Token,
             authCode: data.AuthCode,
           },
-          30 * 24 * 60 * 60 * 1000
+          30 * 24 * 60 * 60 * 1000,
         );
       messageRef.destroy();
       return data;

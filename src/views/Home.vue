@@ -83,7 +83,7 @@ import sm from "@storage/index.ts";
 import { useI18n } from "vue-i18n";
 import Emitter from "@services/eventEmitter";
 import { useResponsive } from "../layout/useResponsive.ts";
-import{ login }from "@api/getData";
+import { login } from "@api/getData";
 import Header from "../components/utils/Header.vue";
 import Footer from "../components/utils/Footer.vue";
 import Block from "../components/blocks/Block.vue";
@@ -119,7 +119,7 @@ const { blockItemsPerRow, maxProjectsPerBlock } = useResponsive();
 onMounted(async () => {
   const ua = sm.getObj("userAuthInfo");
   if (ua.status === "success" && ua.value?.token != null) {
-    const res = await login(ua.value.token, ua.value.authCode,true);
+    const res = await login(ua.value.token, ua.value.authCode, true);
     user.value = {
       coins: res.Data.User.Gold,
       gems: res.Data.User.Diamond,
@@ -128,10 +128,9 @@ onMounted(async () => {
       avatarUrl: getUserUrl(res.Data.User),
       ID: res.Data.User.ID,
     };
-  } 
-    const res = await login(null, null);
-    loadPageData(res);
-  
+  }
+  const res = await login(null, null);
+  loadPageData(res);
 });
 
 onActivated(() => {

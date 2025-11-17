@@ -3,7 +3,6 @@ import type { Ref } from "vue";
 import i18n from "./i18n/i18n";
 import { showMessage } from "@popup/naiveui";
 
-// eslint-disable-next-line max-lines-per-function
 export default async function postComment(
   comment: Ref<string>,
   isLoading: Ref<boolean>,
@@ -42,7 +41,10 @@ export default async function postComment(
     ) {
       const index = Number(response.Message.split("|")[1]);
       const blockedMessage = comment.value.slice(index, 10);
-      const errorMsg = t('errors.contentFilter').replace('{word}', blockedMessage);
+      const errorMsg = t("errors.contentFilter").replace(
+        "{word}",
+        blockedMessage,
+      );
       showMessage("error", errorMsg, { duration: 5000 });
     }
   } catch (e) {

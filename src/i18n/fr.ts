@@ -74,14 +74,16 @@ export default {
     baned: "Bloqué",
   },
   messagesI18n: {
-    errorOnDelete: "Échec de la suppression du message, veuillez réessayer plus tard",
+    errorOnDelete:
+      "Échec de la suppression du message, veuillez réessayer plus tard",
   },
   errors: {
     unknownError:
       "Une erreur inconnue s'est produite. Vous pouvez essayer d'actualiser la page ou activer l'affichage des erreurs dans les paramètres",
     networkError: "Erreur réseau, veuillez vérifier votre connexion",
     serverError: "Erreur serveur, veuillez réessayer plus tard",
-    contentFilter: "Le contenu que vous avez saisi \"...{word}...\" contient des mots inappropriés",
+    contentFilter:
+      'Le contenu que vous avez saisi "...{word}..." contient des mots inappropriés',
   },
   expeSummary: {
     enterExp: "Entrer dans l'expérience ",

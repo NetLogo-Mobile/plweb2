@@ -33,10 +33,7 @@
         <div style="margin-top: auto" class="coverBottom">
           <div
             class="btns"
-            style="
-              display: flex;
-              justify-content: space-around;
-            "
+            style="display: flex; justify-content: space-around"
           >
             <n-button type="info" strong round disabled class="enter">
               {{ t("expeSummary.enterExp") }}
@@ -47,7 +44,7 @@
     </template>
 
     <template #right>
-      <div  class="context">
+      <div class="context">
         <n-tabs
           v-model:value="selectedTab"
           justify-content="space-evenly"
@@ -155,7 +152,7 @@
 import { ref, onMounted, onActivated } from "vue";
 import { useRoute } from "vue-router";
 import { getData } from "@services/api/getData.ts";
-import { NTabs, NTabPane, NInput,NButton } from "naive-ui";
+import { NTabs, NTabPane, NInput, NButton } from "naive-ui";
 import Tag from "../components/utils/TagLarger.vue";
 import MessageList from "../components/messages/MessageList.vue";
 import parse from "@services/advancedParser.ts";
@@ -169,7 +166,6 @@ import { useI18n } from "vue-i18n";
 import showActionSheet from "@popup/actionSheet.ts";
 import { showMessage } from "@popup/naiveui";
 import storageManager from "@storage/index.ts";
-
 
 const comment = ref("");
 const isLoading = ref(false);
@@ -338,7 +334,9 @@ function copySubject() {
               showMessage("error", "Failed to upload file", { duration: 2000 });
               return;
             }
-            showMessage("success", "Cover changed successfully", { duration: 2000 });
+            showMessage("success", "Cover changed successfully", {
+              duration: 2000,
+            });
             // refresh current cover (using existing utility function)
             setTimeout(async () => {
               const refreshed = await getData(`/Contents/GetSummary`, {
@@ -348,12 +346,18 @@ function copySubject() {
               coverUrl.value = getCoverUrl(refreshed.Data);
             }, 800);
           } catch (_err) {
-            showMessage("error", "Failed to change cover, please try again later", { duration: 2000 });
+            showMessage(
+              "error",
+              "Failed to change cover, please try again later",
+              { duration: 2000 },
+            );
           }
         };
         input.click();
       } catch (_error) {
-        showMessage("error", "Unknown error, please try again later", { duration: 2000 });
+        showMessage("error", "Unknown error, please try again later", {
+          duration: 2000,
+        });
       }
     }
   });
