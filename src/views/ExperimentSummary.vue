@@ -167,7 +167,7 @@ import BiLayout from "../layout/BiLayout.vue";
 import "../layout/BiLayout.css";
 import { useI18n } from "vue-i18n";
 import showActionSheet from "@popup/actionSheet.ts";
-import Emitter from "@services/eventEmitter.ts";
+import { showMessage } from "@popup/naiveui";
 import storageManager from "@storage/index.ts";
 
 
@@ -259,10 +259,10 @@ function copy(text: string) {
   navigator.clipboard
     .writeText(text)
     .then(() => {
-      Emitter.emit("info", "copied", 1);
+      showMessage("info", "copied", { duration: 1000 });
     })
-    .catch((e) => {
-      Emitter.emit("error", "failed to copy text", 2, e);
+    .catch(() => {
+      showMessage("error", "failed to copy text", { duration: 2000 });
     });
 }
 // eslint-disable-next-line max-lines-per-function
@@ -334,11 +334,11 @@ function copySubject() {
                 Image: imageIndex,
                 Extension: ".png",
               });
-            } catch (upErr) {
-              Emitter.emit("error", "Failed to upload file", 2, upErr);
+            } catch (_upErr) {
+              showMessage("error", "Failed to upload file", { duration: 2000 });
               return;
             }
-            Emitter.emit("success", "Cover changed successfully", 2);
+            showMessage("success", "Cover changed successfully", { duration: 2000 });
             // refresh current cover (using existing utility function)
             setTimeout(async () => {
               const refreshed = await getData(`/Contents/GetSummary`, {
@@ -347,23 +347,13 @@ function copySubject() {
               });
               coverUrl.value = getCoverUrl(refreshed.Data);
             }, 800);
-          } catch (err) {
-            Emitter.emit(
-              "error",
-              "Failed to change cover, please try again later",
-              2,
-              err,
-            );
+          } catch (_err) {
+            showMessage("error", "Failed to change cover, please try again later", { duration: 2000 });
           }
         };
         input.click();
-      } catch (error) {
-        Emitter.emit(
-          "error",
-          "Unknown error, please try again later",
-          2,
-          error,
-        );
+      } catch (_error) {
+        showMessage("error", "Unknown error, please try again later", { duration: 2000 });
       }
     }
   });

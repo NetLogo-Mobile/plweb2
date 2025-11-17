@@ -140,7 +140,7 @@ import "../layout/BiLayout.css";
 import { getCoverUrl, getUserUrl, EncodeAPITargetLink } from "@services/utils.ts";
 import { useI18n } from "vue-i18n";
 import showActionSheet from "@popup/actionSheet.ts";
-import Emitter from "@services/eventEmitter.ts";
+import { showMessage } from "@popup/naiveui";
 
 const { t } = useI18n();
 let comment = ref("");
@@ -260,10 +260,10 @@ function copy(text: string) {
   navigator.clipboard
     .writeText(text)
     .then(() => {
-      Emitter.emit("info", "copied", 1);
+      showMessage("info", "copied", { duration: 1000 });
     })
-    .catch((e) => {
-      Emitter.emit("error", "failed to copy text", 2, e);
+    .catch(() => {
+      showMessage("error", "failed to copy text", { duration: 2000 });
     });
 }
 

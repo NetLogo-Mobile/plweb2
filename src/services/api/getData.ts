@@ -52,7 +52,7 @@ export async function getData(path: string, body: unknown) {
         // 而Response.data中的错误是API本身的错误（如权限不足、参数错误等），需要在调用API时处理
         // This error handling only deals with non-2xx errors from the API itself, and server issues.
         // Errors in Response.data are API-specific errors (like insufficient permissions, parameter errors
-        Emitter.emit("error", "无法与服务器通讯，请稍候再试", 3);
+        showMessage("error", "无法与服务器通讯，请稍候再试", { duration: 5000 });
       });
     }
     return response.json().then((data) => {
@@ -131,7 +131,7 @@ export async function login(
     window.$ErrorLogger.writeLog(Device);
     if (!response.ok) {
       return response.json().then(() => {
-        Emitter.emit("error", "无法与服务器通讯，请稍候再试", 3);
+          showMessage("error", "无法与服务器通讯，请稍候再试", { duration: 5000 });
       });
     }
     return response.json().then((data) => {

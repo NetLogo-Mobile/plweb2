@@ -32,6 +32,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue";
 import parse from "@services/commonParser.ts";
+import { NEllipsis } from "naive-ui";
 import showUserCard from "@popup/userProfileDialog.ts";
 import { getAvatarUrl } from "@services/getUserCurentAvatarByID";
 import { getPath } from "@services/utils";

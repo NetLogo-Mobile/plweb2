@@ -48,6 +48,7 @@ import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 import NotificationList from "../components/messages/NotificationList.vue";
 import Header from "../components/utils/Header.vue";
+import { NTabs, NTabPane } from "naive-ui";
 import Footer from "../components/utils/Footer.vue";
 import { onActivated, onMounted } from "vue";
 import { checkLogin } from "@services/utils";
@@ -57,9 +58,6 @@ onMounted(checkLogin);
 </script>
 
 <style scoped>
-.outer {
-  margin-top: 50px;
-}
 
 .item {
   box-sizing: border-box;

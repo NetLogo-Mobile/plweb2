@@ -13,8 +13,9 @@
 import { ref, onActivated } from "vue";
 import Notification from "./NotificationItem.vue";
 import { getData } from "@services/api/getData.ts";
-import Emitter from "@services/eventEmitter";
+import { showMessage } from "@popup/naiveui";
 import InfiniteScroll from "../utils/infiniteScroll.vue";
+import { NDivider } from "naive-ui";
 import { useI18n } from "vue-i18n";
 import storageManager from "@storage/index.ts";
 
@@ -155,7 +156,7 @@ function fillInTemplate(data: string, message: PMessage) {
 // 处理加载事件
 // eslint-disable-next-line max-lines-per-function
 const handleLoad = async (noTemplates = true) => {
-  if (!storageManager.getObj("userInfo").value?.id) return;
+  if (!storageManager.getObj("userInfo").value?.ID) return;
   if (loading.value) return; // Lock
   if (noMore.value) return;
   loading.value = true;
@@ -175,7 +176,7 @@ const handleLoad = async (noTemplates = true) => {
 
     if (messages.length === 0) {
       noMore.value = true;
-      Emitter.emit("warning", t('ui.messages.noMore'), 2);
+      showMessage("warning", t("ui.messages.noMore"), { duration: 2000 });
     }
 
     // eslint-disable-next-line complexity
@@ -226,7 +227,7 @@ const handleLoad = async (noTemplates = true) => {
     loading.value = false;
     skip.value += 20;
   } catch (error) {
-    Emitter.emit("error", String(error), 5);
+    showMessage("error", String(error), { duration: 5000 });
   }
 };
 

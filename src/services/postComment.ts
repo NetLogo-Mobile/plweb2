@@ -1,7 +1,7 @@
 import { getData } from "./api/getData";
-import Emitter from "./eventEmitter";
 import type { Ref } from "vue";
 import i18n from "./i18n/i18n";
+import { showMessage } from "@popup/naiveui";
 
 // eslint-disable-next-line max-lines-per-function
 export default async function postComment(
@@ -43,11 +43,7 @@ export default async function postComment(
       const index = Number(response.Message.split("|")[1]);
       const blockedMessage = comment.value.slice(index, 10);
       const errorMsg = t('errors.contentFilter').replace('{word}', blockedMessage);
-      Emitter.emit(
-        "error",
-        errorMsg,
-        1,
-      );
+      showMessage("error", errorMsg, { duration: 5000 });
     }
   } catch (e) {
     if (!(e === "频率过快")) console.error(e);
