@@ -47,7 +47,7 @@
     </template>
 
     <template #right>
-      <div style="text-align: center" class="context">
+      <div  class="context">
         <n-tabs
           v-model:value="selectedTab"
           justify-content="space-evenly"
