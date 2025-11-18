@@ -75,7 +75,7 @@ import Footer from "../components/utils/Footer.vue";
 import { NTabs, NTabPane } from "naive-ui";
 import { useResponsive } from "../layout/useResponsive";
 import storageManager from "@services/storage";
-import { onActivated, onMounted } from "vue";
+import { onActivated } from "vue";
 import { checkLogin } from "@services/utils.ts";
 
 const userID = storageManager.getObj("userInfo").value?.ID;
@@ -83,7 +83,7 @@ const { friendItemsPerRow } = useResponsive();
 const { t } = useI18n();
 
 onActivated(checkLogin);
-onMounted(checkLogin);
+// onMounted(checkLogin);
 </script>
 
 <style scoped>

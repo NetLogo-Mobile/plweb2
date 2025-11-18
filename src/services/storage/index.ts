@@ -1,4 +1,6 @@
-// We force the requirement to check the status when using local storage to get variables
+// Check the status when using storage
+// If you don't need to raise a notification when storage.status!=success, try `sm.getObj("key").value?.a?.b?.c`
+
 type StorageStatus = "success" | "expired" | "empty";
 type localStorages =
   | "userInfo"

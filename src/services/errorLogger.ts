@@ -2,6 +2,8 @@ import { ref } from "vue";
 import storageManager from "./storage";
 import { showNotification } from "@popup/naiveui";
 
+// It requires an update urgently
+
 interface ErrorLog {
   timestamp: number;
   type: string;

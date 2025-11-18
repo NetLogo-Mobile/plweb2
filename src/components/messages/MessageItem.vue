@@ -16,7 +16,7 @@
           class="delete"
           @click.stop="deleteMsg"
         >
-          删除
+          delete
         </div>
       </div>
       <div id="notification_message" class="notification_message">

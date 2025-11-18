@@ -8,7 +8,8 @@
       "@api/*": ["src/services/api/*"],
       "@popup/*": ["src/services/popup/*"],
       "@storage/*": ["src/services/storage/*"],
-      "@services/*": ["src/services/*"]
+      "@services/*": ["src/services/*"],
+      "@i18n/*": ["src/i18n/*"]
     },
 
     /* Linting */

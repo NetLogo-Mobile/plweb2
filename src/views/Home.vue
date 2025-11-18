@@ -76,7 +76,7 @@
 import { ref, onMounted, onActivated } from "vue";
 import { NGi, NGrid } from "naive-ui";
 import router from "../router";
-import { EncodeAPITargetLink, getPath, getUserUrl } from "@services/utils";
+import { checkLogin, EncodeAPITargetLink, getPath, getUserUrl } from "@services/utils";
 import "../layout/loading.css";
 import "../layout/startPage.css";
 import sm from "@storage/index.ts";
@@ -117,6 +117,7 @@ const user =
 const { blockItemsPerRow, maxProjectsPerBlock } = useResponsive();
 
 onMounted(async () => {
+  // First render from cache, then update it
   const ua = sm.getObj("userAuthInfo");
   if (ua.status === "success" && ua.value?.token != null) {
     const res = await login(ua.value.token, ua.value.authCode, true);
@@ -151,12 +152,19 @@ Emitter.on("userLogin", (res) => {
   };
 });
 
+
+// It is astonishing that server respond with projects data when login with (null,null)
+// And responed with user data when login with token/password
+// Fourtunately, both data has the same structure
 async function loadPageData(response: any) {
   isLoading.value = false;
   Emitter.emit("updateTagConfig", response.Data.ContentTags);
   blocks.value = [...response.Data.Library.Blocks];
   const userData = response.Data.User;
-  if (user.value.avatarUrl.length < 30) {
+
+  // Both null-null-login or real-login can get user data,but the previous one is fake
+  // The nickName is null in fake user data
+  if (userData.Nickname != null) {
     user.value = {
       coins: userData.Gold,
       gems: userData.Diamond,
@@ -174,7 +182,7 @@ async function loadPageData(response: any) {
 }
 
 function showModalFn() {
-  if (sm.getObj("userInfo").value?.Nickname) {
+  if (checkLogin(false)) {
     router.push(`/profile/${user.value.ID}`);
     window.$Logger.logPageView({
       pageLink: "/Profile/",
@@ -187,7 +195,7 @@ function showModalFn() {
 </script>
 
 <style scoped>
-/* Header插槽 start */
+/* Header start */
 .user {
   display: flex;
   align-items: center;
@@ -236,7 +244,7 @@ function showModalFn() {
   height: 28px;
   width: 28px;
 }
-/* Header插槽 end */
+/* Header end */
 
 .block {
   height: 100%;

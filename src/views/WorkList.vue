@@ -1,4 +1,5 @@
 <template>
+  <!-- show when click 'more' in Block/TopicBlock component -->
   <Header>
     <img
       src="/assets/library/Navigation-Return.png"

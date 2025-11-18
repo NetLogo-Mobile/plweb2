@@ -50,11 +50,11 @@ import NotificationList from "../components/messages/NotificationList.vue";
 import Header from "../components/utils/Header.vue";
 import { NTabs, NTabPane } from "naive-ui";
 import Footer from "../components/utils/Footer.vue";
-import { onActivated, onMounted } from "vue";
+import { onActivated } from "vue";
 import { checkLogin } from "@services/utils";
 
 onActivated(checkLogin);
-onMounted(checkLogin);
+// onMounted(checkLogin);
 </script>
 
 <style scoped>

@@ -1,4 +1,5 @@
 <template>
+  <!-- Not completed yet -->
   <div class="container">
     <div class="header">
       <div class="header-title">
@@ -55,12 +56,14 @@ import { NSelect } from "naive-ui";
 import storageManager from "../services/storage";
 import sysConfig from "../config/system.config";
 
+// Read current config from storage and render it
 const savedValues = storageManager.getObj("userConfig")?.value || {};
 const settingsConfig = reactive(s);
 settingsConfig.forEach((section) => {
   section.items.forEach((item) => {
     if (savedValues[item.key] !== undefined) {
       item.value = savedValues[item.key];
+      // When section changes, vue will update the html automatically
     }
   });
 });

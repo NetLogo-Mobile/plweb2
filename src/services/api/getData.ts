@@ -1,7 +1,7 @@
 import Emitter from "../eventEmitter.ts";
 import { beforeRequest, afterRequest } from "./Interceptor.ts";
 import sm from "@storage/index.ts";
-import i18n from "../i18n/i18n.ts";
+import i18n from "@i18n/index.ts";
 import { getDeviceInfo, getVisitorId } from "./getDevice.ts";
 import { removeToken } from "../utils.ts";
 import { showMessage } from "@popup/naiveui.ts";
@@ -135,6 +135,7 @@ export async function login(
       return response.json().then(() => {
         showMessage("error", "无法与服务器通讯，请稍候再试", {
           duration: 5000,
+          // Replace with i18n later
         });
       });
     }

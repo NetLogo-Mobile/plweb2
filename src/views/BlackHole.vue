@@ -85,7 +85,7 @@ const goToDevelopment = () => {
   window.open(getPath("/@root/about"));
 };
 
-// 部分活动链接是web版本特有的 Some activity links are specific to the web version
+// Mabey some activity links will be specific to the web version one day
 // @see Interceptor.AfterRequest
 const activityLinkMap: Record<string, () => void> = {
   "internal://forum": goToWebCommunity,

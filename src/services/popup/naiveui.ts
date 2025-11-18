@@ -1,3 +1,6 @@
+// Some popup services using NaiveUI
+// https://www.naiveui.com/en-US/os-theme/components/discrete#basic.vue
+
 import { createDiscreteApi } from "naive-ui";
 import type {
   MessageOptions,

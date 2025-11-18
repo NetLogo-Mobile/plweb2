@@ -1,4 +1,4 @@
-// This file serves as an entry point for the popup service, and can be used as "@popup"
+// import it as "@popup/index"
 // Only JavaScript logic will be stored here, and all elements will be independent Vue instances separate from the root element APP.
 // Some components (such as the specific content of the popup) will be written under components/popup/
 

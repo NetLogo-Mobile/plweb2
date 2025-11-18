@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="text-align: center; margin-top: 50px">
     <h1>{{ t("notfound.title") }}</h1>
     <img src="/assets/messages/Message-Default.png" />
   </div>

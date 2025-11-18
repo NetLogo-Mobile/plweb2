@@ -1,5 +1,5 @@
 const sysConfig = {
-  version: "1.0.2 2025-8-6",
+  version: "1.0.0",
   contributorsMain: [
     {
       ghid: "wsxaiolin",
@@ -9,6 +9,7 @@ const sysConfig = {
     },
   ],
   contributors: [
+    // Finish it later
     {
       plid: "12345",
       nickName: "wsxaiolin",

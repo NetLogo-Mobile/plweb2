@@ -11,7 +11,7 @@
 <script setup lang="ts">
 import router from "../../router";
 import { EncodeAPITargetLink } from "@services/utils";
-import getTagName from "@services/i18n/getTagName";
+import getTagName from "@i18n/getTagName";
 
 const { tag, category } = defineProps<{ tag: string; category: string }>();
 const tagName = getTagName(tag);

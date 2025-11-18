@@ -163,4 +163,6 @@ const i18n = createI18n({
   messages,
 });
 
+// Translation is done useing gpt-5.1-mini
+
 export default i18n;

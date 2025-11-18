@@ -1,4 +1,5 @@
 <template>
+  <!-- Also called: UserProfile(Not userProfileDialog) -->
   <BiLayout>
     <template #left>
       <div
@@ -166,13 +167,13 @@ let userData = ref({
     Avatar: 322,
     AvatarRegion: 0,
     Decoration: 0,
-    Gold: 17900,
-    Diamond: 2683,
-    Fragment: 116,
-    Level: 25,
-    Experience: 62225,
-    Prestige: 18,
-    Subscription: 1,
+    Gold: 0,
+    Diamond: 0,
+    Fragment: 0,
+    Level:0,
+    Experience: 0,
+    Prestige: 0,
+    Subscription: 0,
     SubscriptionUntil: "",
     IsBinded: true,
     Regions: [1],
@@ -191,8 +192,11 @@ let userData = ref({
   },
 });
 
+// Despite called ExpDataType, expData actually contains disccusions as well
 interface ExpDataType {
-  [key: string]: any[];
+  [key: string]: any[]; 
+  // key is the tab name, value is the array of experiments/discussions
+  // Server will respond with up to 4 tabs, but we donnot konw their names in advance
 }
 let expData = ref<ExpDataType>({});
 
@@ -207,10 +211,14 @@ onMounted(async () => {
   userData.value = userRes.Data;
   // Civitas-john always procrastinate on addressing the request to solve the anti-leeching issue.
   // That's why the below occurs
+  // hmmm...When use in https://plweb.turtlesim.com,abti-leeching issue does not occur
+  // So does it really works? No one knows...
   const _url = userData.value.Statistic.Cover
     ? getCoverUrl(userData.value.Statistic.Cover)
     : getUserUrl(userRes.Data.User);
   await fetch(_url, {
+    // We annot get the response with mode: "no-cors"
+    // But the browser will (缓存) cache the image anyway
     referrerPolicy: "no-referrer",
     mode: "no-cors",
   });
@@ -224,6 +232,7 @@ onMounted(async () => {
 function handleMsgClick(item: any) {
   replyID.value = item.userID;
   comment.value = `回复@${item.msg_title}: `;
+  // Replace it with i18n later
 }
 
 async function handleEnter() {
@@ -241,6 +250,7 @@ function goBack() {
   window.history.back();
 }
 
+// Sort 2 means soted by popularity; Sort 1 means sorted by latest;Sort 3 means random sorted
 function getLink(name: string) {
   switch (name) {
     case "Latest-Experiments":
@@ -260,6 +270,9 @@ function getLink(name: string) {
   }
 }
 
+// Copy text to clipboard
+// It well be replaced with a better method later
+// 此方法兼容性不足，日后替换
 function copy(text: string) {
   navigator.clipboard
     .writeText(text)

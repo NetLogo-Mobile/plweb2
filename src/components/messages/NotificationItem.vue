@@ -76,6 +76,8 @@ const msg_icon_url = computed(() => {
   }
 });
 
+// 跳转到对话上下文，以后会直接跳转到这句对话的索引所在
+// Jump to the context of the conversation, and later it will directly jump to the index where this sentence is located
 function showComment() {
   if (props.notification.msg_type === 2) {
     window.open(

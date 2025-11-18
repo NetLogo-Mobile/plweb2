@@ -5,7 +5,7 @@ import {
   differenceInMinutes,
   differenceInHours,
 } from "date-fns";
-import i18n from "./i18n/i18n";
+import i18n from "@i18n/index";
 import Emitter from "./eventEmitter";
 import storageManager from "./storage";
 import { showDialog } from "@popup/naiveui";
@@ -56,7 +56,7 @@ export function getUserUrl(user: PUser): string {
       ? "/@base/assets/user/default-avatar.png"
       : `/@static/users/avatars/${user.ID.slice(0, 4)}/${user.ID.slice(4, 6)}/${user.ID.slice(
           6,
-          8,
+          8
         )}/${user.ID.slice(8, 24)}/${user.Avatar}.jpg`;
 
   return getPath(url);
@@ -65,7 +65,7 @@ export function getUserUrl(user: PUser): string {
 export function getCoverUrl(data: PProjects): string {
   const url = `/@static/experiments/images/${data.ID.slice(0, 4)}/${data.ID.slice(
     4,
-    6,
+    6
   )}/${data.ID.slice(6, 8)}/${data.ID.slice(8, 24)}/${data.Image || 0}.jpg`;
   return getPath(url);
 }
@@ -143,7 +143,7 @@ export function decodeHrefToQueryObj(base64Input: string) {
   }
   const latin1String = atob(base64Input.replace(/DEVIDER/g, "/"));
   const utf8Bytes = new Uint8Array(
-    [...latin1String].map((char) => char.charCodeAt(0)),
+    [...latin1String].map((char) => char.charCodeAt(0))
   );
   const jsonString = new TextDecoder().decode(utf8Bytes);
   const result = JSON.parse(jsonString);
@@ -170,7 +170,7 @@ export function decodeHrefToQueryObj(base64Input: string) {
 export function formatDate(
   id: string,
   showRelative?: boolean,
-  type?: string,
+  type?: string
 ): string {
   // 1. 提取并转换16进制时间戳
   // 1. Extract and convert 16-bit timestamp
@@ -205,7 +205,7 @@ export function formatDate(
     else if (diffDays === 1) {
       return `${i18n.global.t("date.yesterday") as string} ${i18n.global.d(
         date,
-        "time",
+        "time"
       )}`;
     }
     // 前天
@@ -232,6 +232,11 @@ export function formatDate(
   }
 }
 
+/**
+ * To remove or mask token/authcode in an object.Not clearing it from localStorage
+ * @param obj Incoming obkect which may contains key "token|authcode"
+ * @returns any
+ */
 export function removeToken(obj: any) {
   if (obj && typeof obj === "object") {
     for (const key in obj) {
@@ -253,15 +258,23 @@ export function removeToken(obj: any) {
   return obj;
 }
 
-export function checkLogin() {
+/**
+ * Can user have access to login-restricted features
+ * @param showLoginLeader Pupup a dialog to lead user to login
+ * @returns 
+ */
+export function checkLogin(showLoginLeader = true): boolean {
   if (storageManager.getObj("userInfo").value?.Nickname == null) {
-    showDialog("warning", {
-      title: i18n.global.t("login.loginRequired"),
-      content: i18n.global.t("login.loginContent"),
-      positiveText: i18n.global.t("login.confirm"),
-      onPositiveClick: async () => {
-        Emitter.emit("loginRequired");
-      },
-    });
+    if (showLoginLeader)
+      showDialog("warning", {
+        title: i18n.global.t("login.loginRequired"),
+        content: i18n.global.t("login.loginContent"),
+        positiveText: i18n.global.t("login.confirm"),
+        onPositiveClick: async () => {
+          Emitter.emit("loginRequired");
+        },
+      });
+    return false;
   }
+  return true;
 }

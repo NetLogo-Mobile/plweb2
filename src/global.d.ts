@@ -6,9 +6,6 @@ declare global {
   interface Window {
     $Logger: Logger;
     $ErrorLogger: ErrorLogger;
-    $getPath: (path: string) => string;
-    $message: any;
-    $notification: any;
   }
 }
 

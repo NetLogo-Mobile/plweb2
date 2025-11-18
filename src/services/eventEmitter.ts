@@ -1,3 +1,6 @@
+// 这就是一个主流的正常的发布订阅模式
+//  publish-subscribe pattern
+
 type Events =
   | "loginRequired"
   | "updateTagConfig"
@@ -7,12 +10,7 @@ type Events =
 type EventHandlerMap = {
   loginRequired: () => void;
   loading: (msg: string, duration: number) => void;
-  warning: (msg: string, duration: number) => void;
-  error: (msg: string, duration: number, details?: any) => void;
-  info: (msg: string, duration: number) => void;
-  success: (msg: string, duration: number) => void;
   updateTagConfig: (data: any) => void;
-  nWarning: (data: any) => void;
   updateUserConfig: (data: any) => void;
   userLogin: (res: any) => void;
 };

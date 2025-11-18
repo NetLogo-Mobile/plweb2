@@ -732,6 +732,7 @@ let tagConfig = [
   },
 ];
 
+// The tag config will be returned from the server during a null-null login
 Emitter.on("updateTagConfig", (data) => {
   if (!data) return;
   tagConfig = data;
