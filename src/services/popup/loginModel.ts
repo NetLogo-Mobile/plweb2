@@ -1,6 +1,6 @@
 import { createApp } from "vue";
 import loginModel from "../../components/popup/loginModel.vue";
-import i18n from "../../i18n/index";
+import i18n from "@i18n/index";
 
 export default async function showLoginModel() {
   const div = document.createElement("div");

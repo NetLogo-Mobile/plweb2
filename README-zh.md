@@ -21,7 +21,7 @@
 4. 克隆仓库并运行 `npm install` 安装依赖。可以忽略所有警告。
 5. 运行 `npm run dev` 启动本地服务器。
 6. 运行 `npm run lint` 格式化代码并检查 ESLint。
-7. 运行 `npm run build` 执行 TypeScript 检查。**完成后，删除 docs/ 文件夹并提交（这是一个神奇的历史遗留问题）**。
+7. 运行 `npm run build` 执行 TypeScript 检查。
 
 ## 项目结构
 - `public/`: **在这里添加图片和图标**，不要在代码中使用相对路径导入。

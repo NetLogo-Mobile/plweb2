@@ -5,7 +5,7 @@ import {
   differenceInMinutes,
   differenceInHours,
 } from "date-fns";
-import i18n from "./i18n/i18n";
+import i18n from "@i18n/index";
 import Emitter from "./eventEmitter";
 import storageManager from "./storage";
 import { showDialog } from "@popup/naiveui";

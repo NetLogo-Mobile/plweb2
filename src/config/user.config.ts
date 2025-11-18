@@ -1,4 +1,4 @@
-import i18n from "../services/i18n/i18n";
+import i18n from "@i18n/index";
 import Emitter from "../services/eventEmitter";
 import storageManager from "../services/storage";
 import { showDialog } from "@popup/naiveui";

@@ -1,5 +1,5 @@
 import type { MessageReactive } from "naive-ui";
-import translateErrorMessage from "../i18n/translateErrorMessage.ts";
+import translateErrorMessage from "@i18n/translateErrorMessage.ts";
 import storageManager from "@storage/index.ts";
 import { showMessage } from "@popup/naiveui.ts";
 

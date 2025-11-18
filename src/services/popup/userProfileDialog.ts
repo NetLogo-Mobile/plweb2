@@ -1,6 +1,6 @@
 import { createApp } from "vue";
 import UserCard from "../../components/popup/userProfileDialog.vue";
-import i18n from "../../i18n/index";
+import i18n from "@i18n/index";
 
 /**
  * To open a user information card without handling any other events

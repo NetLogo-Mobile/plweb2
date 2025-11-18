@@ -21,7 +21,7 @@ And most importantly, we sincerely thanks to the previous contributors: Arenfell
 4. Clone the repository and run `npm install` to install dependencies. You can ignore all warnings.
 5. Run `npm run dev` to start the local server.
 6. Run `npm run lint` to format the code and check ESLint.
-7. Run `npm run build` to perform TypeScript checks. **After finishing, delete the docs/ folder and commit.**
+7. Run `npm run build` to perform TypeScript checks.
 
 ## Project structure
 - `public/`: **Add pictures and icons here**, DO NOT import them in code using relative paths.
