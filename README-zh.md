@@ -6,7 +6,7 @@
 
 最重要的是，我们衷心感谢之前的贡献者：Arenfelle、sfls-huangzeyuan 以及其他热心的朋友，他们帮助我们在 physicslab 社区中发现了许多 bug。
 
-- 使用技术：vue3, typescript, vite, [基于 C wasm 的富文本渲染](https://github.com/GoodenoughPhysicsLab/pltxt2htm)
+- 使用技术：vue3, typescript, vite, [基于 C wasm 的富文本渲染](https://github.com/SekaiArendelle/pltxt2htm)
 - 其他开发工具：
   矢量图标库: https://icomoon.io/app/#/select
   vue3 组件库: https://www.naiveui.com/zh-CN/os-theme/components/t
@@ -51,3 +51,4 @@
 - [ ] 更好的存储管理 (**使用 indexDB**)。部分请求可以缓存，当需要再次请求时，可以先使用缓存版本，同时再获取真实数据并更新它（Vue 有一个很棒的策略，可以精准更新 DOM 元素）。
 - [ ] 转译代码以支持旧浏览器，使用插件（分配给 @wsxiaolin）
 - [ ] 把router里面路由名称缩短一些，例如 #experiment-summary/:id 改为 #p/:id , userProfile 改为 u 等等
+

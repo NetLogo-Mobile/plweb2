@@ -6,7 +6,7 @@ This project is just migrated from the old repository, there are some small prob
 
 And most importantly, we sincerely thanks to the previous contributors: Arenfelle, sfls-huangzeyuan, and other warm-hearted people who help us fin many bugs in the physicslab's community.
 
-- technologies used: vue3, typescript, vite, [richtext render based on c++ wasm](https://github.com/GoodenoughPhysicsLab/pltxt2htm)
+- technologies used: vue3, typescript, vite, [richtext render based on c++ wasm](https://github.com/SekaiArendelle/pltxt2htm)
 - other development tools:
     + Vector icon library: https://icomoon.io/app/#/select
     + vue3 component library: https://www.naiveui.com/zh-CN/os-theme/components/t
