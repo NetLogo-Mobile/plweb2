@@ -170,7 +170,7 @@ let userData = ref({
     Gold: 0,
     Diamond: 0,
     Fragment: 0,
-    Level:0,
+    Level: 0,
     Experience: 0,
     Prestige: 0,
     Subscription: 0,
@@ -194,7 +194,7 @@ let userData = ref({
 
 // Despite called ExpDataType, expData actually contains disccusions as well
 interface ExpDataType {
-  [key: string]: any[]; 
+  [key: string]: any[];
   // key is the tab name, value is the array of experiments/discussions
   // Server will respond with up to 4 tabs, but we donnot konw their names in advance
 }

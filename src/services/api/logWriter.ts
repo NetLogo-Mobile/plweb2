@@ -1,7 +1,6 @@
 // see repository CIVITAS-John/Quantum-Intermediates ( ask @CIVITAS-John for access )
 // Up till now, nobody kowns whether it works, as the log-uploading API well repond with 200 nomatter what.
 
-
 export type LogSession = {
   type: 0;
   region: string;

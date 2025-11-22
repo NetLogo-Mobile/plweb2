@@ -76,7 +76,12 @@
 import { ref, onMounted, onActivated } from "vue";
 import { NGi, NGrid } from "naive-ui";
 import router from "../router";
-import { checkLogin, EncodeAPITargetLink, getPath, getUserUrl } from "@services/utils";
+import {
+  checkLogin,
+  EncodeAPITargetLink,
+  getPath,
+  getUserUrl,
+} from "@services/utils";
 import "../layout/loading.css";
 import "../layout/startPage.css";
 import sm from "@storage/index.ts";
@@ -118,20 +123,25 @@ const { blockItemsPerRow, maxProjectsPerBlock } = useResponsive();
 
 onMounted(async () => {
   // First render from cache, then update it
-  const ua = sm.getObj("userAuthInfo");
-  if (ua.status === "success" && ua.value?.token != null) {
-    const res = await login(ua.value.token, ua.value.authCode, true);
-    user.value = {
-      coins: res.Data.User.Gold,
-      gems: res.Data.User.Diamond,
-      level: res.Data.User.Level,
-      username: res.Data.User.Nickname,
-      avatarUrl: getUserUrl(res.Data.User),
-      ID: res.Data.User.ID,
-    };
+  async function processAuthInfo() {
+    const ua = sm.getObj("userAuthInfo");
+    if (ua.status === "success" && ua.value?.token != null) {
+      const res = await login(ua.value.token, ua.value.authCode, true);
+      user.value = {
+        coins: res.Data.User.Gold,
+        gems: res.Data.User.Diamond,
+        level: res.Data.User.Level,
+        username: res.Data.User.Nickname,
+        avatarUrl: getUserUrl(res.Data.User),
+        ID: res.Data.User.ID,
+      };
+    }
   }
-  const res = await login(null, null);
-  loadPageData(res);
+  async function processHomepageProjects() {
+    const res = await login(null, null);
+    loadPageData(res);
+  }
+  Promise.allSettled([processAuthInfo(), processHomepageProjects()]);
 });
 
 onActivated(() => {
@@ -151,7 +161,6 @@ Emitter.on("userLogin", (res) => {
     ID: res.Data.User.ID,
   };
 });
-
 
 // It is astonishing that server respond with projects data when login with (null,null)
 // And responed with user data when login with token/password

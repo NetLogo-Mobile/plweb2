@@ -3,6 +3,18 @@
     <slot></slot>
     <!-- @see https://icomoon.io/app/ -->
     <div class="buttons">
+      <div class="logout" @click="logout">
+        <svg
+          width="25"
+          height="25"
+          viewBox="0 0 32 32"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M24 20v-4h-10v-4h10v-4l6 6zM22 18v8h-10v6l-12-6v-26h22v10h-2v-8h-16l8 4v18h8v-6z"
+          ></path>
+        </svg>
+      </div>
       <div v-show="!isFullScreen" class="fullScreen" @click="toggleFullScreen">
         <svg
           width="22"
@@ -34,10 +46,11 @@
 </template>
 
 <script setup lang="ts">
+import router from "../../router/index";
 import { ref } from "vue";
 let isFullScreen = ref(false);
 
-const toggleFullScreen = () => {
+function toggleFullScreen() {
   if (!document.fullscreenElement) {
     document.documentElement.requestFullscreen();
     isFullScreen.value = true;
@@ -47,19 +60,20 @@ const toggleFullScreen = () => {
       isFullScreen.value = false;
     }
   }
-};
+}
 
 /**
  *  强制刷新，但是日后需要修改本地存储清理逻辑
  * Force refresh, but the local storage clearing logic needs to be modified in the future
  *  @deprecated
  */
-// function logout() {
-//   sm.remove("userInfo");
-//   Emitter.emit("info", "您已退出登录！", 1);
-//   window.location.href = getPath("/@root");
-//   window.location.reload();
-// }
+function logout() {
+  localStorage.clear();
+  // This is not merely to clear the storage, mabye an error happened in our storage system so the user try to logout
+  router.push({ name: "Home" }).then(() => {
+    window.location.reload();
+  });
+}
 </script>
 
 <style scoped>
@@ -80,7 +94,7 @@ const toggleFullScreen = () => {
   display: flex;
   align-items: center;
   cursor: pointer;
-  padding-right: 8vw;
+  padding-right: 20px;
   gap: 10px;
 }
 

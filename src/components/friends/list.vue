@@ -2,7 +2,7 @@
   <infiniteScroll
     :initial-items="items"
     :has-more="!noMore"
-    :margin-top="-200" 
+    :margin-top="-200"
     @load="handleLoad"
   >
     <template #default="{ items }">

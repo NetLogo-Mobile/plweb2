@@ -19,14 +19,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick, onMounted } from "vue";
+import { ref, watch, nextTick } from "vue";
 import MessageItem from "./MessageItem.vue";
 import { getData } from "@services/api/getData.ts";
 import type { PropType } from "vue";
 import { showMessage } from "@popup/naiveui";
 import InfiniteScroll from "../utils/infiniteScroll.vue";
 import { useI18n } from "vue-i18n";
-import storageManager from "@storage/index.ts";
 import { checkLogin } from "@services/utils.ts";
 import { NDivider } from "naive-ui";
 
@@ -97,7 +96,8 @@ function handleMsgClick(message: PMessageItem) {
 
 const handleLoad = async () => {
   if (
-    storageManager.getObj("userInfo")?.value?.loginStatus === false &&
+    // CheckLogin without popup for the sake of avoiding API Handling errors
+    checkLogin(false) === false &&
     Category === "User"
   ) {
     return;
@@ -137,7 +137,10 @@ const handleLoad = async () => {
   await nextTick();
 };
 
+if (Category === "User") checkLogin();
+// CheckLogin with popup for the sake of leading user
 handleLoad();
+
 watch(
   () => upDate,
   () => {
@@ -152,10 +155,6 @@ watch(
 window.$Logger.logPageView({
   pageLink: `/${Category}/${ID}/Comments/`,
   timeStamp: Date.now(),
-});
-
-onMounted(() => {
-  if (Category === "User") checkLogin();
 });
 </script>
 

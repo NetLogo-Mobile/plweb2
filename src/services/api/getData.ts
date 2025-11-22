@@ -1,4 +1,3 @@
-import Emitter from "../eventEmitter.ts";
 import { beforeRequest, afterRequest } from "./Interceptor.ts";
 import sm from "@storage/index.ts";
 import i18n from "@i18n/index.ts";
@@ -22,12 +21,11 @@ import { getPath } from "../utils.ts";
 // eslint-disable-next-line max-lines-per-function
 export async function getData(path: string, body: unknown) {
   const userInfo = sm.getObj("userAuthInfo");
-  if (userInfo.status === "empty" || userInfo.status === "expired") {
-    Emitter.emit("loginRequired");
-    return;
-  }
-  const token = userInfo.value.token;
-  const authCode = userInfo.value.authCode;
+  const token = userInfo.value?.token;
+  const authCode = userInfo.value?.authCode;
+  // If token || authcode is null, it means a there's a problem with our code logic
+  // Mabe the anonymous token storage or local storage or authentication (CheckLogin) has a problem
+  // 可能是匿名Token的存储或者本地存储或者鉴权(CheckLogin)出了问题
   const beforeRes = beforeRequest(path);
   if (beforeRes.continue === false) {
     return beforeRes.data;
@@ -79,13 +77,8 @@ export async function getData(path: string, body: unknown) {
 /**
  * 在首页进行登录操作。 Login operation on the Home.vue
  * 注意，不进行本操作无法访问其他任何API接口（除非有本地缓存），所以在处理任何其他API时都要处理是否登录的错误（不等同于没有“类似管理行为”的权限）
- * 可以使用EventEmitter来发布LoginRequired事件
- * 订阅laoding、error、success事件，并管理用户登录状态存储。使用`window.$message`显示消息。
- *
  * Note that without performing this operation, you cannot access any other API interfaces (unless there is local cache).
  * Therefore, when handling any other API, you should handle the error of whether the user is
- * Emits loading, error, and success events via `Emitter` and manages user login status in storage. Displays messages using `window.$message`.
- *
  * @param arg1 - 用户名或者API令牌，取决于IsToken。’The username or API token, depending on `is_token`.
  * @param arg2 - 密码或者API认证码，取决于IsToken。The password or API auth code, depending on `is_token`.
  * @returns 成功时返回服务器响应数据，失败时发出错误事件。A promise that resolves to the server response data if successful, or emits an error event on failure.
@@ -140,7 +133,8 @@ export async function login(
       });
     }
     return response.json().then((data) => {
-      if (data.Token != null && data.AuthCode != null)
+      // Exclude(排除) user who has authenticated successfully but still does an null-null login to get homepage data
+      if (sm.getObj("userAuthInfo").value?.token == null) {
         sm.setObj(
           "userAuthInfo",
           {
@@ -149,6 +143,7 @@ export async function login(
           },
           30 * 24 * 60 * 60 * 1000,
         );
+      }
       messageRef.destroy();
       return data;
     });

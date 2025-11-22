@@ -1,7 +1,6 @@
 import i18n from "@i18n/index";
-import Emitter from "../services/eventEmitter";
 import storageManager from "../services/storage";
-import { showDialog } from "@popup/naiveui";
+import { showDialog, showNotification } from "@popup/naiveui";
 
 export const settingsConfig = [
   {
@@ -30,7 +29,10 @@ export const settingsConfig = [
                 label: "newValue",
                 timestamp: Date.now(),
               });
-              Emitter.emit("loginRequired");
+              showNotification({
+                type: "info",
+                title: i18n.global.t("login.reLoginContent"),
+              });
             },
           });
         },
