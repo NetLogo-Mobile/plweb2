@@ -103,7 +103,7 @@
                   {{ t("expeSummary.intro") }}
                 </h3>
 
-                <div class="intro" v-html="parse(data.Description)"></div>
+                <div class="intro" v-html="descriptionHtml"></div>
                 <div>
                   {{ t("expeSummary.wordCount") }}
                 </div>
@@ -213,6 +213,12 @@ const data = ref({
     Verification: "Banned",
   },
 });
+
+const descriptionHtml = parse(
+  () => Array.isArray(data.value.Description)
+    ? data.value.Description.join("\n")
+    : data.value.Description,
+);
 
 let coverUrl = ref(getPath("/@base/assets/messages/Experiment-Default.png"));
 let avatarUrl = ref(getUserUrl(data.value.User));
