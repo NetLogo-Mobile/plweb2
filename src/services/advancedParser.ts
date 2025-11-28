@@ -4,7 +4,7 @@ import { getDeallocator } from "./pltxt2htm/deallocator";
 
 let fixedadv_parser: ((text: string, host: string) => number) | null = null;
 
-async function FixedadvParser(text: string, host: string): Promise<string> {
+async function fixedadvParser(text: string, host: string): Promise<string> {
   const wasmInstance = await getWasmInstance();
   if (!fixedadv_parser) {
     fixedadv_parser = wasmInstance.cwrap("fixedadv_parser", "number", ["string", "string"]);
@@ -21,7 +21,7 @@ function parse(source: () => string) {
   watch(
     source,
     async (val) => {
-      html.value = val ? await FixedadvParser(val, import.meta.env.VITE_ROOT_URL) : "";
+      html.value = val ? await fixedadvParser(val, import.meta.env.VITE_ROOT_URL) : "";
     },
     { immediate: true }
   );
