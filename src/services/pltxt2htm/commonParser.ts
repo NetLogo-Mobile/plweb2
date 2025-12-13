@@ -1,5 +1,7 @@
 import { getWasmInstance } from "./wasmLoader";
 import { getDeallocator } from "./deallocator";
+import dompurify from "dompurify";
+
 
 async function commonParser(text: string): Promise<string> {
   const wasmInstance = await getWasmInstance();
@@ -19,16 +21,10 @@ async function commonParser(text: string): Promise<string> {
   return result;
 }
 
-// @ts-expect-error test
-window.$p = parse;
 
 async function parse(source: string) {
-  // 计算函数执行用时
-  // console.time("commonParser");
   const result = await commonParser(source);
-  // console.timeEnd("commonParser");
-  console.log(result);
-  return result;
+  return dompurify.sanitize(result);
 }
 
 export default parse;

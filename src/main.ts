@@ -5,6 +5,7 @@ import i18n from "@i18n/index";
 import ErrorLogger from "./services/errorLogger.ts";
 import { LogManager } from "@api/logWriter.ts";
 import type { DirectiveBinding } from "vue";
+import "highlight.js/styles/github.css";
 
 const app = createApp(App);
 app.use(router);
