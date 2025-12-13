@@ -10,6 +10,7 @@ export async function getWasmInstance() {
   if (wasmInstance) return wasmInstance;
   if (wasmInstancePromise) return wasmInstancePromise;
   wasmInstancePromise = (async () => {
+    // @ts-expect-error No type info
     const pltxt2htm = (await import("./vendor/pltxt2htm.js")).default;
     wasmInstance = await pltxt2htm();
     wasmInstancePromise = null;

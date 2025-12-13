@@ -11,9 +11,9 @@
         <div>
           <img :src="returnImagePath" class="return" @click="goBack" />
           <div
+            v-richText="() => parseInline(data.Subject)"
             class="title"
             @click="copySubject"
-            v-richText="()=>parseInline(data.Subject)"
           ></div>
           <div class="tagContainer">
             <Tag
@@ -78,8 +78,8 @@
                     {{ data.User.Nickname }}
                   </p>
                   <p
+                    v-richText="() => parseInline(data.User.Signature)"
                     style="color: gray; margin: 0%; width: 100%"
-                    v-richText="()=>parseInline(data.User.Signature)"
                   ></p>
                 </div>
               </div>
@@ -103,7 +103,17 @@
                   {{ t("expeSummary.intro") }}
                 </h3>
 
-                <div class="intro" v-richText="()=>parse(Array.isArray(data.Description)? data.Description.join('\n'): data.Description,)"></div>
+                <div
+                  v-richText="
+                    () =>
+                      parse(
+                        Array.isArray(data.Description)
+                          ? data.Description.join('\n')
+                          : data.Description,
+                      )
+                  "
+                  class="intro"
+                ></div>
                 <div>
                   {{ t("expeSummary.wordCount") }}
                 </div>
@@ -213,7 +223,6 @@ const data = ref({
     Verification: "Banned",
   },
 });
-
 
 let coverUrl = ref(getPath("/@base/assets/messages/Experiment-Default.png"));
 let avatarUrl = ref(getUserUrl(data.value.User));

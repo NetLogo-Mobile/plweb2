@@ -5,7 +5,7 @@
     <div class="card">
       <img :src="imgUrl" class="icon" />
       <div class="text">
-        <p class="title" v-richText="()=>parse(data.Subject)"></p>
+        <p v-richText="() => parse(data.Subject)" class="title"></p>
         <p class="subtitle">{{ data.User.Nickname }}</p>
         <div class="subtitle">
           <Tag v-for="i in data.Tags" :category="data.Category" :tag="i" />

@@ -22,8 +22,8 @@
       <div id="notification_message" class="notification_message">
         <div
           id="notification_text"
+          v-richText="() => parse(message.msg)"
           class="notification_text"
-          v-richText="()=>parse(message.msg)"
         ></div>
       </div>
     </div>

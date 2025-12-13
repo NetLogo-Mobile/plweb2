@@ -8,7 +8,7 @@
     <div class="card" :type="type">
       <img :src="imgUrl" class="icon" />
       <div class="text">
-        <p class="title" v-richText="()=>parse(data.Subject)"></p>
+        <p v-richText="() => parse(data.Subject)" class="title"></p>
         <p class="subtitle">
           {{ data.User.Nickname + "&nbsp;&nbsp;-" + formattedDate }}
         </p>
@@ -18,7 +18,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from "vue";
+import { computed } from "vue";
 import parse from "@services/pltxt2htm/commonParser";
 import { getCoverUrl, formatDate } from "@services/utils.ts";
 

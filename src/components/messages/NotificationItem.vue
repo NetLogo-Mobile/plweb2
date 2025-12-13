@@ -6,8 +6,8 @@
     <div id="notification" class="notification" @click="showComment">
       <div
         id="notification_title"
+        v-richText="() => parse(notification.msg_title)"
         class="notification_title"
-        v-richText="()=>parse(notification.msg_title)"
       ></div>
       <div id="notification_message" class="notification_message">
         <div id="notification_icon" class="notification_icon">
@@ -17,10 +17,10 @@
           <!-- 我认为是在没必要专门像APP一样渲染邮件，所以暂时这样 -->
           <!-- I think it's unnecessary to render emails like an app, so I'll do it this way for now -->
           <n-ellipsis
+            v-richText="() => parse(notification.msg)"
             expand-trigger="click"
             line-clamp="2"
             :tooltip="false"
-            v-richText="()=>parse(notification.msg)"
           >
           </n-ellipsis>
         </div>
