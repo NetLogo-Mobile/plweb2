@@ -7,7 +7,7 @@
       <div
         id="notification_title"
         class="notification_title"
-        v-html="parse(notification.msg_title, true)"
+        v-richText="()=>parse(notification.msg_title)"
       ></div>
       <div id="notification_message" class="notification_message">
         <div id="notification_icon" class="notification_icon">
@@ -20,7 +20,7 @@
             expand-trigger="click"
             line-clamp="2"
             :tooltip="false"
-            v-html="parse(notification.msg, true)"
+            v-richText="()=>parse(notification.msg)"
           >
           </n-ellipsis>
         </div>
@@ -31,7 +31,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue";
-import parse from "@services/commonParser.ts";
+import parse from "@services/pltxt2htm/commonParser";
 import { NEllipsis } from "naive-ui";
 import showUserCard from "@popup/userProfileDialog.ts";
 import { getAvatarUrl } from "@services/getUserCurentAvatarByID";

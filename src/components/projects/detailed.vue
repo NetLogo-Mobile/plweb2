@@ -5,7 +5,7 @@
     <div class="card">
       <img :src="imgUrl" class="icon" />
       <div class="text">
-        <p class="title" v-html="parse(data.Subject)"></p>
+        <p class="title" v-richText="()=>parse(data.Subject)"></p>
         <p class="subtitle">{{ data.User.Nickname }}</p>
         <div class="subtitle">
           <Tag v-for="i in data.Tags" :category="data.Category" :tag="i" />
@@ -17,7 +17,7 @@
 
 <script setup lang="ts">
 import Tag from "../utils/Tag.vue";
-import parse from "@services/commonParser.ts";
+import parse from "@services/pltxt2htm/commonParser";
 import { getCoverUrl, getPath } from "@services/utils";
 import { useRouter } from "vue-router";
 

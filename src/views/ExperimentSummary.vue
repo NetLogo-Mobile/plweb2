@@ -13,7 +13,7 @@
           <div
             class="title"
             @click="copySubject"
-            v-html="parseInline(data.Subject)"
+            v-richText="()=>parseInline(data.Subject)"
           ></div>
           <div class="tagContainer">
             <Tag
@@ -79,7 +79,7 @@
                   </p>
                   <p
                     style="color: gray; margin: 0%; width: 100%"
-                    v-html="parseInline(data.User.Signature)"
+                    v-richText="()=>parseInline(data.User.Signature)"
                   ></p>
                 </div>
               </div>
@@ -103,7 +103,7 @@
                   {{ t("expeSummary.intro") }}
                 </h3>
 
-                <div class="intro" v-html="descriptionHtml"></div>
+                <div class="intro" v-richText="()=>parse(Array.isArray(data.Description)? data.Description.join('\n'): data.Description,)"></div>
                 <div>
                   {{ t("expeSummary.wordCount") }}
                 </div>
@@ -155,8 +155,8 @@ import { getData } from "@services/api/getData.ts";
 import { NTabs, NTabPane, NInput, NButton } from "naive-ui";
 import Tag from "../components/utils/TagLarger.vue";
 import MessageList from "../components/messages/MessageList.vue";
-import parse from "@services/advancedParser.ts";
-import parseInline from "@services/commonParser.ts";
+import parse from "@services/pltxt2htm/advancedParser";
+import parseInline from "@services/pltxt2htm/commonParser";
 import showUserCard from "@popup/userProfileDialog.ts";
 import postComment from "@services/postComment.ts";
 import { getCoverUrl, getUserUrl, getPath } from "@services/utils.ts";
@@ -214,11 +214,6 @@ const data = ref({
   },
 });
 
-const descriptionHtml = parse(
-  () => Array.isArray(data.value.Description)
-    ? data.value.Description.join("\n")
-    : data.value.Description,
-);
 
 let coverUrl = ref(getPath("/@base/assets/messages/Experiment-Default.png"));
 let avatarUrl = ref(getUserUrl(data.value.User));

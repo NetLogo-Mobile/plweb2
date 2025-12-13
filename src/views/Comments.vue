@@ -42,7 +42,7 @@ import { ref } from "vue";
 import MessagesList from "../components/messages/MessageList.vue";
 import { useRoute } from "vue-router";
 import Header from "../components/utils/Header.vue";
-import parse from "@services/commonParser.ts";
+import parse from "@services/pltxt2htm/commonParser";
 import postComment from "@services/postComment.ts";
 import { useI18n } from "vue-i18n";
 import { NInput } from "naive-ui";

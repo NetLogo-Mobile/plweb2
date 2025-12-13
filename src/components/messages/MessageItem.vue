@@ -23,7 +23,7 @@
         <div
           id="notification_text"
           class="notification_text"
-          v-html="parse(message.msg, true)"
+          v-richText="()=>parse(message.msg)"
         ></div>
       </div>
     </div>
@@ -32,7 +32,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from "vue";
-import parse from "@services/advancedParser.ts";
+import parse from "@services/pltxt2htm/advancedParser";
 import showUserCard from "@popup/userProfileDialog.ts";
 import { getAvatarUrl } from "@services/getUserCurentAvatarByID";
 import storageManager from "@storage/index.ts";

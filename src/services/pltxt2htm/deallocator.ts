@@ -1,11 +1,10 @@
 import { getWasmInstance } from "./wasmLoader";
 
-let deallocate: ((ptr: number) => void) | null = null;
-
 export async function getDeallocator() : Promise<(ptr: number) => void> {
-  if (!deallocate) {
-    const wasmInstance = await getWasmInstance();
-    deallocate = wasmInstance.cwrap("deallocate", null, ["number"]);
+  const wasmInstance = await getWasmInstance();
+  const instanceAny: any = wasmInstance;
+  if (!instanceAny.__deallocate_fn) {
+    instanceAny.__deallocate_fn = wasmInstance.cwrap("deallocate", null, ["number"]);
   }
-  return deallocate;
+  return instanceAny.__deallocate_fn as (ptr: number) => void;
 }

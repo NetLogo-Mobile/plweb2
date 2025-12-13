@@ -4,6 +4,7 @@ import router from "./router/index";
 import i18n from "@i18n/index";
 import ErrorLogger from "./services/errorLogger.ts";
 import { LogManager } from "@api/logWriter.ts";
+import type { DirectiveBinding } from "vue";
 
 const app = createApp(App);
 app.use(router);
@@ -21,6 +22,21 @@ app.use(i18n);
 //   }
 // }
 // setVh();
+
+// Richtext Render
+app.directive("richText", {
+  mounted(el, binding: DirectiveBinding<() => Promise<string>>) {
+    el.innerHTML = "rendering...";
+    Promise.resolve(binding.value()).then((html) => {
+      el.innerHTML = html;
+    });
+  },
+  updated(el: HTMLElement, binding: DirectiveBinding<any>) {
+    Promise.resolve(binding.value()).then((html) => {
+      el.innerHTML = html;
+    });
+  },
+});
 
 app.mount("#app");
 window.$ErrorLogger = new ErrorLogger(app);
