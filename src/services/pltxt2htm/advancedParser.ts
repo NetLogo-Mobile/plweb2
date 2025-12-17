@@ -41,7 +41,6 @@ async function parse(source: string) {
   //   });
   // }
   tempDiv.querySelectorAll("pre code").forEach((block) => {
-    block.querySelectorAll("br").forEach(br => br.replaceWith("\n"))
     hljs.highlightElement(block as HTMLElement);
   });
   return dompurify.sanitize(tempDiv.innerHTML);
