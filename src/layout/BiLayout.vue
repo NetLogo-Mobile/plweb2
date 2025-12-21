@@ -30,6 +30,7 @@
   position: relative;
   height: 28vh;
   flex: 0 0 auto;
+  overflow: auto;
 }
 
 .layout-right {
@@ -38,7 +39,7 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: auto;
 }
 
 .layout-left::before {
@@ -62,18 +63,25 @@
 @media (min-aspect-ratio: 1/1) {
   .basic-layout {
     flex-direction: row;
+    height: 100dvh;
+    overflow: hidden;
   }
 
   .layout-left {
-    width: 50vw;
-    min-height: calc(var(--vh, 1vh) * 100);
-    flex: 0 0 50vw;
+    width: 50%;
+    height: 100%;
+    flex: 0 0 50%;
+    align-self: stretch;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 
   .layout-right {
-    width: 50vw;
-    min-height: calc(var(--vh, 1vh) * 100);
-    flex: 1 1 50vw;
+    width: 50%;
+    flex: 1 1 50%;
+    align-self: stretch;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 
   .scroll-container {

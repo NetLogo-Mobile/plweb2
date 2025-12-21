@@ -24,13 +24,13 @@
 <style>
 html,
 body {
-  height: 100vh !important;
   height: 100dvh !important;
+  overflow: hidden;
 }
 
 #app {
-  height: 100vh !important;
   height: 100dvh !important;
   touch-action: none;
+  overflow: hidden;
 }
 </style>
