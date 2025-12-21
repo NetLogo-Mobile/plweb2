@@ -4,19 +4,19 @@ import hljs from "highlight.js";
 import dompurify from "dompurify";
 // import renderMathInElement from "katex/contrib/auto-render/auto-render.js";
 
-async function fixedadvParser(text: string, host: string): Promise<string> {
+async function advancedParser(text: string, host: string): Promise<string> {
   const wasmInstance = await getWasmInstance();
   const instanceAny: any = wasmInstance;
-  if (!instanceAny.__fixedadv_parser_fn) {
-    instanceAny.__fixedadv_parser_fn = wasmInstance.cwrap(
-      "fixedadv_parser",
+  if (!instanceAny.__advanced_parser_fn) {
+    instanceAny.__advanced_parser_fn = wasmInstance.cwrap(
+      "advanced_parser",
       "number",
       ["string", "string"]
     );
   }
   let deallocate = await getDeallocator();
   let char8_t_const_ptr = (
-    instanceAny.__fixedadv_parser_fn as (t: string, h: string) => number
+    instanceAny.__advanced_parser_fn as (t: string, h: string) => number
   )(text, host);
   let result = wasmInstance.UTF8ToString(char8_t_const_ptr);
   deallocate(char8_t_const_ptr);
@@ -24,7 +24,7 @@ async function fixedadvParser(text: string, host: string): Promise<string> {
 }
 
 async function parse(source: string) {
-  const rawHtml = await fixedadvParser(source, import.meta.env.VITE_ROOT_URL);
+  const rawHtml = await advancedParser(source, import.meta.env.VITE_ROOT_URL);
   console.log(rawHtml)
   if (!rawHtml) return "";
   const tempDiv = document.createElement("div");
