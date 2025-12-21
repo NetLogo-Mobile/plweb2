@@ -114,4 +114,15 @@ export default defineConfig({
       },
     },
   },
+  build:{
+    rollupOptions:{
+      output:{
+        manualChunks: (id) => {
+          if(id.includes("highlight.js")){
+            return "highlightjs";
+          }
+        }
+      }
+    }
+  }
 });

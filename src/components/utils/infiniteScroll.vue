@@ -47,7 +47,6 @@ const props = defineProps({
 
 const emit = defineEmits(["load"]);
 
-const scrollContainer = ref<HTMLElement>();
 const sentinel = ref<HTMLElement>();
 const items = ref([...props.initialItems]);
 const loading = ref(false);
