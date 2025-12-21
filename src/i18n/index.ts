@@ -4,6 +4,7 @@ import de from "./de";
 import ja from "./ja";
 import fr from "./fr";
 import { createI18n } from "vue-i18n";
+import storageManager from "@storage/index";
 
 const datetimeFormats = {
   Chinese: {
@@ -151,7 +152,9 @@ const messages = {
   French: fr,
 };
 
-const _l = navigator.language;
+// Read from user config
+const config = storageManager.getObj("userConfig");
+const _l = config.value?.language || navigator.language;
 const defaultLanguage =
   _l === "zh-CN" ? "Chinese" : _l === "zh" ? "Chinese" : "English";
 

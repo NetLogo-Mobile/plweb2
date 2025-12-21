@@ -98,7 +98,7 @@ class ErrorLogger {
     for (const key of keys) {
       try {
         result[key] = this.limitJsonDepth(obj[key], depth + 1);
-      } catch (e) {
+      } catch {
         result[key] = "[Error reading property]";
       }
     }

@@ -11,18 +11,68 @@
           backgroundPosition: 'center',
         }"
       >
-        <div class="userInfo">
+        <!-- Top header row: Back button and Settings button (landscape only) -->
+        <div class="cover-header">
           <img
             src="/assets/library/Navigation-Return.png"
             style="width: 2.7em"
             class="return"
             @click="goBack"
           />
-          <div
-            style="color: white; font-size: 2em; text-align: left"
-            @click="copyUser()"
+          <!-- Settings button for own profile (landscape only) -->
+          <button
+            v-if="isOwnProfile"
+            class="settings-btn settings-btn-header"
+            :title="t('settings.settings')"
+            @click="goToSettings"
           >
-            {{ userData.User.Nickname }}
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <!-- Modern settings icon -->
+              <circle cx="12" cy="12" r="2.5" fill="white" />
+              <path
+                d="M12 2C11.7348 2 11.4804 2.1054 11.2929 2.2929C11.1054 2.4804 11 2.7348 11 3V4C11 4.2652 10.8946 4.5196 10.7071 4.7071C10.5196 4.8946 10.2652 5 10 5H9.5C9.2348 5 8.9804 4.8946 8.7929 4.7071C8.6054 4.5196 8.5 4.2652 8.5 4V3C8.5 2.7348 8.3946 2.4804 8.2071 2.2929C8.0196 2.1054 7.7652 2 7.5 2C6.5 2 5.5 2.5 5.5 3.5C5.5 4 5.8 4.5 6 5C4 6 2 8 2 10.5C2 14.09 5.13 17 9 17C9.45 17 9.87 16.96 10.29 16.88C10.4725 16.9533 10.6725 17 10.88 17H13.12C13.3275 17 13.5275 16.9533 13.71 16.88C14.13 16.96 14.55 17 15 17C18.87 17 22 14.09 22 10.5C22 8 20 6 18 5C18.2 4.5 18.5 4 18.5 3.5C18.5 2.5 17.5 2 16.5 2C16.2348 2 15.9804 2.1054 15.7929 2.2929C15.6054 2.4804 15.5 2.7348 15.5 3V4C15.5 4.2652 15.3946 4.5196 15.2071 4.7071C15.0196 4.8946 14.7652 5 14.5 5H14C13.7348 5 13.4804 4.8946 13.2929 4.7071C13.1054 4.5196 13 4.2652 13 4V3C13 2.7348 12.8946 2.4804 12.7071 2.2929C12.5196 2.1054 12.2652 2 12 2Z"
+                fill="white"
+              />
+            </svg>
+          </button>
+        </div>
+        <div class="userInfo">
+          <!-- User name row with settings button (portrait only) -->
+          <div class="user-name-row">
+            <div
+              style="color: white; font-size: 2em; text-align: left; flex: 1"
+              @click="copyUser()"
+            >
+              {{ userData.User.Nickname }}
+            </div>
+            <!-- Settings button for own profile (portrait only) -->
+            <button
+              v-if="isOwnProfile"
+              class="settings-btn settings-btn-portrait"
+              :title="t('settings.settings')"
+              @click="goToSettings"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <!-- Modern settings icon -->
+                <circle cx="12" cy="12" r="2.5" fill="white" />
+                <path
+                  d="M12 2C11.7348 2 11.4804 2.1054 11.2929 2.2929C11.1054 2.4804 11 2.7348 11 3V4C11 4.2652 10.8946 4.5196 10.7071 4.7071C10.5196 4.8946 10.2652 5 10 5H9.5C9.2348 5 8.9804 4.8946 8.7929 4.7071C8.6054 4.5196 8.5 4.2652 8.5 4V3C8.5 2.7348 8.3946 2.4804 8.2071 2.2929C8.0196 2.1054 7.7652 2 7.5 2C6.5 2 5.5 2.5 5.5 3.5C5.5 4 5.8 4.5 6 5C4 6 2 8 2 10.5C2 14.09 5.13 17 9 17C9.45 17 9.87 16.96 10.29 16.88C10.4725 16.9533 10.6725 17 10.88 17H13.12C13.3275 17 13.5275 16.9533 13.71 16.88C14.13 16.96 14.55 17 15 17C18.87 17 22 14.09 22 10.5C22 8 20 6 18 5C18.2 4.5 18.5 4 18.5 3.5C18.5 2.5 17.5 2 16.5 2C16.2348 2 15.9804 2.1054 15.7929 2.2929C15.6054 2.4804 15.5 2.7348 15.5 3V4C15.5 4.2652 15.3946 4.5196 15.2071 4.7071C15.0196 4.8946 14.7652 5 14.5 5H14C13.7348 5 13.4804 4.8946 13.2929 4.7071C13.1054 4.5196 13 4.2652 13 4V3C13 2.7348 12.8946 2.4804 12.7071 2.2929C12.5196 2.1054 12.2652 2 12 2Z"
+                  fill="white"
+                />
+              </svg>
+            </button>
           </div>
           <Tag
             category="User"
@@ -129,11 +179,12 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { getData } from "@services/api/getData.ts";
 import { NTabs, NTabPane, NInput } from "naive-ui";
 import Tag from "../components/utils/TagLarger.vue";
 import MessageList from "../components/messages/MessageList.vue";
+import storageManager from "@services/storage";
 import Block from "../components/blocks/Block.vue";
 import postComment from "@services/postComment.ts";
 import BiLayout from "../layout/BiLayout.vue";
@@ -152,9 +203,11 @@ let comment = ref("");
 let isLoading = ref(false);
 let upDate = ref(1);
 let replyID = ref("");
+let isOwnProfile = ref(false);
 
 const selectedTab = ref("Intro");
 const route = useRoute();
+const router = useRouter();
 
 let coverUrl = ref("");
 
@@ -209,6 +262,13 @@ onMounted(async () => {
     ID: route.params.id,
   });
   userData.value = userRes.Data;
+  
+  // Check if viewing own profile
+  const currentUser = storageManager.getObj("userInfo")?.value;
+  if (currentUser && currentUser.ID === route.params.id) {
+    isOwnProfile.value = true;
+  }
+  
   // Civitas-john always procrastinate on addressing the request to solve the anti-leeching issue.
   // That's why the below occurs
   // hmmm...When use in https://plweb.turtlesim.com,abti-leeching issue does not occur
@@ -248,6 +308,10 @@ async function handleEnter() {
 
 function goBack() {
   window.history.back();
+}
+
+function goToSettings() {
+  router.push("/settings");
 }
 
 // Sort 2 means soted by popularity; Sort 1 means sorted by latest;Sort 3 means random sorted
@@ -314,6 +378,95 @@ function copyUser() {
   z-index: 10;
   position: relative;
 }
+
+.user-name-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.cover-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 15;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.settings-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+  backdrop-filter: blur(10px);
+}
+
+.settings-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: rotate(20deg);
+}
+
+.settings-btn:active {
+  transform: rotate(20deg) scale(0.95);
+}
+
+.settings-btn svg {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+/* Landscape: Show header settings button, hide portrait button */
+.settings-btn-header {
+  display: flex;
+}
+
+.settings-btn-portrait {
+  display: none;
+}
+
+/* Portrait: Hide header, show in user name row */
+@media (max-aspect-ratio: 1/1) {
+  .return {
+    display: none;
+  }
+  
+  .cover-header {
+    display: none;
+  }
+  
+  .settings-btn-header {
+    display: none;
+  }
+  
+  .settings-btn-portrait {
+    display: flex;
+  }
+  
+  .user-name-row {
+    justify-content: flex-start;
+  }
+  
+  .settings-btn {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .settings-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
 .container {
   text-align: center;
   display: flex;
@@ -374,6 +527,20 @@ function copyUser() {
 @media (max-aspect-ratio: 1/1) {
   .return {
     display: none;
+  }
+  
+  .user-name-row {
+    justify-content: flex-start;
+  }
+  
+  .settings-btn {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .settings-btn svg {
+    width: 20px;
+    height: 20px;
   }
 }
 

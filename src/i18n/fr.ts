@@ -115,6 +115,9 @@ export default {
     settings: "Paramètres",
     general: "Général",
     debugger: "Collecter les journaux",
+    exportLogs: "Exporter les journaux d'erreurs",
+    languageChangeTitle: "Langue modifiée",
+    languageChangeContent: "Certaines fonctionnalités doivent être réactivées après la reconnexion pour appliquer la nouvelle langue complètement",
   },
   footer: {
     home: "Accueil",

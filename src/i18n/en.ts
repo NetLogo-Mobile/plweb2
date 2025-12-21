@@ -114,6 +114,9 @@ export default {
     settings: "settings",
     general: "General",
     debugger: "collect logs",
+    exportLogs: "Export Error Logs",
+    languageChangeTitle: "Language Changed",
+    languageChangeContent: "Some features need to re-login to apply the new language completely",
   },
   footer: {
     home: "Home",

@@ -112,6 +112,9 @@ export default {
     settings: "应用设置",
     general: "通用设置",
     debugger: "收集调试信息",
+    exportLogs: "导出错误日志",
+    languageChangeTitle: "语言已切换",
+    languageChangeContent: "部分功能需要重新登录才能完全应用新语言",
   },
   footer: {
     home: "首页",

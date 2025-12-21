@@ -1,220 +1,392 @@
 <template>
-  <!-- Not completed yet -->
-  <div class="container">
-    <div class="header">
-      <div class="header-title">
+  <div class="settings-wrapper">
+    <div class="settings-container">
+      <div class="settings-header">
         <img
           src="/assets/library/Navigation-Return.png"
-          style="width: 1.5em"
-          class="return"
+          alt="back"
+          class="back-icon"
           @click="goBack"
         />
-        {{ $t("settings.settings") }}
+        <h1 class="page-title">{{ $t("settings.settings") }}</h1>
       </div>
-    </div>
-    <div
-      v-for="section in settingsConfig"
-      :key="section.title"
-      class="settings-section"
-    >
-      <div class="section-title">{{ $t(`settings.${section.title}`) }}</div>
-      <div v-for="item in section.items" :key="item.key" class="setting-item">
-        <span class="label">{{ $t(`settings.${item.key}`) }}</span>
-        <div v-if="item.type === 'link'" class="value">
-          <n-select
-            :options="item.options"
-            size="medium"
-            :default-value="item.value as string"
-            @update:value="
-              (v) => {
-                item.value = v;
-                if (item.callBack) item.callBack(v);
-              }
-            "
-          />
+
+      <div class="settings-content">
+        <div
+          v-for="section in settingsConfig"
+          :key="section.title"
+          class="settings-section"
+        >
+          <h2 class="section-title">{{ $t(`settings.${section.title}`) }}</h2>
+          <div class="section-items">
+            <div
+              v-for="item in section.items"
+              :key="item.key"
+              class="setting-item"
+            >
+              <span class="item-label">{{ $t(`settings.${item.key}`) }}</span>
+
+              <!-- Select/Link Type -->
+              <div v-if="item.type === 'link'" class="item-control">
+                <n-select
+                  :options="item.options"
+                  size="small"
+                  :value="item.value as string"
+                  style="width: 150px"
+                  @update:value="handleSelectChange(item, $event)"
+                />
+              </div>
+
+              <!-- Toggle Type -->
+              <label v-else-if="item.type === 'toggle'" class="toggle-wrapper">
+                <input
+                  type="checkbox"
+                  :checked="item.value === 'on'"
+                  @change="handleToggleChange(item, $event)"
+                />
+                <span class="toggle-slider"></span>
+              </label>
+
+              <!-- Button Type -->
+              <button
+                v-else-if="item.type === 'button'"
+                class="export-button"
+                @click="handleButtonClick(item)"
+              >
+                {{ $t(`settings.${item.key}`) }}
+              </button>
+            </div>
+          </div>
         </div>
-        <label v-else-if="item.type === 'toggle'" class="toggle-switch">
-          <input
-            type="checkbox"
-            :checked="!!item.value"
-            @click="
-              (e) =>
-                (item.value = String((e.target as HTMLInputElement)?.checked))
-            "
-          />
-          <span class="slider"></span>
-        </label>
+      </div>
+
+      <div class="settings-footer">
+        <span class="version-info">v{{ sysConfig.version }}</span>
       </div>
     </div>
   </div>
-  <div class="version">{{ sysConfig.version }}</div>
 </template>
 <script setup lang="ts">
-import { reactive, watch, onActivated } from "vue";
+import { reactive, onActivated } from "vue";
 import { settingsConfig as s } from "../config/user.config";
 import { NSelect } from "naive-ui";
 import storageManager from "../services/storage";
 import sysConfig from "../config/system.config";
+import i18n from "@i18n/index";
 
-// Read current config from storage and render it
-const savedValues = storageManager.getObj("userConfig")?.value || {};
 const settingsConfig = reactive(s);
+
+// Initialize settings from storage
+const savedValues = storageManager.getObj("userConfig")?.value || {};
 settingsConfig.forEach((section) => {
   section.items.forEach((item) => {
-    if (savedValues[item.key] !== undefined) {
+    if (item.type !== "button" && savedValues[item.key] !== undefined) {
       item.value = savedValues[item.key];
-      // When section changes, vue will update the html automatically
     }
   });
 });
+
+// Restore language setting on component mount
+if (savedValues.language) {
+  i18n.global.locale.value = savedValues.language as any;
+}
+
+function saveSettings() {
+  const saveData: Record<string, any> = {};
+  settingsConfig.forEach((section) => {
+    section.items.forEach((item) => {
+      if (item.type !== "button") {
+        saveData[item.key] = item.value;
+      }
+    });
+  });
+  storageManager.setObj("userConfig", saveData);
+}
+
+function handleSelectChange(item: any, newValue: string) {
+  item.value = newValue;
+  saveSettings();
+  if (item.callBack) {
+    item.callBack(newValue);
+  }
+}
+
+function handleToggleChange(item: any, event: Event) {
+  const target = event.target as HTMLInputElement;
+  item.value = target.checked ? "on" : "off";
+  saveSettings();
+  if (item.callBack) {
+    item.callBack(target.checked ? "on" : "off");
+  }
+}
+
+function handleButtonClick(item: any) {
+  if (item.callBack) {
+    item.callBack();
+  }
+}
 
 function goBack() {
   window.history.back();
 }
 
-watch(
-  () => settingsConfig,
-  () => {
-    const saveData = settingsConfig.reduce(
-      (acc, section) => {
-        section.items.forEach((item) => {
-          acc[item.key] = item.value;
-        });
-        return acc;
-      },
-      {} as Record<string, any>,
-    );
-
-    storageManager.setObj("userConfig", saveData);
-  },
-  { deep: true },
-);
-
 onActivated(() => {
-  window.$Logger.logPageView({
-    pageLink: "/Settings/",
-    timeStamp: Date.now(),
-  });
+  if (window.$Logger) {
+    window.$Logger.logPageView({
+      pageLink: "/settings",
+      timeStamp: Date.now(),
+    });
+  }
 });
 </script>
 
 <style scoped>
-.container {
-  max-width: 800px;
+.settings-wrapper {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding: 20px 0;
+}
+
+.settings-container {
+  max-width: 700px;
   margin: 0 auto;
   background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 24px;
-  border-bottom: 1px solid #dee2e6;
-}
-
-.header-title {
+.settings-header {
   display: flex;
   align-items: center;
-  font-size: 1.5rem;
-  font-weight: 500;
+  padding: 24px 24px 20px 24px;
+  border-bottom: 2px solid #f0f0f0;
+  background-color: #ffffff;
 }
 
-.header-title img {
-  margin-right: 20px;
+.back-icon {
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  transition: transform 0.2s;
+  margin-right: 16px;
+}
+
+.back-icon:hover {
+  transform: scale(1.1);
+}
+
+.page-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #333333;
+  letter-spacing: 0.5px;
+}
+
+.settings-content {
+  padding: 24px;
 }
 
 .settings-section {
-  padding: 0 24px;
+  margin-bottom: 32px;
+}
+
+.settings-section:last-child {
+  margin-bottom: 0;
 }
 
 .section-title {
-  padding: 24px 0 8px;
-  font-size: 1rem;
-  font-weight: 500;
-  color: #6c757d;
+  font-size: 14px;
+  font-weight: 700;
+  color: #667eea;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #667eea;
+}
+
+.section-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 .setting-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 0;
-  border-bottom: 1px solid #e9ecef;
+  padding: 16px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.2s;
 }
 
 .setting-item:last-child {
   border-bottom: none;
 }
 
-.setting-item .label {
-  font-size: 1rem;
+.setting-item:hover {
+  background-color: #fafbfc;
 }
 
-.setting-item .value {
+.item-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333333;
+  min-width: 120px;
+}
+
+.item-control {
   display: flex;
   align-items: center;
-  color: #6c757d;
-  width: 200px;
+  gap: 8px;
 }
 
-.value .material-icons {
-  font-size: 1rem;
-  color: #adb5bd;
-}
-
-.toggle-switch {
+/* Toggle Switch Styles */
+.toggle-wrapper {
   position: relative;
   display: inline-block;
-  width: 44px;
-  height: 24px;
+  width: 50px;
+  height: 28px;
+  cursor: pointer;
 }
 
-.toggle-switch input {
+.toggle-wrapper input {
   opacity: 0;
   width: 0;
   height: 0;
 }
 
-.slider {
+.toggle-slider {
   position: absolute;
   cursor: pointer;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ccc;
-  transition: 0.4s;
-  border-radius: 24px;
+  background-color: #d4d4d4;
+  transition: all 0.3s ease;
+  border-radius: 34px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.slider:before {
+.toggle-slider:before {
   position: absolute;
   content: "";
-  height: 20px;
-  width: 20px;
+  height: 24px;
+  width: 24px;
   left: 2px;
   bottom: 2px;
   background-color: white;
-  transition: 0.4s;
+  transition: all 0.3s ease;
   border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-input:checked + .slider {
-  background-color: #007bff;
+.toggle-wrapper input:checked + .toggle-slider {
+  background-color: #8293dd;
+  box-shadow: inset 0 2px 4px rgba(102, 126, 234, 0.3);
 }
 
-input:checked + .slider:before {
-  transform: translateX(20px);
+.toggle-wrapper input:checked + .toggle-slider:before {
+  transform: translateX(22px);
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.version {
-  font-size: 0.875rem;
-  color: #6c757d;
-  padding: 12px 24px;
-  border-top: 1px solid #dee2e6;
+.toggle-wrapper input:focus + .toggle-slider {
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+/* Export Button Styles */
+.export-button {
+  padding: 10px 24px;
+  background-color: #8293dd;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.export-button:hover {
+  background-color: #5568d3;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.export-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.export-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.settings-footer {
+  padding: 16px 24px;
+  border-top: 2px solid #f0f0f0;
+  background-color: #fafbfc;
+  text-align: center;
+}
+
+.version-info {
+  font-size: 12px;
+  color: #999999;
+  letter-spacing: 0.5px;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .settings-wrapper {
+    padding: 10px 0;
+  }
+
+  .settings-container {
+    border-radius: 0;
+  }
+
+  .settings-header {
+    padding: 20px 16px 16px 16px;
+  }
+
+  .page-title {
+    font-size: 20px;
+  }
+
+  .settings-content {
+    padding: 16px;
+  }
+
+  .setting-item {
+    padding: 12px 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .item-label {
+    min-width: auto;
+  }
+
+  .item-control {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .export-button {
+    width: 100%;
+    padding: 12px 16px;
+  }
 }
 </style>

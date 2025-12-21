@@ -116,6 +116,9 @@ export default {
     settings: "Einstellungen",
     general: "Allgemein",
     debugger: "Protokolle sammeln",
+    exportLogs: "Fehlerprotokolle exportieren",
+    languageChangeTitle: "Sprache geändert",
+    languageChangeContent: "Einige Funktionen erfordern eine erneute Anmeldung, um die neue Sprache vollständig anzuwenden",
   },
   footer: {
     home: "Startseite",
