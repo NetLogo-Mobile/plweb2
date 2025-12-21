@@ -7,16 +7,16 @@ import dompurify from "dompurify";
 async function fixedadvParser(text: string, host: string): Promise<string> {
   const wasmInstance = await getWasmInstance();
   const instanceAny: any = wasmInstance;
-  if (!instanceAny.__fixedadv_parser_fn) {
-    instanceAny.__fixedadv_parser_fn = wasmInstance.cwrap(
-      "fixedadv_parser",
+  if (!instanceAny.__advanced_parser_fn) {
+    instanceAny.__advanced_parser_fn = wasmInstance.cwrap(
+      "advanced_parser",
       "number",
       ["string", "string"]
     );
   }
   let deallocate = await getDeallocator();
   let char8_t_const_ptr = (
-    instanceAny.__fixedadv_parser_fn as (t: string, h: string) => number
+    instanceAny.__advanced_parser_fn as (t: string, h: string) => number
   )(text, host);
   let result = wasmInstance.UTF8ToString(char8_t_const_ptr);
   deallocate(char8_t_const_ptr);
