@@ -9,7 +9,7 @@ async function advancedParser(text: string, host: string): Promise<string> {
   const instanceAny: any = wasmInstance;
   if (!instanceAny.__advanced_parser_fn) {
     instanceAny.__advanced_parser_fn = wasmInstance.cwrap(
-      "advanced_parser",
+      "fixedadv_parser",
       "number",
       ["string", "string"]
     );
@@ -24,8 +24,9 @@ async function advancedParser(text: string, host: string): Promise<string> {
 }
 
 async function parse(source: string) {
+  console.log(source);
   const rawHtml = await advancedParser(source, import.meta.env.VITE_ROOT_URL);
-  console.log(rawHtml)
+  console.log(rawHtml);
   if (!rawHtml) return "";
   const tempDiv = document.createElement("div");
   tempDiv.innerHTML = rawHtml;
