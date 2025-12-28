@@ -162,6 +162,8 @@
 import { ref, onMounted, onActivated } from "vue";
 import { useRoute } from "vue-router";
 import { getData } from "@services/api/getData.ts";
+import { showAPiError } from "@popup/index.ts";
+import { removeToken } from "@services/utils.ts";
 import { NTabs, NTabPane, NInput, NButton } from "naive-ui";
 import Tag from "../components/utils/TagLarger.vue";
 import MessageList from "../components/messages/MessageList.vue";
@@ -226,11 +228,27 @@ const data = ref({
 
 let coverUrl = ref(getPath("/@base/assets/messages/Experiment-Default.png"));
 let avatarUrl = ref(getUserUrl(data.value.User));
-onMounted(async () => {
+async function fetchSummary() {
   const res = await getData(`/Contents/GetSummary`, {
     ContentID: route.params.id,
     Category: route.params.category,
   });
+  if (res?.Status !== 200) {
+    showAPiError(
+      t("errors.apiErrorTitle"),
+      t("errors.apiErrorMessage", {
+        path: "/Contents/GetSummary",
+        status: res?.Status,
+        message: res?.Message || "",
+      }),
+      fetchSummary,
+    );
+    const _req = removeToken({ ContentID: route.params.id, Category: route.params.category });
+    const _res = removeToken(res);
+    window.$ErrorLogger.captureApiError("POST", "/Contents/GetSummary", res?.Status, _res, _req);
+    console.error(`/Contents/GetSummary returned ${res?.Status}`, _res);
+    return;
+  }
   data.value = res.Data;
   avatarUrl.value = getUserUrl(data.value.User);
   // Civitas-john always procrastinate on addressing the request to solve the anti-leeching issue.
@@ -240,6 +258,10 @@ onMounted(async () => {
     mode: "no-cors",
   });
   coverUrl.value = getCoverUrl(res.Data);
+}
+
+onMounted(() => {
+  fetchSummary();
 });
 
 function handleMsgClick(item: any) {
@@ -310,13 +332,57 @@ function copySubject() {
               ContentID: route.params.id,
               Category: route.params.category,
             });
+            if (summaryRes?.Status !== 200) {
+              showAPiError(
+                t("errors.apiErrorTitle"),
+                t("errors.apiErrorMessage", {
+                  path: "/Contents/GetSummary",
+                  status: summaryRes?.Status,
+                  message: summaryRes?.Message || "",
+                }),
+                async () => {
+                  return await getData(`/Contents/GetSummary`, {
+                    ContentID: route.params.id,
+                    Category: route.params.category,
+                  });
+                },
+              );
+              const _req = removeToken({ ContentID: route.params.id, Category: route.params.category });
+              const _res = removeToken(summaryRes);
+              window.$ErrorLogger.captureApiError("POST", "/Contents/GetSummary", summaryRes?.Status, _res, _req);
+              console.error(`/Contents/GetSummary returned ${summaryRes?.Status}`, _res);
+              return;
+            }
             const imageIndex = (summaryRes.Data.Image || 0) + 1;
-            await getData(`/Contents/ConfirmExperiment`, {
+            const confirmRes = await getData(`/Contents/ConfirmExperiment`, {
               Category: route.params.category,
               SummaryID: route.params.id,
               Image: imageIndex,
               Extension: ".png",
             });
+            if (confirmRes?.Status !== 200) {
+              showAPiError(
+                t("errors.apiErrorTitle"),
+                t("errors.apiErrorMessage", {
+                  path: "/Contents/ConfirmExperiment",
+                  status: confirmRes?.Status,
+                  message: confirmRes?.Message || "",
+                }),
+                async () => {
+                  return await getData(`/Contents/ConfirmExperiment`, {
+                    Category: route.params.category,
+                    SummaryID: route.params.id,
+                    Image: imageIndex,
+                    Extension: ".png",
+                  });
+                },
+              );
+              const _req = removeToken({ Category: route.params.category, SummaryID: route.params.id, Image: imageIndex, Extension: ".png" });
+              const _res = removeToken(confirmRes);
+              window.$ErrorLogger.captureApiError("POST", "/Contents/ConfirmExperiment", confirmRes?.Status, _res, _req);
+              console.error(`/Contents/ConfirmExperiment returned ${confirmRes?.Status}`, _res);
+              return;
+            }
             const submitRes = await getData(`/Contents/SubmitExperiment`, {
               Request: {
                 FileSize: 0 - Math.abs(file.size),
@@ -324,6 +390,30 @@ function copySubject() {
               },
               Summary: summaryRes.Data,
             });
+            if (submitRes?.Status !== 200) {
+              showAPiError(
+                t("errors.apiErrorTitle"),
+                t("errors.apiErrorMessage", {
+                  path: "/Contents/SubmitExperiment",
+                  status: submitRes?.Status,
+                  message: submitRes?.Message || "",
+                }),
+                async () => {
+                  return await getData(`/Contents/SubmitExperiment`, {
+                    Request: {
+                      FileSize: 0 - Math.abs(file.size),
+                      Extension: ".jpg",
+                    },
+                    Summary: summaryRes.Data,
+                  });
+                },
+              );
+              const _req = removeToken({ Request: { FileSize: 0 - Math.abs(file.size), Extension: ".jpg" }, Summary: summaryRes.Data });
+              const _res = removeToken(submitRes);
+              window.$ErrorLogger.captureApiError("POST", "/Contents/SubmitExperiment", submitRes?.Status, _res, _req);
+              console.error(`/Contents/SubmitExperiment returned ${submitRes?.Status}`, _res);
+              return;
+            }
             try {
               const form = new FormData();
               form.append(
@@ -336,12 +426,35 @@ function copySubject() {
                 method: "POST",
                 body: form,
               });
-              await getData(`/Contents/ConfirmExperiment`, {
+              const confirmRes2 = await getData(`/Contents/ConfirmExperiment`, {
                 Category: route.params.category,
                 SummaryID: route.params.id,
                 Image: imageIndex,
                 Extension: ".png",
               });
+              if (confirmRes2?.Status !== 200) {
+                showAPiError(
+                  t("errors.apiErrorTitle"),
+                  t("errors.apiErrorMessage", {
+                    path: "/Contents/ConfirmExperiment",
+                    status: confirmRes2?.Status,
+                    message: confirmRes2?.Message || "",
+                  }),
+                  async () => {
+                    return await getData(`/Contents/ConfirmExperiment`, {
+                      Category: route.params.category,
+                      SummaryID: route.params.id,
+                      Image: imageIndex,
+                      Extension: ".png",
+                    });
+                  },
+                );
+                const _req = removeToken({ Category: route.params.category, SummaryID: route.params.id, Image: imageIndex, Extension: ".png" });
+                const _res = removeToken(confirmRes2);
+                window.$ErrorLogger.captureApiError("POST", "/Contents/ConfirmExperiment", confirmRes2?.Status, _res, _req);
+                console.error(`/Contents/ConfirmExperiment returned ${confirmRes2?.Status}`, _res);
+                return;
+              }
             } catch (_upErr) {
               showMessage("error", "Failed to upload file", { duration: 2000 });
               return;
@@ -355,6 +468,27 @@ function copySubject() {
                 ContentID: route.params.id,
                 Category: route.params.category,
               });
+              if (refreshed?.Status !== 200) {
+                showAPiError(
+                  t("errors.apiErrorTitle"),
+                  t("errors.apiErrorMessage", {
+                    path: "/Contents/GetSummary",
+                    status: refreshed?.Status,
+                    message: refreshed?.Message || "",
+                  }),
+                  async () => {
+                    return await getData(`/Contents/GetSummary`, {
+                      ContentID: route.params.id,
+                      Category: route.params.category,
+                    });
+                  },
+                );
+                const _req = removeToken({ ContentID: route.params.id, Category: route.params.category });
+                const _res = removeToken(refreshed);
+                window.$ErrorLogger.captureApiError("POST", "/Contents/GetSummary", refreshed?.Status, _res, _req);
+                console.error(`/Contents/GetSummary returned ${refreshed?.Status}`, _res);
+                return;
+              }
               coverUrl.value = getCoverUrl(refreshed.Data);
             }, 800);
           } catch (_err) {

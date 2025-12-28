@@ -181,6 +181,8 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { getData } from "@services/api/getData.ts";
+import { showAPiError } from "@popup/index.ts";
+import { removeToken } from "@services/utils.ts";
 import { NTabs, NTabPane, NInput } from "naive-ui";
 import Tag from "../components/utils/TagLarger.vue";
 import MessageList from "../components/messages/MessageList.vue";
@@ -253,22 +255,38 @@ interface ExpDataType {
 }
 let expData = ref<ExpDataType>({});
 
-onMounted(async () => {
+async function fetchProfile() {
   const expRes = await getData(`/Contents/GetProfile`, {
     ID: route.params.id,
   });
+  if (expRes?.Status !== 200) {
+    showAPiError(
+      t("errors.apiErrorTitle"),
+      t("errors.apiErrorMessage", {
+        path: "/Contents/GetProfile",
+        status: expRes?.Status,
+        message: expRes?.Message || "",
+      }),
+      fetchProfile,
+    );
+    const _req = removeToken({ ID: route.params.id });
+    const _res = removeToken(expRes);
+    window.$ErrorLogger.captureApiError("POST", "/Contents/GetProfile", expRes?.Status, _res, _req);
+    console.error(`/Contents/GetProfile returned ${expRes?.Status}`, _res);
+    return;
+  }
   expData.value = expRes.Data.Experiments;
   const userRes = await getData(`/Users/GetUser`, {
     ID: route.params.id,
   });
   userData.value = userRes.Data;
-  
+
   // Check if viewing own profile
   const currentUser = storageManager.getObj("userInfo")?.value;
   if (currentUser && currentUser.ID === route.params.id) {
     isOwnProfile.value = true;
   }
-  
+
   // Civitas-john always procrastinate on addressing the request to solve the anti-leeching issue.
   // That's why the below occurs
   // hmmm...When use in https://plweb.turtlesim.com,abti-leeching issue does not occur
@@ -287,6 +305,10 @@ onMounted(async () => {
     pageLink: `/User/${route.params.id}/`,
     timeStamp: Date.now(),
   });
+}
+
+onMounted(() => {
+  fetchProfile();
 });
 
 function handleMsgClick(item: any) {

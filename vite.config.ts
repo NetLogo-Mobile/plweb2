@@ -67,7 +67,7 @@ export default defineConfig({
               networkTimeoutSeconds: 6,
               expiration: {
                 maxEntries: 1000,
-                maxAgeSeconds: 3 * 24 * 60 * 60, // 3 day
+                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 day
               },
             },
           },

@@ -20,6 +20,8 @@ import UserItem from "./item.vue";
 import { NGrid, NGi } from "naive-ui";
 import { ref } from "vue";
 import { getData } from "@services/api/getData.ts";
+import { showAPiError } from "@popup/index.ts";
+import { removeToken } from "@services/utils.ts";
 import infiniteScroll from "../utils/infiniteScroll.vue";
 import { useI18n } from "vue-i18n";
 import { showMessage } from "@popup/naiveui";
@@ -61,6 +63,25 @@ async function handleLoad() {
     Take: 24,
     Query: "",
   });
+  if (getRelationsRes?.Status !== 200) {
+    showAPiError(
+      t("errors.apiErrorTitle"),
+      t("errors.apiErrorMessage"),
+      handleLoad,
+    );
+    const _req = removeToken({
+      UserID: userid,
+      DisplayType: type,
+      Skip: skip.value,
+      Take: 24,
+      Query: "",
+    });
+    const _res = removeToken(getRelationsRes);
+    window.$ErrorLogger.captureApiError("POST", "/Users/GetRelations", getRelationsRes?.Status, _res, _req);
+    console.error(`/Users/GetRelations returned ${getRelationsRes?.Status}`, _res);
+    loading.value = false;
+    return;
+  }
   // 在某些地方用的skip传入的是时间戳，但是这里找不到可能与时间戳有关的逻辑，skip为整数也能work
   // In some places, the 'skip' is a timestamp, but here there doesn't seem to be any logic related to the timestamp; 'skip' as an integer also works.
   noMore.value = getRelationsRes.Data.$values.length < 24;

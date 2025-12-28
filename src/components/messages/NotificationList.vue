@@ -13,6 +13,8 @@
 import { ref, onActivated } from "vue";
 import Notification from "./NotificationItem.vue";
 import { getData } from "@services/api/getData.ts";
+import { showAPiError } from "@popup/index.ts";
+import { removeToken } from "@services/utils.ts";
 import { showMessage } from "@popup/naiveui";
 import InfiniteScroll from "../utils/infiniteScroll.vue";
 import { NDivider } from "naive-ui";
@@ -167,6 +169,31 @@ const handleLoad = async (noTemplates = true) => {
       Skip: skip.value,
       NoTemplates: noTemplates,
     });
+
+    if (getMessagesResponse?.Status !== 200) {
+      showAPiError(
+        t("errors.apiErrorTitle"),
+        t("errors.apiErrorMessage", {
+          path: "/Messages/GetMessages",
+          status: getMessagesResponse?.Status,
+          message: getMessagesResponse?.Message || "",
+        }),
+        async () => {
+          return await getData("/Messages/GetMessages", {
+            CategoryID: convertUIIndexToCategoryID(notificationTypeIndexOfUI),
+            Take: 20,
+            Skip: skip.value,
+            NoTemplates: noTemplates,
+          });
+        },
+      );
+      const _req = removeToken({ CategoryID: convertUIIndexToCategoryID(notificationTypeIndexOfUI), Take: 20, Skip: skip.value, NoTemplates: noTemplates });
+      const _res = removeToken(getMessagesResponse);
+      window.$ErrorLogger.captureApiError("POST", "/Messages/GetMessages", getMessagesResponse?.Status, _res, _req);
+      console.error(`/Messages/GetMessages returned ${getMessagesResponse?.Status}`, _res);
+      loading.value = false;
+      return;
+    }
 
     if (!noTemplates) {
       templates = getMessagesResponse.Data.Templates;

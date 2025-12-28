@@ -14,6 +14,8 @@ import { NGrid, NGi } from "naive-ui";
 import Works from "./item.vue";
 import { ref } from "vue";
 import { getData } from "@services/api/getData.ts";
+import { showAPiError } from "@popup/index.ts";
+import { removeToken } from "@services/utils.ts";
 import { showMessage } from "@popup/naiveui";
 import infiniteScroll from "../utils/infiniteScroll.vue";
 import { useI18n } from "vue-i18n";
@@ -73,6 +75,43 @@ async function handleLoad() {
       ...q,
     },
   });
+  if (getProjectsRes?.Status !== 200) {
+    showAPiError(
+      t("errors.apiErrorTitle"),
+      t("errors.apiErrorMessage", {
+        path: "/Contents/QueryExperiments",
+        status: getProjectsRes?.Status,
+        message: getProjectsRes?.Message || "",
+      }),
+      handleLoad,
+    );
+    const _req = removeToken({
+      Query: {
+        Category: "Discussion",
+        Languages: [],
+        ExcludeLanguages: null,
+        Tags: ["精选"],
+        ModelTags: null,
+        ExcludeTags: null,
+        ModelID: null,
+        ParentID: null,
+        UserID: null,
+        Special: null,
+        From: from.value === "" ? null : from.value,
+        Skip: skip.value,
+        Take: 24,
+        Days: 0,
+        Sort: 0,
+        ShowAnnouncement: false,
+        ...q,
+      },
+    });
+    const _res = removeToken(getProjectsRes);
+    window.$ErrorLogger.captureApiError("POST", "/Contents/QueryExperiments", getProjectsRes?.Status, _res, _req);
+    console.error(`/Contents/QueryExperiments returned ${getProjectsRes?.Status}`, _res);
+    isGettingData.value = false;
+    return;
+  }
   if (getProjectsRes.Data.$values.length < 24) {
     if (!hasInformed.value)
       showMessage("warning", t("ui.messages.noMore"), { duration: 1000 });

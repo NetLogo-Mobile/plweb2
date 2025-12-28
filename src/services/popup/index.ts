@@ -14,6 +14,7 @@ import {
   showNotification,
 } from "./naiveui";
 import showUserProfileDialog from "./userProfileDialog";
+import { showAPiError } from "./apiError";
 
 export {
   showMessage,
@@ -23,4 +24,5 @@ export {
   showNotification,
   showUserProfileDialog,
   showLoginModel,
+  showAPiError,
 };

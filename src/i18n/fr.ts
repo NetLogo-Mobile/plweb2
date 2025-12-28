@@ -84,6 +84,8 @@ export default {
     serverError: "Erreur serveur, veuillez réessayer plus tard",
     contentFilter:
       'Le contenu que vous avez saisi "...{word}..." contient des mots inappropriés',
+    apiErrorTitle: "Erreur de requête",
+    apiErrorMessage: "{path} a retourné {status} : {message}",
   },
   expeSummary: {
     enterExp: "Entrer dans l'expérience ",
@@ -138,5 +140,10 @@ export default {
       astrophysicsExp: "Expérience d'astrophysique",
       electromagneticsExp: "Expérience d'électromagnétisme",
     },
+    ok: "OK",
+    cancel: "Annuler",
+    retrying: "Nouvelle tentative...",
+    retrySuccess: "Nouvelle tentative réussie",
+    retryFailed: "Nouvelle tentative échouée",
   },
 };

@@ -42,10 +42,14 @@ export async function getData(path: string, body: unknown) {
   }).then((response) => {
     if (!response.ok) {
       if (path !== "/Users/GetUser") {
-        window.$ErrorLogger.addBreadcrumb("api", `${path} failed with status ${response.status}`, {
-          statusCode: response.status,
-          path,
-        });
+        window.$ErrorLogger.addBreadcrumb(
+          "api",
+          `${path} failed with status ${response.status}`,
+          {
+            statusCode: response.status,
+            path,
+          }
+        );
       }
       window.$ErrorLogger.captureApiError(
         "POST",
@@ -72,7 +76,7 @@ export async function getData(path: string, body: unknown) {
           dataStatus: data.Status,
         });
       }
-      
+
       if (data.Status !== 200) {
         window.$ErrorLogger.captureApiError(
           "POST",
@@ -105,7 +109,7 @@ export async function getData(path: string, body: unknown) {
 export async function login(
   arg1: string | null,
   arg2: string | null,
-  is_token = false,
+  is_token = false
 ): Promise<{
   Status: number;
   Message: string;
@@ -114,7 +118,6 @@ export async function login(
   let messageRef = showMessage("loading", "loading...", {
     duration: 6000,
   });
-
   let username = is_token ? null : arg1;
   let password = is_token ? null : arg2;
   let header = { "Content-Type": "application/json" };
@@ -159,7 +162,7 @@ export async function login(
             token: data.Token,
             authCode: data.AuthCode,
           },
-          30 * 24 * 60 * 60 * 1000,
+          30 * 24 * 60 * 60 * 1000
         );
       }
       messageRef.destroy();
