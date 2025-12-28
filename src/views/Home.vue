@@ -161,7 +161,6 @@ Emitter.on("userLogin", (res) => {
     ID: res.Data.User.ID,
   };
 });
-
 // It is astonishing that server respond with projects data when login with (null,null)
 // And responed with user data when login with token/password
 // Fourtunately, both data has the same structure
@@ -198,7 +197,7 @@ function showModalFn() {
       timeStamp: Date.now(),
     });
   } else {
-    showLoginModel();
+      showLoginModel();
   }
 }
 </script>

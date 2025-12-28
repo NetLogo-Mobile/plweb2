@@ -48,15 +48,19 @@ class ErrorLogger {
   private sessionId: string;
   private debugMode = true;
   private maxJsonDepth = 4;
+  // For deduplication and reducing notification spam
+  private lastErrorSignature?: string;
+  private lastErrorTime = 0;
+  private lastErrorCount = 0;
+  private dedupInterval = 2500; // milliseconds
 
   constructor(app: any) {
     this.sessionId = this.generateSessionId();
     this.initDebugMode();
-    
-    if (this.debugMode) {
-      this.loadLogsFromStorage();
-    }
-    
+
+    // Always load logs from storage so they survive refreshes (sanitization performed on save)
+    this.loadLogsFromStorage();
+
     this.setupGlobalHandlers(app);
   }
 
@@ -124,9 +128,29 @@ class ErrorLogger {
   }
 
   private saveLogsToStorage() {
-    if (!this.debugMode) return;
     try {
-      localStorage.setItem("error_logs", JSON.stringify(this.logs.value));
+      // Serialize only a sanitized, serializable snapshot to avoid losing logs due to
+      // unserializable Error objects or circular references.
+      const toStore = this.logs.value.slice(-this.maxLogs).map((log) => {
+        return {
+          id: log.id,
+          timestamp: log.timestamp,
+          sessionId: log.sessionId,
+          userAgent: log.userAgent,
+          userId: log.userId,
+          url: log.url,
+          type: log.type,
+          message: log.message,
+          // keep only the first line of stack to save space and still be useful
+          stack: log.stack ? String(log.stack).split("\n")[0] : undefined,
+          statusCode: log.statusCode,
+          responseData: log.responseData,
+          requestData: log.requestData,
+          breadcrumbs: log.breadcrumbs,
+        };
+      });
+
+      localStorage.setItem("error_logs", JSON.stringify(toStore));
     } catch (e) {
       console.error("Failed to save error logs to storage", e);
     }
@@ -139,6 +163,8 @@ class ErrorLogger {
         type: "vue",
         message: err?.message || String(err),
         stack: err?.stack,
+        // pass original Error so console can expand it
+        error: err,
         component: info,
         breadcrumbs: [...this.breadcrumbs],
       });
@@ -150,12 +176,15 @@ class ErrorLogger {
         type: "window",
         message: String(message),
         stack: error?.stack,
+        // pass original error object so console can expand it
+        error,
         source,
         lineno,
         colno,
         breadcrumbs: [...this.breadcrumbs],
       });
-      return true;
+      // Allow browser to also show its default error logging
+      return false;
     };
 
     // Unhandled promise rejection
@@ -164,24 +193,24 @@ class ErrorLogger {
         type: "promise",
         message: event.reason?.message || String(event.reason),
         stack: event.reason?.stack,
+        // pass original rejection reason so console can expand it
+        error: event.reason,
         breadcrumbs: [...this.breadcrumbs],
       });
-      event.preventDefault();
+      // Do not call event.preventDefault() so the browser's default logging remains visible
     });
   }
 
   /**
-   * 捕获错误并记录
+   * 捕获错误并记录（含去重与精简输出）
    */
   captureError(context: ErrorContext) {
+    // Only store non-vital custom logs when debug mode is on
     if (!this.debugMode && context.type !== "vue" && context.type !== "window" && context.type !== "promise") {
       return;
     }
 
-    if (this.logs.value.length >= this.maxLogs) {
-      this.logs.value.shift();
-    }
-
+    // Prepare sanitized log for storage
     const errorLog: ErrorLog = {
       id: `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       timestamp: Date.now(),
@@ -190,32 +219,58 @@ class ErrorLogger {
       userId: storageManager.getObj("userInfo")?.value?.ID || "unknown",
       url: window.location.href,
       ...context,
-      // 限制 responseData 和 requestData 的深度
       responseData: context.responseData ? this.limitJsonDepth(context.responseData) : context.responseData,
       requestData: context.requestData ? this.limitJsonDepth(context.requestData) : context.requestData,
-      // 限制 breadcrumbs 中每个数据的深度
       breadcrumbs: context.breadcrumbs?.map(bc => ({
         ...bc,
         data: bc.data ? this.limitJsonDepth(bc.data) : bc.data,
       })) || [],
     };
 
+    // Deduplication: if the same message+stack appears within dedupInterval, treat as duplicate
+    const signature = `${context.message || ''}||${context.stack || ''}`;
+    const now = Date.now();
+    const isDuplicate = signature === this.lastErrorSignature && (now - this.lastErrorTime) < this.dedupInterval;
+
+    // push to storage regardless
+    if (this.logs.value.length >= this.maxLogs) this.logs.value.shift();
     this.logs.value.push(errorLog);
     this.saveLogsToStorage();
 
-    // Show notification for critical errors
-    if (this.isErrorCritical(context.type)) {
-      this.showErrorNotification(errorLog);
+    if (isDuplicate) {
+      this.lastErrorCount++;
+      // skip console and notification for duplicates to avoid spam
+      return;
     }
 
-    // Log to console in debug mode
-    if (this.debugMode) {
-      console.group(`%c[${context.type.toUpperCase()}]`, "color: red; font-weight: bold");
-      console.error("Message:", context.message);
-      console.error("Stack:", context.stack);
-      console.error("Full context:", errorLog);
-      console.groupEnd();
+    // If previous error repeated multiple times, emit a compact summary to console
+    if (this.lastErrorCount > 1) {
+      console.info(`(Previous error repeated ${this.lastErrorCount} times)`);
     }
+
+    // Reset counters for new signature
+    this.lastErrorSignature = signature;
+    this.lastErrorTime = now;
+    this.lastErrorCount = 1;
+
+    // Show a concise notification for critical errors
+    if (this.isErrorCritical(context.type)) {
+      this.showErrorNotification(errorLog, this.lastErrorCount);
+    }
+
+    // Console output: be concise to avoid double noise (browser already prints native errors)
+    const rawContext = { ...context };
+    console.groupCollapsed(`%c[${context.type.toUpperCase()}] ${context.message}`, "color: red; font-weight: bold");
+    if (rawContext.error) {
+      // print the original Error object so it can be expanded when needed
+      console.error("Error object:", rawContext.error);
+    } else if (context.stack) {
+      console.error("Stack:", context.stack);
+    }
+    if (this.debugMode) {
+      console.debug("Full context (sanitized):", errorLog);
+    }
+    console.groupEnd();
   }
 
   /**
@@ -272,12 +327,23 @@ class ErrorLogger {
     return ["vue", "window", "promise"].includes(type);
   }
 
-  private showErrorNotification(errorLog: ErrorLog) {
+  private showErrorNotification(errorLog: ErrorLog, repeatCount = 1) {
+    const shortDescription = repeatCount > 1 ? `Occurred ${repeatCount} times` : "";
+
     showNotification({
-      title: "Error Occurred",
+      title: "Error",
       content: errorLog.message,
-      description: errorLog.stack ? errorLog.stack.split("\n")[0] : "",
+      description: shortDescription,
     });
+
+    // Only print the full sanitized details when debug mode is enabled to avoid noise
+    if (this.debugMode) {
+      console.group(`Error details: ${errorLog.id}`);
+      console.log("Sanitized context:", errorLog);
+      const raw = (errorLog as any).error;
+      if (raw) console.log("Original error:", raw);
+      console.groupEnd();
+    }
   }
 
   /**
