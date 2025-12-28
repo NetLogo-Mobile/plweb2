@@ -1,3 +1,4 @@
+
 export default {
   login: {
     emailOrPhone: "E-Mail / Telefon",
@@ -85,6 +86,8 @@ export default {
     serverError: "Serverfehler, bitte versuchen Sie es später",
     contentFilter:
       'Der eingegebene Inhalt "...{word}..." enthält unangemessene Wörter',
+    apiErrorTitle: "Fehler bei der Anfrage",
+    apiErrorMessage: "{path} hat {status} zurückgegeben: {message}",
   },
   expeSummary: {
     enterExp: "Experiment eingeben ",
@@ -139,5 +142,10 @@ export default {
       astrophysicsExp: "Astrophysik-Experiment",
       electromagneticsExp: "Elektromagnetismus-Experiment",
     },
+    ok: "OK",
+    cancel: "Abbrechen",
+    retrying: "Wiederholung...",
+    retrySuccess: "Wiederholung erfolgreich",
+    retryFailed: "Wiederholung fehlgeschlagen",
   },
 };

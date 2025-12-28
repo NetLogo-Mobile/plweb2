@@ -83,6 +83,8 @@ export default {
     serverError: "サーバーエラーが発生しました。後でもう一度お試しください",
     contentFilter:
       '入力したコンテンツ "...{word}..." に不適切な単語が含まれています',
+    apiErrorTitle: "リクエストエラー",
+    apiErrorMessage: "{path} が {status} を返しました: {message}",
   },
   expeSummary: {
     enterExp: "実験を入力 ",
@@ -137,5 +139,10 @@ export default {
       astrophysicsExp: "天体物理学実験",
       electromagneticsExp: "電磁気学実験",
     },
+    ok: "確認",
+    cancel: "キャンセル",
+    retrying: "再試行中...",
+    retrySuccess: "再試行に成功しました",
+    retryFailed: "再試行に失敗しました",
   },
 };

@@ -205,8 +205,9 @@ class ErrorLogger {
    * 捕获错误并记录（含去重与精简输出）
    */
   captureError(context: ErrorContext) {
-    // Only store non-vital custom logs when debug mode is on
-    if (!this.debugMode && context.type !== "vue" && context.type !== "window" && context.type !== "promise") {
+    // Always record API/network errors: even in non-debug mode we want these for diagnostics.
+    // Other non-vital logs still respect debugMode.
+    if (!this.debugMode && !["vue", "window", "promise", "api", "network"].includes(context.type)) {
       return;
     }
 
@@ -423,6 +424,12 @@ class ErrorLogger {
       }
       if (log.statusCode) {
         content += `Status Code: ${log.statusCode}\n`;
+      }
+      if (log.requestData) {
+        content += `\nRequest Data:\n${JSON.stringify(log.requestData, null, 2)}\n`;
+      }
+      if (log.responseData) {
+        content += `\nResponse Data:\n${JSON.stringify(log.responseData, null, 2)}\n`;
       }
       if (log.breadcrumbs && log.breadcrumbs.length > 0) {
         content += `\nBreadcrumbs:\n`;

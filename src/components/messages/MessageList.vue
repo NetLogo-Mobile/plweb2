@@ -22,6 +22,8 @@
 import { ref, watch, nextTick } from "vue";
 import MessageItem from "./MessageItem.vue";
 import { getData } from "@services/api/getData.ts";
+import { showAPiError } from "@popup/index.ts";
+import { removeToken } from "@services/utils.ts";
 import type { PropType } from "vue";
 import { showMessage } from "@popup/naiveui";
 import InfiniteScroll from "../utils/infiniteScroll.vue";
@@ -111,6 +113,38 @@ const handleLoad = async () => {
     Take: 20,
     Skip: skip.value || 0,
   });
+
+  if (getMessagesResponse?.Status !== 200) {
+    showAPiError(
+      t("errors.apiErrorTitle"),
+      t("errors.apiErrorMessage", {
+        path: "/Messages/GetComments",
+        status: getMessagesResponse?.Status,
+        message: getMessagesResponse?.Message || "",
+      }),
+      async () => {
+        return await getData("/Messages/GetComments", {
+          TargetID: ID,
+          TargetType: Category,
+          CommentID: from || "",
+          Take: 20,
+          Skip: skip.value || 0,
+        });
+      },
+    );
+    const _req = removeToken({
+      TargetID: ID,
+      TargetType: Category,
+      CommentID: from || "",
+      Take: 20,
+      Skip: skip.value || 0,
+    });
+    const _res = removeToken(getMessagesResponse);
+    window.$ErrorLogger.captureApiError("POST", "/Messages/GetComments", getMessagesResponse?.Status, _res, _req);
+    console.error(`/Messages/GetComments returned ${getMessagesResponse?.Status}`, _res);
+    loading.value = false;
+    return;
+  }
 
   const messages = getMessagesResponse.Data.Comments;
   const _length = messages.length;

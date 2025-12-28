@@ -82,6 +82,8 @@ export function afterRequest(response: IResponse): IIntercetporResponse {
     re.Message = translateErrorMessage(response.Message);
   }
   if (messageRef && re.Data && !noDestroyPath.some((p) => re.Data.$type === p)) messageRef.destroy();
+  // re.Status = 400;
+  //  For testing purpose
   return {
     continue: false,
     data: re,

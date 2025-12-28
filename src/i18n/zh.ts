@@ -81,6 +81,8 @@ export default {
     networkError: "网络错误，请检查您的网络连接",
     serverError: "服务器发生错误，请稍后再试",
     contentFilter: '您输入的内容"...{word}..."中包含不适合词句',
+    apiErrorTitle: "请求错误",
+    apiErrorMessage: "{path} 返回 {status}：{message}",
   },
   expeSummary: {
     enterExp: "进入实验 ",
@@ -135,5 +137,10 @@ export default {
       astrophysicsExp: "天体物理实验",
       electromagneticsExp: "电与磁实验",
     },
+    ok: "确定",
+    cancel: "取消",
+    retrying: "重试中...",
+    retrySuccess: "重试成功",
+    retryFailed: "重试失败",
   },
 };

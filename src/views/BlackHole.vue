@@ -57,8 +57,12 @@ import TopicBlock from "../components/blocks/TopicBlock.vue";
 import Block from "../components/blocks/Block.vue";
 import Footer from "../components/utils/Footer.vue";
 import { getData } from "@services/api/getData.ts";
+import { showAPiError } from "@popup/index.ts";
+import { removeToken } from "@services/utils.ts";
+import { useI18n } from "vue-i18n";
 import { NGrid, NGi } from "naive-ui";
 import { EncodeAPITargetLink, getPath } from "@services/utils.ts";
+
 import "../layout/loading.css";
 import "../layout/startPage.css";
 
@@ -106,13 +110,35 @@ const getActivityProc = (
 
 const { blockItemsPerRow, maxProjectsPerBlock } = useResponsive();
 
-onMounted(async () => {
+const { t } = useI18n();
+
+async function fetchLibrary() {
   const getLibraryResponse = await getData("/Contents/GetLibrary", {
     Identifier: "Discussions",
     Language: "Chinese",
   });
+  if (getLibraryResponse?.Status !== 200) {
+    showAPiError(
+      t("errors.apiErrorTitle"),
+      t("errors.apiErrorMessage", {
+        path: "/Contents/GetLibrary",
+        status: getLibraryResponse?.Status,
+        message: getLibraryResponse?.Message || "",
+      }),
+      fetchLibrary,
+    );
+    const _req = removeToken({ Identifier: "Discussions", Language: "Chinese" });
+    const _res = removeToken(getLibraryResponse);
+    window.$ErrorLogger.captureApiError("POST", "/Contents/GetLibrary", getLibraryResponse?.Status, _res, _req);
+    console.error(`/Contents/GetLibrary returned ${getLibraryResponse?.Status}`, _res);
+    return;
+  }
   loading.value = false;
   blocks.value = getLibraryResponse.Data.Blocks;
+}
+
+onMounted(() => {
+  fetchLibrary();
 });
 
 onActivated(() => {

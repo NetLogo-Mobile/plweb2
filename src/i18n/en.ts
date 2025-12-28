@@ -83,6 +83,8 @@ export default {
     serverError: "Server error, please try again later",
     contentFilter:
       'The content you entered "...{word}..." contains inappropriate words',
+    apiErrorTitle: "Request Error",
+    apiErrorMessage: "{path} returned {status}: {message}",
   },
   expeSummary: {
     enterExp: "Enter experience ",
@@ -137,5 +139,10 @@ export default {
       astrophysicsExp: "Astrophysics Experiment",
       electromagneticsExp: "Electromagnetics Experiment",
     },
+    ok: "OK",
+    cancel: "Cancel",
+    retrying: "Retrying...",
+    retrySuccess: "Retry succeeded",
+    retryFailed: "Retry failed",
   },
 };
