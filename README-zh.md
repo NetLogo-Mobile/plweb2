@@ -30,7 +30,6 @@
 
 ## **注意事项**
 - 如果添加新页面，请记得在 `src/router/index.ts` 中添加路由。
-- **富文本渲染将来会被 wasm 版本替换**，不要向当前版本添加新功能。
 - 不要直接使用 localStorage 或 sessionStorage，应使用 @storage/index，并在其中注册键值。
 - 不要直接使用 fetch，应使用 @services/api/。
 - *不要直接通过路径导入静态文件*，应使用 @services/utils 中的 `getPath` 函数。

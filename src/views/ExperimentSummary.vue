@@ -110,6 +110,11 @@
                         Array.isArray(data.Description)
                           ? data.Description.join('\n')
                           : data.Description,
+                        data.Subject,
+                        data.User.Nickname,
+                        data.User.Nickname,
+                        // TODO i18n support for 'None'
+                        data.Coauthors.length === 0 ? 'None' : data.Coauthors.join(', '),
                       )
                   "
                   class="intro"
