@@ -111,10 +111,11 @@
                           ? data.Description.join('\n')
                           : data.Description,
                         data.Subject,
+                        storageManager.getObj('userInfo').value.Nickname,
+                        storageManager.getObj('userInfo').value.ID,
                         data.User.Nickname,
-                        data.User.Nickname,
-                        // TODO i18n support for 'None'
-                        data.Coauthors.length === 0 ? 'None' : data.Coauthors.join(', '),
+                        data.User.ID,
+                        data.Coauthors,
                       )
                   "
                   class="intro"
