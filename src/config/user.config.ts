@@ -19,7 +19,12 @@ export const settingsConfig = [
           { label: "Français", value: "French" },
         ],
         callBack: (newValue: string) => {
-          i18n.global.locale.value = newValue as "English" | "Chinese" | "German" | "Japanese" | "French";
+          i18n.global.locale.value = newValue as
+            | "English"
+            | "Chinese"
+            | "German"
+            | "Japanese"
+            | "French";
           // Save language setting to localStorage
           const userConfig = storageManager.getObj("userConfig")?.value || {};
           userConfig.language = newValue;

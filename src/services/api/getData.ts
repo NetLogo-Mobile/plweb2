@@ -1,9 +1,10 @@
-import { beforeRequest, afterRequest } from "./Interceptor.ts";
+import { afterRequest } from "./Interceptor.ts";
 import sm from "@storage/index.ts";
 import i18n from "@i18n/index.ts";
 import { getDeviceInfo, getVisitorId } from "./getDevice.ts";
 import { showMessage } from "@popup/naiveui.ts";
 import { getPath } from "../utils.ts";
+import { normalizePath } from "./types.ts";
 
 /**
  * 本API会使用本地存储的登录凭据Token和AuthCode，但不会处理未登录或者权限不足，使用本API必须手动处理错误。
@@ -17,19 +18,25 @@ import { getPath } from "../utils.ts";
  * @param body - 作为JSON发送的请求负载。 The request payload to be sent as JSON.
  * @returns 一个Promise，该Promise将解析为响应数据，或者如果中断了流，则解析为结果的钩子。 A promise that resolves with the response data, or with the result of the hooks if they interrupt the flow.
  */
-// eslint-disable-next-line max-lines-per-function
-export async function getData(path: string, body: unknown) {
+
+import type { ApiPath, APIParam, APIResult } from "./types.ts";
+
+export function getData<Path extends ApiPath>(
+  path: Path,
+  body: APIParam<Path>,
+): Promise<APIResult<Path>>;
+export function getData(path: string, body?: unknown): Promise<any>;
+export function getData(path: string, body?: unknown): Promise<any> {
+  const npath = normalizePath(String(path));
   const userInfo = sm.getObj("userAuthInfo");
   const token = userInfo.value?.token;
   const authCode = userInfo.value?.authCode;
+
   // If token || authcode is null, it means a there's a problem with our code logic
   // Mabe the anonymous token storage or local storage or authentication (CheckLogin) has a problem
   // 可能是匿名Token的存储或者本地存储或者鉴权(CheckLogin)出了问题
-  const beforeRes = beforeRequest(path);
-  if (beforeRes.continue === false) {
-    return beforeRes.data;
-  }
-  return fetch(getPath(`/@api${path}`), {
+
+  return fetch(getPath(`/@api${npath}`), {
     method: "POST",
     body: JSON.stringify(body),
     headers: {
@@ -37,26 +44,25 @@ export async function getData(path: string, body: unknown) {
       "x-API-Token": token,
       "x-API-AuthCode": authCode,
       "x-API-Version": "2502",
-      // F**K! When was it updated from 2411 to 2502?
     },
   }).then((response) => {
     if (!response.ok) {
-      if (path !== "/Users/GetUser") {
+      if (npath !== "/Users/GetUser") {
         window.$ErrorLogger.addBreadcrumb(
           "api",
-          `${path} failed with status ${response.status}`,
+          `${npath} failed with status ${response.status}`,
           {
             statusCode: response.status,
-            path,
-          }
+            path: npath,
+          },
         );
       }
       window.$ErrorLogger.captureApiError(
         "POST",
-        path,
+        npath,
         response.status,
         undefined,
-        body
+        body,
       );
       return response.json().then(() => {
         // 这里的错误处理仅处理API本身非2xx的错误，及服务器本身出了问题
@@ -69,10 +75,10 @@ export async function getData(path: string, body: unknown) {
       });
     }
     return response.json().then((data) => {
-      if (path !== "/Users/GetUser") {
-        window.$ErrorLogger.addBreadcrumb("api", `${path} success`, {
+      if (npath !== "/Users/GetUser") {
+        window.$ErrorLogger.addBreadcrumb("api", `${npath} success`, {
           statusCode: 200,
-          path,
+          path: npath,
           dataStatus: data.Status,
         });
       }
@@ -83,7 +89,7 @@ export async function getData(path: string, body: unknown) {
           path,
           data.Status,
           data,
-          body
+          body,
         );
       }
       const afterRes = afterRequest(data);
@@ -109,7 +115,7 @@ export async function getData(path: string, body: unknown) {
 export async function login(
   arg1: string | null,
   arg2: string | null,
-  is_token = false
+  is_token = false,
 ): Promise<{
   Status: number;
   Message: string;
@@ -162,7 +168,7 @@ export async function login(
             token: data.Token,
             authCode: data.AuthCode,
           },
-          30 * 24 * 60 * 60 * 1000
+          30 * 24 * 60 * 60 * 1000,
         );
       }
       messageRef.destroy();

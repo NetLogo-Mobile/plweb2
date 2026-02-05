@@ -1,6 +1,6 @@
 <template>
   <div class="notification_container">
-    <div class="img" @click.stop="showUserCard(notification.uid)">
+    <div class="img" @click.stop="()=>{ if(notification.Users[0]) showUserCard(notification.Users[0])}">
       <img id="avatar" :src="getPath(avatarUrl)" />
     </div>
     <div id="notification" class="notification" @click="showComment">
@@ -36,17 +36,16 @@ import { NEllipsis } from "naive-ui";
 import showUserCard from "@popup/userProfileDialog.ts";
 import { getAvatarUrl } from "@services/getUserCurentAvatarByID";
 import { getPath } from "@services/utils";
+import type { Message } from "@services/../pl-serve-type-main/type/main";
+
+interface NotificationItemMessage extends Message {
+  msg_title: string;
+  msg: string;
+  msg_type: number;
+}
 
 const props = defineProps<{
-  notification: {
-    msg: string;
-    msg_title: string;
-    msg_type: number;
-    tid: string;
-    category: string;
-    name: string;
-    uid: string;
-  };
+  notification: NotificationItemMessage;
 }>();
 
 const avatarUrl = ref("/@base/assets/user/default-avatar.png");
@@ -54,18 +53,18 @@ const fetchAvatar = async () => {
   avatarUrl.value =
     props.notification.msg_type === 1
       ? "/@base/assets/messages/Message-Unread.png"
-      : await getAvatarUrl(props.notification.uid);
+      : await getAvatarUrl(props.notification.Users[0] ?? "");
 };
 onMounted(fetchAvatar);
-watch(() => props.notification.uid, fetchAvatar);
+watch(() => props.notification.Users[0], fetchAvatar);
 
 const msg_icon_url = computed(() => {
   switch (props.notification.msg_type) {
     case 1:
       return "/@base/assets/icons/notifications_system.png";
-    case 2:
-      return "/@base/assets/icons/notifications_comments.png";
     case 3:
+      return "/@base/assets/icons/notifications_comments.png";
+    case 2:
       return "/@base/assets/icons/notifications_followers.png";
     case 4:
       return "/@base/assets/icons/notifications_projects.png";
@@ -81,7 +80,16 @@ const msg_icon_url = computed(() => {
 function showComment() {
   if (props.notification.msg_type === 2) {
     window.open(
-      `${getPath("/@root")}/Comments/${props.notification.category}/${props.notification.tid}/${props.notification.name}`,
+      `${getPath("/@root")}/Comments/${
+        props.notification.Fields?.Discussion ? "Discussion" : "Experiment"
+      }/${
+        props.notification.Fields?.DiscussionID ||
+        props.notification.TargetID
+      }/${
+        props.notification.Fields?.Discussion ||
+        props.notification.Fields?.Experiment ||
+        ""
+      }`,
       "_self",
     );
   }

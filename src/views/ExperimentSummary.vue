@@ -233,20 +233,29 @@ async function fetchSummary() {
     ContentID: route.params.id,
     Category: route.params.category,
   });
-  if (res?.Status !== 200) {
+  if (res.Status !== 200) {
     showAPiError(
       t("errors.apiErrorTitle"),
       t("errors.apiErrorMessage", {
         path: "/Contents/GetSummary",
-        status: res?.Status,
+        status: res.Status,
         message: res?.Message || "",
       }),
       fetchSummary,
     );
-    const _req = removeToken({ ContentID: route.params.id, Category: route.params.category });
+    const _req = removeToken({
+      ContentID: route.params.id,
+      Category: route.params.category,
+    });
     const _res = removeToken(res);
-    window.$ErrorLogger.captureApiError("POST", "/Contents/GetSummary", res?.Status, _res, _req);
-    console.error(`/Contents/GetSummary returned ${res?.Status}`, _res);
+    window.$ErrorLogger.captureApiError(
+      "POST",
+      "/Contents/GetSummary",
+      res.Status,
+      _res,
+      _req,
+    );
+    console.error(`/Contents/GetSummary returned ${res.Status}`, _res);
     return;
   }
   data.value = res.Data;
@@ -332,25 +341,37 @@ function copySubject() {
               ContentID: route.params.id,
               Category: route.params.category,
             });
-            if (summaryRes?.Status !== 200) {
+            if (summaryRes.Status !== 200) {
               showAPiError(
                 t("errors.apiErrorTitle"),
                 t("errors.apiErrorMessage", {
                   path: "/Contents/GetSummary",
-                  status: summaryRes?.Status,
+                  status: summaryRes.Status,
                   message: summaryRes?.Message || "",
                 }),
                 async () => {
-                  return await getData(`/Contents/GetSummary`, {
+                  return getData(`/Contents/GetSummary`, {
                     ContentID: route.params.id,
                     Category: route.params.category,
                   });
                 },
               );
-              const _req = removeToken({ ContentID: route.params.id, Category: route.params.category });
+              const _req = removeToken({
+                ContentID: route.params.id,
+                Category: route.params.category,
+              });
               const _res = removeToken(summaryRes);
-              window.$ErrorLogger.captureApiError("POST", "/Contents/GetSummary", summaryRes?.Status, _res, _req);
-              console.error(`/Contents/GetSummary returned ${summaryRes?.Status}`, _res);
+              window.$ErrorLogger.captureApiError(
+                "POST",
+                "/Contents/GetSummary",
+                summaryRes.Status,
+                _res,
+                _req,
+              );
+              console.error(
+                `/Contents/GetSummary returned ${summaryRes.Status}`,
+                _res,
+              );
               return;
             }
             const imageIndex = (summaryRes.Data.Image || 0) + 1;
@@ -360,16 +381,16 @@ function copySubject() {
               Image: imageIndex,
               Extension: ".png",
             });
-            if (confirmRes?.Status !== 200) {
+            if (confirmRes.Status !== 200) {
               showAPiError(
                 t("errors.apiErrorTitle"),
                 t("errors.apiErrorMessage", {
                   path: "/Contents/ConfirmExperiment",
-                  status: confirmRes?.Status,
+                  status: confirmRes.Status,
                   message: confirmRes?.Message || "",
                 }),
                 async () => {
-                  return await getData(`/Contents/ConfirmExperiment`, {
+                  return getData(`/Contents/ConfirmExperiment`, {
                     Category: route.params.category,
                     SummaryID: route.params.id,
                     Image: imageIndex,
@@ -377,10 +398,24 @@ function copySubject() {
                   });
                 },
               );
-              const _req = removeToken({ Category: route.params.category, SummaryID: route.params.id, Image: imageIndex, Extension: ".png" });
+              const _req = removeToken({
+                Category: route.params.category,
+                SummaryID: route.params.id,
+                Image: imageIndex,
+                Extension: ".png",
+              });
               const _res = removeToken(confirmRes);
-              window.$ErrorLogger.captureApiError("POST", "/Contents/ConfirmExperiment", confirmRes?.Status, _res, _req);
-              console.error(`/Contents/ConfirmExperiment returned ${confirmRes?.Status}`, _res);
+              window.$ErrorLogger.captureApiError(
+                "POST",
+                "/Contents/ConfirmExperiment",
+                confirmRes.Status,
+                _res,
+                _req,
+              );
+              console.error(
+                `/Contents/ConfirmExperiment returned ${confirmRes.Status}`,
+                _res,
+              );
               return;
             }
             const submitRes = await getData(`/Contents/SubmitExperiment`, {
@@ -390,16 +425,16 @@ function copySubject() {
               },
               Summary: summaryRes.Data,
             });
-            if (submitRes?.Status !== 200) {
+            if (submitRes.Status !== 200) {
               showAPiError(
                 t("errors.apiErrorTitle"),
                 t("errors.apiErrorMessage", {
                   path: "/Contents/SubmitExperiment",
-                  status: submitRes?.Status,
+                  status: submitRes.Status,
                   message: submitRes?.Message || "",
                 }),
                 async () => {
-                  return await getData(`/Contents/SubmitExperiment`, {
+                  return getData(`/Contents/SubmitExperiment`, {
                     Request: {
                       FileSize: 0 - Math.abs(file.size),
                       Extension: ".jpg",
@@ -408,10 +443,25 @@ function copySubject() {
                   });
                 },
               );
-              const _req = removeToken({ Request: { FileSize: 0 - Math.abs(file.size), Extension: ".jpg" }, Summary: summaryRes.Data });
+              const _req = removeToken({
+                Request: {
+                  FileSize: 0 - Math.abs(file.size),
+                  Extension: ".jpg",
+                },
+                Summary: summaryRes.Data,
+              });
               const _res = removeToken(submitRes);
-              window.$ErrorLogger.captureApiError("POST", "/Contents/SubmitExperiment", submitRes?.Status, _res, _req);
-              console.error(`/Contents/SubmitExperiment returned ${submitRes?.Status}`, _res);
+              window.$ErrorLogger.captureApiError(
+                "POST",
+                "/Contents/SubmitExperiment",
+                submitRes.Status,
+                _res,
+                _req,
+              );
+              console.error(
+                `/Contents/SubmitExperiment returned ${submitRes.Status}`,
+                _res,
+              );
               return;
             }
             try {
@@ -432,16 +482,16 @@ function copySubject() {
                 Image: imageIndex,
                 Extension: ".png",
               });
-              if (confirmRes2?.Status !== 200) {
+              if (confirmRes2.Status !== 200) {
                 showAPiError(
                   t("errors.apiErrorTitle"),
                   t("errors.apiErrorMessage", {
                     path: "/Contents/ConfirmExperiment",
-                    status: confirmRes2?.Status,
+                    status: confirmRes2.Status,
                     message: confirmRes2?.Message || "",
                   }),
                   async () => {
-                    return await getData(`/Contents/ConfirmExperiment`, {
+                    return getData(`/Contents/ConfirmExperiment`, {
                       Category: route.params.category,
                       SummaryID: route.params.id,
                       Image: imageIndex,
@@ -449,10 +499,24 @@ function copySubject() {
                     });
                   },
                 );
-                const _req = removeToken({ Category: route.params.category, SummaryID: route.params.id, Image: imageIndex, Extension: ".png" });
+                const _req = removeToken({
+                  Category: route.params.category,
+                  SummaryID: route.params.id,
+                  Image: imageIndex,
+                  Extension: ".png",
+                });
                 const _res = removeToken(confirmRes2);
-                window.$ErrorLogger.captureApiError("POST", "/Contents/ConfirmExperiment", confirmRes2?.Status, _res, _req);
-                console.error(`/Contents/ConfirmExperiment returned ${confirmRes2?.Status}`, _res);
+                window.$ErrorLogger.captureApiError(
+                  "POST",
+                  "/Contents/ConfirmExperiment",
+                  confirmRes2.Status,
+                  _res,
+                  _req,
+                );
+                console.error(
+                  `/Contents/ConfirmExperiment returned ${confirmRes2.Status}`,
+                  _res,
+                );
                 return;
               }
             } catch (_upErr) {
@@ -468,25 +532,37 @@ function copySubject() {
                 ContentID: route.params.id,
                 Category: route.params.category,
               });
-              if (refreshed?.Status !== 200) {
+              if (refreshed.Status !== 200) {
                 showAPiError(
                   t("errors.apiErrorTitle"),
                   t("errors.apiErrorMessage", {
                     path: "/Contents/GetSummary",
-                    status: refreshed?.Status,
+                    status: refreshed.Status,
                     message: refreshed?.Message || "",
                   }),
                   async () => {
-                    return await getData(`/Contents/GetSummary`, {
+                    return getData(`/Contents/GetSummary`, {
                       ContentID: route.params.id,
                       Category: route.params.category,
                     });
                   },
                 );
-                const _req = removeToken({ ContentID: route.params.id, Category: route.params.category });
+                const _req = removeToken({
+                  ContentID: route.params.id,
+                  Category: route.params.category,
+                });
                 const _res = removeToken(refreshed);
-                window.$ErrorLogger.captureApiError("POST", "/Contents/GetSummary", refreshed?.Status, _res, _req);
-                console.error(`/Contents/GetSummary returned ${refreshed?.Status}`, _res);
+                window.$ErrorLogger.captureApiError(
+                  "POST",
+                  "/Contents/GetSummary",
+                  refreshed.Status,
+                  _res,
+                  _req,
+                );
+                console.error(
+                  `/Contents/GetSummary returned ${refreshed.Status}`,
+                  _res,
+                );
                 return;
               }
               coverUrl.value = getCoverUrl(refreshed.Data);

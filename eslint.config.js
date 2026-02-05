@@ -46,7 +46,8 @@ export default [
       "no-template-curly-in-string": "warn",
       "prefer-template": "error",
       "no-useless-concat": "error",
-      "no-redeclare": "error",
+      "no-redeclare": "off",
+      "@typescript-eslint/no-redeclare": "error",
       "no-unused-expressions": "error",
       "@typescript-eslint/no-inferrable-types": [
         "error",

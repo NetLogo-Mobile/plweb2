@@ -5,19 +5,20 @@
     <div
       class="container"
       :style="{
-        backgroundImage: `url(${ProjectsBackground})`,
+        backgroundImage: block.Summaries[0]
+          ? `url(${getCoverUrl(block.Summaries[0]!)})`
+          : 'none',
         backgroundRepeat: 'no-repeat',
         backgroundSize: 'cover',
       }"
-      @click="jump"
+      @click="() => router.push(`/list/${block.TargetLink}`)"
     >
-      <h2 class="title">{{ projectsName }}</h2>
+      <h2 class="title">{{ block.Subject }}</h2>
       <div class="box" @click.stop="">
         <Works
-          v-for="item in projects"
+          v-for="item in block.Summaries"
           :key="item.ID"
           :data="item"
-          :type="type"
         ></Works>
       </div>
     </div>
@@ -25,35 +26,25 @@
     <!-- The content of activity is different from the app version, but we won't handle it here. Instead, we will modify the server response at the API level, see getData.ts -->
     <div
       class="activity"
-      :style="{ backgroundImage: `url(${activityBackground})` }"
+      :style="{
+        backgroundImage: `url(${getPath('/@base/assets/support.png')})`,
+      }"
       @click="activityProc"
     >
-      <h1 class="activity-text">{{ activityName }}</h1>
+      <h1 class="activity-text">{{ block.AuxiliaryText }}</h1>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import type { TopicBlock as TopicBlockType } from "@services/../pl-serve-type-main/type/main";
 import Works from "../projects/brief.vue";
 import router from "../../router";
-import { getCoverUrl } from "@services/utils.ts";
-const { projects, type, link } = defineProps<{
-  projects: any[];
-  type: string;
-  activityName: string;
-  activityBackground: string;
-  projectsName: string;
+import { getCoverUrl, getPath } from "@services/utils.ts";
+const { block, activityProc } = defineProps<{
+  block: TopicBlockType;
   activityProc?: (event: MouseEvent) => void;
-  link: string;
 }>();
-
-// 会使用最新一个作品的封面作为盒子的背景
-// Use the cover of the latest project as the background of the box
-const ProjectsBackground = getCoverUrl(projects[0]);
-
-const jump = () => {
-  router.push(`/list/${link}`);
-};
 </script>
 
 <style scoped>

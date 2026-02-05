@@ -29,20 +29,17 @@
 
 import { ref, onMounted, onUnmounted, watch } from "vue";
 
-const props = defineProps({
-  initialItems: {
-    type: Array,
-    default: () => [],
-  },
-  hasMore: Boolean,
-  scrollTarget: {
-    type: String,
-    default: null,
-  },
-  marginTop: {
-    type: Number,
-    default: -800,
-  },
+interface Props {
+  initialItems?: any[];
+  hasMore: boolean;
+  scrollTarget?: string | null;
+  marginTop?: number;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  initialItems: () => [],
+  scrollTarget: null,
+  marginTop: -800,
 });
 
 const emit = defineEmits(["load"]);

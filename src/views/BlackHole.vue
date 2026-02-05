@@ -17,13 +17,7 @@
                 v-if="
                   block.$type.startsWith('Quantum.Models.Contents.TopicBlock')
                 "
-                type="Discussion"
-                :projects="block.Summaries"
-                :activityName="
-                  block.AuxiliaryText || $t('blackhole.participate')
-                "
-                :activityBackground="getPath('/@base/assets/mechanics.png')"
-                :projectsName="block.Subject"
+                :block="block"
                 :activityProc="
                   (event) =>
                     //@ts-ignore no need to infer its type
@@ -31,14 +25,11 @@
                       block.AuxiliaryLink || 'internal://co-dev',
                     )?.(event) ?? undefined
                 "
-                :link="EncodeAPITargetLink(block.TargetLink)"
               />
               <Block
                 v-else
-                type="Discussion"
-                :data="block.Summaries.slice(0, maxProjectsPerBlock)"
-                :title="block.Header"
-                :link="EncodeAPITargetLink(block.TargetLink)"
+                :block="block"
+                :maxProjectsPerBlock="maxProjectsPerBlock"
               />
             </div>
           </n-gi>
@@ -61,7 +52,7 @@ import { showAPiError } from "@popup/index.ts";
 import { removeToken } from "@services/utils.ts";
 import { useI18n } from "vue-i18n";
 import { NGrid, NGi } from "naive-ui";
-import { EncodeAPITargetLink, getPath } from "@services/utils.ts";
+import { getPath } from "@services/utils.ts";
 
 import "../layout/loading.css";
 import "../layout/startPage.css";
@@ -117,20 +108,33 @@ async function fetchLibrary() {
     Identifier: "Discussions",
     Language: "Chinese",
   });
-  if (getLibraryResponse?.Status !== 200) {
+
+  if (getLibraryResponse.Status !== 200 || !getLibraryResponse.Data) {
     showAPiError(
       t("errors.apiErrorTitle"),
       t("errors.apiErrorMessage", {
         path: "/Contents/GetLibrary",
-        status: getLibraryResponse?.Status,
-        message: getLibraryResponse?.Message || "",
+        status: getLibraryResponse.Status,
+        message: getLibraryResponse.Message,
       }),
       fetchLibrary,
     );
-    const _req = removeToken({ Identifier: "Discussions", Language: "Chinese" });
+    const _req = removeToken({
+      Identifier: "Discussions",
+      Language: "Chinese",
+    });
     const _res = removeToken(getLibraryResponse);
-    window.$ErrorLogger.captureApiError("POST", "/Contents/GetLibrary", getLibraryResponse?.Status, _res, _req);
-    console.error(`/Contents/GetLibrary returned ${getLibraryResponse?.Status}`, _res);
+    window.$ErrorLogger.captureApiError(
+      "POST",
+      "/Contents/GetLibrary",
+      getLibraryResponse.Status,
+      _res,
+      _req,
+    );
+    console.error(
+      `/Contents/GetLibrary returned ${getLibraryResponse.Status}`,
+      _res,
+    );
     return;
   }
   loading.value = false;

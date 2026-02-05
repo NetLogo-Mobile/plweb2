@@ -1,4 +1,3 @@
-
 export default {
   login: {
     emailOrPhone: "E-Mail / Telefon",
@@ -121,7 +120,8 @@ export default {
     debugger: "Protokolle sammeln",
     exportLogs: "Fehlerprotokolle exportieren",
     languageChangeTitle: "Sprache geändert",
-    languageChangeContent: "Einige Funktionen erfordern eine erneute Anmeldung, um die neue Sprache vollständig anzuwenden",
+    languageChangeContent:
+      "Einige Funktionen erfordern eine erneute Anmeldung, um die neue Sprache vollständig anzuwenden",
   },
   footer: {
     home: "Startseite",

@@ -38,14 +38,16 @@ import { getAvatarUrl } from "@services/getUserCurentAvatarByID";
 import storageManager from "@storage/index.ts";
 import { formatDate, getPath } from "@services/utils";
 
+interface MessageItemData {
+  id: string;
+  userID: string;
+  msg: string;
+  msg_title: string;
+  type: string;
+}
+
 const props = defineProps<{
-  message: {
-    id: string;
-    userID: string;
-    msg: string;
-    msg_title: string;
-    type: string;
-  };
+  message: MessageItemData;
 }>();
 
 const emit = defineEmits(["msgClick", "deleteMsg"]);

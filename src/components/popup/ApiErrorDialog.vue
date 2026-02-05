@@ -17,32 +17,38 @@
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import type { PropType, Ref } from "vue";
+import type { Ref } from "vue";
 
-const props = defineProps({
-  title: String,
-  message: String,
-  // Optional reactive refs for live updates
-  titleRef: { type: Object as PropType<Ref<string> | undefined> },
-  messageRef: { type: Object as PropType<Ref<string> | undefined> },
-  icon: { type: String as PropType<string>, default: "/assets/messages/Message-Default.png" },
-  confirmLabel: { type: String as PropType<string>, default: "OK" },
-  cancelLabel: { type: String as PropType<string>, default: "Cancel" },
-  confirmingLabel: { type: String as PropType<string>, default: "Retrying..." },
-  onConfirm: Function as PropType<() => Promise<any> | void>,
-  close: Function as PropType<() => void>,
+interface Props {
+  title?: string;
+  message?: string;
+  titleRef?: Ref<string>;
+  messageRef?: Ref<string>;
+  icon?: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  confirmingLabel?: string;
+  onConfirm?: () => Promise<any> | void;
+  close?: () => void;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  icon: "/assets/messages/Message-Default.png",
+  confirmLabel: "OK",
+  cancelLabel: "Cancel",
+  confirmingLabel: "Retrying...",
 });
 
 const loading = ref(false);
 
 const displayTitle = computed(() => {
   const tr = props.titleRef as Ref<string> | undefined;
-  return (tr?.value ?? props.title ?? "");
+  return tr?.value ?? props.title ?? "";
 });
 
 const displayMessage = computed(() => {
   const mr = props.messageRef as Ref<string> | undefined;
-  return (mr?.value ?? props.message ?? "");
+  return mr?.value ?? props.message ?? "";
 });
 
 async function onConfirmClick() {
@@ -54,7 +60,7 @@ async function onConfirmClick() {
     loading.value = true;
     await props.onConfirm();
     // on success the caller may close via close()
-  } catch (e) {
+  } catch (_e) {
     // keep dialog open on failure – caller can decide behavior
   } finally {
     loading.value = false;
@@ -124,5 +130,6 @@ function onCancel() {
 }
 .btn:disabled {
   opacity: 0.6;
-  pointer-events: none;}
+  pointer-events: none;
+}
 </style>

@@ -5,10 +5,14 @@
     <div class="card">
       <img :src="imgUrl" class="icon" />
       <div class="text">
-        <p v-richText="() => parse(data.Subject)" class="title"></p>
+        <p v-richText="() => parse(data.Subject || '')" class="title"></p>
         <p class="subtitle">{{ data.User.Nickname }}</p>
         <div class="subtitle">
-          <Tag v-for="i in data.Tags" :category="data.Category" :tag="i" />
+          <Tag
+            v-for="i in data.Tags"
+            :category="data.Category || 'Experiment'"
+            :tag="i"
+          />
         </div>
       </div>
     </div>
@@ -17,23 +21,13 @@
 
 <script setup lang="ts">
 import Tag from "../utils/Tag.vue";
+import type { Summary } from "@services/../pl-serve-type-main/type/main";
 import parse from "@services/pltxt2htm/commonParser";
 import { getCoverUrl, getPath } from "@services/utils";
 import { useRouter } from "vue-router";
 
-interface IData {
-  ID: string;
-  Subject: string;
-  User: {
-    Nickname: string;
-  };
-  Tags: string[];
-  Category: string;
-  Image: number;
-}
-
 const { data } = defineProps<{
-  data: IData;
+  data: Summary;
 }>();
 
 const router = useRouter();

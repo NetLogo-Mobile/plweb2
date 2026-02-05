@@ -1,0 +1,22 @@
+/** 形状 */
+export type {
+  User,
+  UserInfo,
+  Summary,
+  Comment,
+  Sync,
+  Device,
+  Statistic,
+  RelationList,
+  Block,
+  TopicBlock,
+  ListBlock,
+  Homepage,
+  Library,
+  Workspace,
+  CommentResult,
+  CommentPost,
+  ExperimentQuery,
+  ContentSubmitSummary,
+  SubmitExperiment,
+} from "./main.ts";

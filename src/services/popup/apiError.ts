@@ -43,15 +43,25 @@ export function showAPiError(
       try {
         const res = await current.retry();
         if (res && typeof res === "object" && (res as any).Status === 200) {
-          showMessage("success", (i18n.global.t("ui.retrySuccess") as string) || "Success");
+          showMessage(
+            "success",
+            (i18n.global.t("ui.retrySuccess") as string) || "Success",
+          );
           close();
         } else {
-          showMessage("error", (i18n.global.t("ui.retryFailed") as string) || "Retry failed", { duration: 3000 });
+          showMessage(
+            "error",
+            (i18n.global.t("ui.retryFailed") as string) || "Retry failed",
+            { duration: 3000 },
+          );
         }
         return res;
       } catch (_e) {
-        showMessage("error", (i18n.global.t("ui.retryFailed") as string) || "Retry failed", { duration: 3000 });
-        return;
+        showMessage(
+          "error",
+          (i18n.global.t("ui.retryFailed") as string) || "Retry failed",
+          { duration: 3000 },
+        );
       }
     },
     close: close,
@@ -72,4 +82,3 @@ export function showAPiError(
 
   current = { close, title: titleRef, message: messageRef, retry };
 }
-

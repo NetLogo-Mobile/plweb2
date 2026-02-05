@@ -1,18 +1,15 @@
 import type { MessageReactive } from "naive-ui";
-import translateErrorMessage from "@i18n/translateErrorMessage.ts";
+
 import storageManager from "@storage/index.ts";
 import { showMessage } from "@popup/naiveui.ts";
 
 let messageRef: MessageReactive;
 
-interface IResponse {
-  Status: number;
-  Message: string;
-  Data: any;
-}
+import type { Result } from "src/pl-serve-type-main/type/main";
+
 interface IIntercetporResponse {
   continue: boolean;
-  data: IResponse | null;
+  data: Result | null;
 }
 
 const noMessagesPath = ["/Users/GetUser"];
@@ -66,7 +63,7 @@ export function beforeRequest(path: string): IIntercetporResponse {
   if (rateLimit(path)) {
     return {
       continue: false,
-      data: { Status: -1001, Message: "连接失败，请稍候重试", Data: null },
+      data: { Status: -1001, Message: "Server.Offline", Data: null },
     };
   }
   if (!noMessagesPath.some((p) => path === p))
@@ -76,12 +73,10 @@ export function beforeRequest(path: string): IIntercetporResponse {
   return { continue: true, data: null };
 }
 
-export function afterRequest(response: IResponse): IIntercetporResponse {
+export function afterRequest(response: any): IIntercetporResponse {
   let re = response;
-  if (response.Status !== 200) {
-    re.Message = translateErrorMessage(response.Message);
-  }
-  if (messageRef && re.Data && !noDestroyPath.some((p) => re.Data.$type === p)) messageRef.destroy();
+  if (messageRef && re.Data && !noDestroyPath.some((p) => re.Data.$type === p))
+    messageRef.destroy();
   // re.Status = 400;
   //  For testing purpose
   return {

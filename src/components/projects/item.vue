@@ -26,13 +26,14 @@
 
 <script setup lang="ts">
 import router from "../../router";
+import type { Summary } from "@services/../pl-serve-type-main/type/main";
 import { getCoverUrl, getUserUrl, formatDate } from "@services/utils";
 import { useResponsive } from "../../layout/useResponsive";
 
 const { projectsHeight, fontSizeS } = useResponsive();
 const { item } = defineProps<{
-  item: any;
-  showName: boolean;
+  item: Summary;
+  showName?: boolean;
 }>();
 
 const imgUrl = getCoverUrl(item);

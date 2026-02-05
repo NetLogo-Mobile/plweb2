@@ -24,12 +24,12 @@ import MessageItem from "./MessageItem.vue";
 import { getData } from "@services/api/getData.ts";
 import { showAPiError } from "@popup/index.ts";
 import { removeToken } from "@services/utils.ts";
-import type { PropType } from "vue";
 import { showMessage } from "@popup/naiveui";
 import InfiniteScroll from "../utils/infiniteScroll.vue";
 import { useI18n } from "vue-i18n";
 import { checkLogin } from "@services/utils.ts";
 import { NDivider } from "naive-ui";
+import type { Category as CategoryType } from "@services/../pl-serve-type-main/type/main";
 
 interface PMessageItem {
   id: string;
@@ -39,14 +39,11 @@ interface PMessageItem {
   type: string;
 }
 
-const { ID, Category, upDate } = defineProps({
-  ID: String,
-  Category: {
-    type: String as PropType<"Discussion" | "Experiment" | "User">,
-    required: true,
-  },
-  upDate: Number,
-});
+const { ID, Category, upDate } = defineProps<{
+  ID: string;
+  Category: CategoryType | "User";
+  upDate?: number;
+}>();
 
 let items = ref<PMessageItem[]>([]); // 前端的消息列表  front-end message list
 const loading = ref(false);
@@ -114,16 +111,16 @@ const handleLoad = async () => {
     Skip: skip.value || 0,
   });
 
-  if (getMessagesResponse?.Status !== 200) {
+  if (getMessagesResponse.Status !== 200) {
     showAPiError(
       t("errors.apiErrorTitle"),
       t("errors.apiErrorMessage", {
         path: "/Messages/GetComments",
-        status: getMessagesResponse?.Status,
+        status: getMessagesResponse.Status,
         message: getMessagesResponse?.Message || "",
       }),
       async () => {
-        return await getData("/Messages/GetComments", {
+        return getData("/Messages/GetComments", {
           TargetID: ID,
           TargetType: Category,
           CommentID: from || "",
@@ -140,8 +137,17 @@ const handleLoad = async () => {
       Skip: skip.value || 0,
     });
     const _res = removeToken(getMessagesResponse);
-    window.$ErrorLogger.captureApiError("POST", "/Messages/GetComments", getMessagesResponse?.Status, _res, _req);
-    console.error(`/Messages/GetComments returned ${getMessagesResponse?.Status}`, _res);
+    window.$ErrorLogger.captureApiError(
+      "POST",
+      "/Messages/GetComments",
+      getMessagesResponse.Status,
+      _res,
+      _req,
+    );
+    console.error(
+      `/Messages/GetComments returned ${getMessagesResponse.Status}`,
+      _res,
+    );
     loading.value = false;
     return;
   }

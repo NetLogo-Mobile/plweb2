@@ -11,7 +11,7 @@ async function advancedParser(text: string, host: string): Promise<string> {
     instanceAny.__advanced_parser_fn = wasmInstance.cwrap(
       "fixedadv_parser",
       "number",
-      ["string", "string"]
+      ["string", "string"],
     );
   }
   let deallocate = await getDeallocator();

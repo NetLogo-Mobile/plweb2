@@ -2,13 +2,13 @@
   <router-link
     :to="{
       name: 'ExperimentSummary',
-      params: { category: data.Category, id: data.ID },
+      params: { category: data.Category || 'Experiment', id: data.ID },
     }"
   >
     <div class="card" :type="type">
       <img :src="imgUrl" class="icon" />
       <div class="text">
-        <p v-richText="() => parse(data.Subject)" class="title"></p>
+        <p v-richText="() => parse(data.Subject || '')" class="title"></p>
         <p class="subtitle">
           {{ data.User.Nickname + "&nbsp;&nbsp;-" + formattedDate }}
         </p>
@@ -17,17 +17,25 @@
   </router-link>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from "vue";
+import type { Summary } from "@services/../pl-serve-type-main/type/main";
 import parse from "@services/pltxt2htm/commonParser";
 import { getCoverUrl, formatDate } from "@services/utils.ts";
 
+declare global {
+  interface Window {
+    formtDate: typeof formatDate;
+  }
+}
+
 window.formtDate = formatDate;
 
-const { data, type } = defineProps({
-  data: Object,
-  type: String,
-});
+const { data } = defineProps<{
+  data: Summary;
+}>();
+
+const type = "Experiment";
 
 const imgUrl = getCoverUrl(data);
 const formattedDate = computed(() => {

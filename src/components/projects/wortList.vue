@@ -2,8 +2,8 @@
   <infiniteScroll :initial-items="items" :has-more="!noMore" @load="handleLoad">
     <template #default="{ items }">
       <n-grid :cols="row || 3" :x-gap="16" :y-gap="16" responsive="screen">
-        <n-gi v-for="item in items as Item[]" :key="item.ID">
-          <Works :item="item as Item" :show-name="!q?.userID" />
+        <n-gi v-for="item in items as Summary[]" :key="item.ID">
+          <Works :item="item" :show-name="!q?.userID" />
         </n-gi> </n-grid
     ></template>
   </infiniteScroll>
@@ -13,6 +13,7 @@
 import { NGrid, NGi } from "naive-ui";
 import Works from "./item.vue";
 import { ref } from "vue";
+import type { Summary } from "@services/../pl-serve-type-main/type/main";
 import { getData } from "@services/api/getData.ts";
 import { showAPiError } from "@popup/index.ts";
 import { removeToken } from "@services/utils.ts";
@@ -20,23 +21,15 @@ import { showMessage } from "@popup/naiveui";
 import infiniteScroll from "../utils/infiniteScroll.vue";
 import { useI18n } from "vue-i18n";
 
-interface Item {
-  ID: string;
-  avatar_url: string;
-  msg_title: string;
-  msg: string;
-  userID: string;
-}
-
-const { q } = defineProps({
-  row: Number,
-  q: Object,
-});
+const { q } = defineProps<{
+  row?: number;
+  q?: Record<string, any>;
+}>();
 
 const { t } = useI18n();
 
 const loading = ref(true);
-const items = ref<Item[]>([]);
+const items = ref<Summary[]>([]);
 const from = ref("");
 const isGettingData = ref(false);
 
@@ -52,21 +45,13 @@ async function handleLoad() {
   if (isGettingData.value === true) return; // Lock
   isGettingData.value = true;
 
-  // 这里展示了全部可用参数
-  // Here all available parameters are shown
   const getProjectsRes = await getData("/Contents/QueryExperiments", {
     Query: {
       Category: "Discussion",
       Languages: [],
-      ExcludeLanguages: null,
       Tags: ["精选"],
-      ModelTags: null,
-      ExcludeTags: null,
-      ModelID: null,
-      ParentID: null,
-      UserID: null,
       Special: null,
-      From: from.value === "" ? null : from.value,
+      From: from.value,
       Skip: skip.value,
       Take: 24,
       Days: 0,
@@ -75,12 +60,12 @@ async function handleLoad() {
       ...q,
     },
   });
-  if (getProjectsRes?.Status !== 200) {
+  if (getProjectsRes.Status !== 200) {
     showAPiError(
       t("errors.apiErrorTitle"),
       t("errors.apiErrorMessage", {
         path: "/Contents/QueryExperiments",
-        status: getProjectsRes?.Status,
+        status: getProjectsRes.Status,
         message: getProjectsRes?.Message || "",
       }),
       handleLoad,
@@ -107,9 +92,26 @@ async function handleLoad() {
       },
     });
     const _res = removeToken(getProjectsRes);
-    window.$ErrorLogger.captureApiError("POST", "/Contents/QueryExperiments", getProjectsRes?.Status, _res, _req);
-    console.error(`/Contents/QueryExperiments returned ${getProjectsRes?.Status}`, _res);
+    window.$ErrorLogger.captureApiError(
+      "POST",
+      "/Contents/QueryExperiments",
+      getProjectsRes.Status,
+      _res,
+      _req,
+    );
+    console.error(
+      `/Contents/QueryExperiments returned ${getProjectsRes.Status}`,
+      _res,
+    );
     isGettingData.value = false;
+    return;
+  }
+  if (!getProjectsRes.Data) {
+    showAPiError(
+      t("errors.apiErrorTitle"),
+      t("errors.apiErrorMessage"),
+      handleLoad,
+    );
     return;
   }
   if (getProjectsRes.Data.$values.length < 24) {

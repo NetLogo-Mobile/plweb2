@@ -38,7 +38,7 @@ export async function getAvatarUrl(ID: string, useCache = true) {
         getData("/Users/GetUser", { ID }),
         timeoutPromise,
       ]);
-      avatarIndex = response.Data?.User?.Avatar;
+      avatarIndex = (response as any).Data?.User?.Avatar;
       if (!avatarIndex) {
         return getPath("/@base/assets/user/default-avatar.png");
       }

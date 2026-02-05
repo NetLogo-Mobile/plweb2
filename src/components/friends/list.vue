@@ -7,8 +7,8 @@
   >
     <template #default="{ items }">
       <n-grid :cols="cols || 2">
-        <n-gi v-for="user in items as User[]" :key="user.User.ID">
-          <UserItem :user="user.User" />
+        <n-gi v-for="user in items as RelationList[]" :key="user.User?.ID">
+          <UserItem v-if="user.User" :user="user.User" />
         </n-gi>
       </n-grid>
     </template>
@@ -19,6 +19,7 @@
 import UserItem from "./item.vue";
 import { NGrid, NGi } from "naive-ui";
 import { ref } from "vue";
+import type { RelationList } from "@services/../pl-serve-type-main/type/main";
 import { getData } from "@services/api/getData.ts";
 import { showAPiError } from "@popup/index.ts";
 import { removeToken } from "@services/utils.ts";
@@ -26,23 +27,19 @@ import infiniteScroll from "../utils/infiniteScroll.vue";
 import { useI18n } from "vue-i18n";
 import { showMessage } from "@popup/naiveui";
 
-interface User {
-  User: any;
-}
-
 // cols需要在父组件传参，这可能会在好友界面和Profile界面（未实现）展现
 //  Props `cols` needs to be passed from the parent component, which may be displayed in the Friends page and Profile page (not implemented yet).
-const { userid, type } = defineProps({
-  userid: String,
-  type: String,
-  cols: Number,
-});
+const { userid, type } = defineProps<{
+  userid?: string;
+  type?: string;
+  cols?: number;
+}>();
 
 let loading = ref(false);
 let skip = ref(0);
 let noMore = ref(false);
 let hasInformed = ref(false);
-const items = ref<User[]>([]);
+const items = ref<RelationList[]>([]);
 const { t } = useI18n();
 // Vue对于Ref会自动处理数据竞争问题
 // Vue automatically handles data race issues with Ref.
@@ -63,7 +60,7 @@ async function handleLoad() {
     Take: 24,
     Query: "",
   });
-  if (getRelationsRes?.Status !== 200) {
+  if (getRelationsRes.Status !== 200) {
     showAPiError(
       t("errors.apiErrorTitle"),
       t("errors.apiErrorMessage"),
@@ -77,8 +74,17 @@ async function handleLoad() {
       Query: "",
     });
     const _res = removeToken(getRelationsRes);
-    window.$ErrorLogger.captureApiError("POST", "/Users/GetRelations", getRelationsRes?.Status, _res, _req);
-    console.error(`/Users/GetRelations returned ${getRelationsRes?.Status}`, _res);
+    window.$ErrorLogger.captureApiError(
+      "POST",
+      "/Users/GetRelations",
+      getRelationsRes.Status,
+      _res,
+      _req,
+    );
+    console.error(
+      `/Users/GetRelations returned ${getRelationsRes.Status}`,
+      _res,
+    );
     loading.value = false;
     return;
   }

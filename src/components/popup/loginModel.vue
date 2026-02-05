@@ -117,9 +117,11 @@ import { showMessage } from "@popup/naiveui";
 
 const emailOrPhone = ref("");
 const loginPassword = ref("");
-const { close } = defineProps<{
+interface LoginModelProps {
   close: () => void;
-}>();
+}
+
+const { close } = defineProps<LoginModelProps>();
 
 async function handlePasswordLogin() {
   let res = await login(emailOrPhone.value, loginPassword.value, false);

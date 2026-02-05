@@ -15,11 +15,18 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{
-  options: { label: string; color?: string }[];
+interface ActionSheetOption {
+  label: string;
+  color?: string;
+}
+
+interface Props {
+  options: ActionSheetOption[];
   close: () => void;
   onSelect: (idx: number) => void;
-}>();
+}
+
+const props = defineProps<Props>();
 
 function select(idx: number) {
   props.onSelect(idx);

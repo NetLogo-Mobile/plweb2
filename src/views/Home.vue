@@ -49,19 +49,12 @@
                 v-if="
                   block.$type.startsWith('Quantum.Models.Contents.TopicBlock')
                 "
-                type="Experiment"
-                :projects="block.Summaries"
-                :activityName="block.AuxiliaryText"
-                :activityBackground="getPath('/@base/assets/support.png')"
-                :projectsName="block.Subject"
-                :link="EncodeAPITargetLink(block.TargetLink)"
+                :block="block"
               />
               <Block
                 v-else
-                type="Experiment"
-                :data="block.Summaries.slice(0, maxProjectsPerBlock)"
-                :title="block.Header"
-                :link="EncodeAPITargetLink(block.TargetLink)"
+                :block="block"
+                :maxProjectsPerBlock="maxProjectsPerBlock"
               />
             </div>
           </n-gi>
@@ -76,12 +69,7 @@
 import { ref, onMounted, onActivated } from "vue";
 import { NGi, NGrid } from "naive-ui";
 import router from "../router";
-import {
-  checkLogin,
-  EncodeAPITargetLink,
-  getPath,
-  getUserUrl,
-} from "@services/utils";
+import { checkLogin, getPath, getUserUrl } from "@services/utils";
 import "../layout/loading.css";
 import "../layout/startPage.css";
 import sm from "@storage/index.ts";
@@ -141,7 +129,7 @@ onMounted(async () => {
     const res = await login(null, null);
     loadPageData(res);
   }
-  Promise.allSettled([processAuthInfo(), processHomepageProjects()]);
+  await Promise.allSettled([processAuthInfo(), processHomepageProjects()]);
 });
 
 onActivated(() => {
@@ -197,7 +185,7 @@ function showModalFn() {
       timeStamp: Date.now(),
     });
   } else {
-      showLoginModel();
+    showLoginModel();
   }
 }
 </script>

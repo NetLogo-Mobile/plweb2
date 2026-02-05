@@ -118,7 +118,8 @@ export default {
     debugger: "collect logs",
     exportLogs: "Export Error Logs",
     languageChangeTitle: "Language Changed",
-    languageChangeContent: "Some features need to re-login to apply the new language completely",
+    languageChangeContent:
+      "Some features need to re-login to apply the new language completely",
   },
   footer: {
     home: "Home",

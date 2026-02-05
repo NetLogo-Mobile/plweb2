@@ -1,7 +1,7 @@
 <template>
   <infiniteScroll :has-more="!noMore" :initial-items="items" @load="handleLoad">
     <template #default="slotProps">
-      <div v-for="item in slotProps.items as NotificationItem[]" :key="item.id">
+      <div v-for="item in slotProps.items " :key="item.ID">
         <Notification :notification="item" />
         <n-divider style="margin: 0" />
       </div>
@@ -20,51 +20,18 @@ import InfiniteScroll from "../utils/infiniteScroll.vue";
 import { NDivider } from "naive-ui";
 import { useI18n } from "vue-i18n";
 import storageManager from "@storage/index.ts";
+import type { Message } from "@services/../pl-serve-type-main/type/main";
 
 onActivated(() => {
   window.$Logger.logPageView({
-    pageLink: `/Social/Notifications/${convertUIIndexToCategoryID(notificationTypeIndexOfUI)}/`,
+    pageLink: `/Social/Notifications/${CategoryID}/`,
     timeStamp: Date.now(),
   });
 });
 
 const { locale, t } = useI18n();
 
-interface NotificationItem {
-  id: string;
-  msg_title: string;
-  msg: string;
-  msg_type: number;
-  category: string;
-  tid: string;
-  name: string;
-  uid: string;
-}
-
-interface PMessage {
-  Fields: {
-    User?: string;
-    UserID?: string;
-    Discussion?: string;
-    DiscussionID?: string;
-    Experiment?: string;
-    ExperimentID?: string;
-    Content: string;
-    TargetName?: string; // 当前登录者的名称，the nickname of the current user
-    Unitl: string;
-    Editor: string;
-  };
-  Users: string[];
-  UserNames: string[];
-  Numbers: {
-    Gold: string;
-  };
-  ID: string;
-  TemplateID: string;
-  CategoryID: number;
-}
-
-const items = ref<NotificationItem[]>([]);
+const items = ref<Array<Message & { msg_title: string; msg: string; msg_type: number }>>([]);
 const loading = ref(false);
 let skip = ref(0); // 获取消息API的必要参数 A necessary parameter for the GetMessages API
 const noMore = ref(false);
@@ -111,23 +78,14 @@ let templates: any = [
     AvailableUntil: 1893477600000,
     Push: 0,
   },
-]; // 仅仅是为了类型推断  Only for type inference
+]; 
 
-const { notificationTypeIndexOfUI } = defineProps<{
-  notificationTypeIndexOfUI: number;
+const { CategoryID } = defineProps<{
+  CategoryID: number;
 }>();
 
-// 以下两个函数是API糟糕设计的糟糕解决方案，既然厄能跑，不建议尝试修改
-// These two functions are bad solutions to the bad design of the API. Since it can run, it is not recommended to try to modify them.
-function convertCategoryIDToUIIndex(n: number) {
-  return n === 2 ? 3 : n === 3 ? 2 : n;
-}
 
-function convertUIIndexToCategoryID(n: number) {
-  return n === 3 ? 2 : n === 2 ? 3 : n;
-}
-
-function fillInTemplate(data: string, message: PMessage) {
+function fillInTemplate(data: string, message: Message) {
   const re = data
     .replace(
       /{Users}/g,
@@ -146,11 +104,11 @@ function fillInTemplate(data: string, message: PMessage) {
     .replace(
       /{\$TargetName}/g,
       message.Fields.TargetName ||
-        storageManager.getObj("userInfo").value?.nickName,
+        storageManager.getObj("userInfo").value?.NickName,
     )
-    .replace(/{\$Until}/g, message.Fields.Unitl)
+    .replace(/{\$Until}/g, message.Fields.Until)
     .replace(/{\$Editor}/g, message.Fields.Editor)
-    .replace(/{\$Gold}/g, message.Numbers?.Gold)
+    .replace(/{\$Gold}/g, message.Numbers?.Gold ?.toString() || "{error}")
     .replace(/undefined/g, "");
   return re;
 }
@@ -164,33 +122,47 @@ const handleLoad = async (noTemplates = true) => {
   loading.value = true;
   try {
     const getMessagesResponse = await getData("/Messages/GetMessages", {
-      CategoryID: convertUIIndexToCategoryID(notificationTypeIndexOfUI),
+      CategoryID,
       Take: 20,
       Skip: skip.value,
       NoTemplates: noTemplates,
     });
 
-    if (getMessagesResponse?.Status !== 200) {
+    if (getMessagesResponse.Status !== 200 || !getMessagesResponse?.Data) {
       showAPiError(
         t("errors.apiErrorTitle"),
         t("errors.apiErrorMessage", {
           path: "/Messages/GetMessages",
-          status: getMessagesResponse?.Status,
+          status: getMessagesResponse.Status,
           message: getMessagesResponse?.Message || "",
         }),
         async () => {
-          return await getData("/Messages/GetMessages", {
-            CategoryID: convertUIIndexToCategoryID(notificationTypeIndexOfUI),
+          return getData("/Messages/GetMessages", {
+            CategoryID: CategoryID,
             Take: 20,
             Skip: skip.value,
             NoTemplates: noTemplates,
           });
         },
       );
-      const _req = removeToken({ CategoryID: convertUIIndexToCategoryID(notificationTypeIndexOfUI), Take: 20, Skip: skip.value, NoTemplates: noTemplates });
+      const _req = removeToken({
+        CategoryID: CategoryID,
+        Take: 20,
+        Skip: skip.value,
+        NoTemplates: noTemplates,
+      });
       const _res = removeToken(getMessagesResponse);
-      window.$ErrorLogger.captureApiError("POST", "/Messages/GetMessages", getMessagesResponse?.Status, _res, _req);
-      console.error(`/Messages/GetMessages returned ${getMessagesResponse?.Status}`, _res);
+      window.$ErrorLogger.captureApiError(
+        "POST",
+        "/Messages/GetMessages",
+        getMessagesResponse.Status,
+        _res,
+        _req,
+      );
+      console.error(
+        `/Messages/GetMessages returned ${getMessagesResponse.Status}`,
+        _res,
+      );
       loading.value = false;
       return;
     }
@@ -199,14 +171,15 @@ const handleLoad = async (noTemplates = true) => {
       templates = getMessagesResponse.Data.Templates;
     }
 
-    const messages = getMessagesResponse.Data.Messages as PMessage[];
+    const messages = getMessagesResponse.Data
+      .Messages as Message[];
 
     if (messages.length === 0) {
       noMore.value = true;
       showMessage("warning", t("ui.messages.noMore"), { duration: 2000 });
     }
 
-    // eslint-disable-next-line complexity
+     
     const defaultItems = messages.map((message) => {
       const template = templates.find((t: any) => t.ID === message.TemplateID);
 
@@ -227,26 +200,10 @@ const handleLoad = async (noTemplates = true) => {
           : "Chinese"
       ) as keyof typeof template.Subject;
       return {
-        id: message.ID,
+        ...message,
         msg_title: fillInTemplate(template.Subject[lang], message),
         msg: fillInTemplate(template.Content[lang], message),
-        msg_type: convertCategoryIDToUIIndex(message.CategoryID),
-        category: message.Fields?.User
-          ? "User"
-          : message.Fields?.Discussion
-            ? "Discussion"
-            : "Experiment",
-        tid:
-          message.Fields?.UserID ||
-          message.Fields?.DiscussionID ||
-          message.Fields?.ExperimentID ||
-          "",
-        name:
-          message.Fields?.Discussion ||
-          message.Fields?.Experiment ||
-          message.Fields?.User ||
-          "",
-        uid: message.Users[0] || "",
+        msg_type: message.CategoryID,
       };
     });
 

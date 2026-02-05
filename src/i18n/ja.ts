@@ -118,7 +118,8 @@ export default {
     debugger: "ログを収集",
     exportLogs: "エラーログをエクスポート",
     languageChangeTitle: "言語が変更されました",
-    languageChangeContent: "一部の機能は新しい言語を完全に適用するために再度ログインする必要があります",
+    languageChangeContent:
+      "一部の機能は新しい言語を完全に適用するために再度ログインする必要があります",
   },
   footer: {
     home: "ホーム",

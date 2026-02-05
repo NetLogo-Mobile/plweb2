@@ -134,10 +134,19 @@
               <div v-for="[t, d] in Object.entries(expData)" :key="t">
                 <Block
                   v-if="d.length > 0"
-                  :title="t"
-                  :data="d"
-                  :block-type="d[0].Category"
-                  :link="EncodeAPITargetLink(getLink(t))"
+                  :block="{
+                    Header: t,
+                    Summaries: d,
+                    TargetLink: getLink(t),
+                    DefaultLink: '',
+                    DefaultText: '',
+                    FetchAmount: 0,
+                    FetchConfiguration: null,
+                    FetchSource: '',
+                    Locations: null,
+                    Permission: null,
+                    Type: 0,
+                  }"
                 />
               </div>
             </div>
@@ -191,11 +200,7 @@ import Block from "../components/blocks/Block.vue";
 import postComment from "@services/postComment.ts";
 import BiLayout from "../layout/BiLayout.vue";
 import "../layout/BiLayout.css";
-import {
-  getCoverUrl,
-  getUserUrl,
-  EncodeAPITargetLink,
-} from "@services/utils.ts";
+import { getCoverUrl, getUserUrl } from "@services/utils.ts";
 import { useI18n } from "vue-i18n";
 import showActionSheet from "@popup/actionSheet.ts";
 import { showMessage } from "@popup/naiveui";
@@ -259,20 +264,26 @@ async function fetchProfile() {
   const expRes = await getData(`/Contents/GetProfile`, {
     ID: route.params.id,
   });
-  if (expRes?.Status !== 200) {
+  if (expRes.Status !== 200) {
     showAPiError(
       t("errors.apiErrorTitle"),
       t("errors.apiErrorMessage", {
         path: "/Contents/GetProfile",
-        status: expRes?.Status,
+        status: expRes.Status,
         message: expRes?.Message || "",
       }),
       fetchProfile,
     );
     const _req = removeToken({ ID: route.params.id });
     const _res = removeToken(expRes);
-    window.$ErrorLogger.captureApiError("POST", "/Contents/GetProfile", expRes?.Status, _res, _req);
-    console.error(`/Contents/GetProfile returned ${expRes?.Status}`, _res);
+    window.$ErrorLogger.captureApiError(
+      "POST",
+      "/Contents/GetProfile",
+      expRes.Status,
+      _res,
+      _req,
+    );
+    console.error(`/Contents/GetProfile returned ${expRes.Status}`, _res);
     return;
   }
   expData.value = expRes.Data.Experiments;
@@ -461,28 +472,28 @@ function copyUser() {
   .return {
     display: none;
   }
-  
+
   .cover-header {
     display: none;
   }
-  
+
   .settings-btn-header {
     display: none;
   }
-  
+
   .settings-btn-portrait {
     display: flex;
   }
-  
+
   .user-name-row {
     justify-content: flex-start;
   }
-  
+
   .settings-btn {
     width: 40px;
     height: 40px;
   }
-  
+
   .settings-btn svg {
     width: 20px;
     height: 20px;
@@ -550,16 +561,16 @@ function copyUser() {
   .return {
     display: none;
   }
-  
+
   .user-name-row {
     justify-content: flex-start;
   }
-  
+
   .settings-btn {
     width: 40px;
     height: 40px;
   }
-  
+
   .settings-btn svg {
     width: 20px;
     height: 20px;

@@ -88,14 +88,17 @@ const jumpToUser = (id: any) => {
 
 onMounted(async () => {
   const re = await getData("/Users/GetUser", { ID: props.userid });
+  if (!re.Data || !re.Data.User) return;
   const data = re.Data.User;
   name.value = data.Nickname;
   snt.value = data.Signature;
   avatar.value = getUserUrl(data);
-  followingCount.value = re.Data.Statistic.FollowingCount;
-  followerCount.value = re.Data.Statistic.FollowerCount;
-  postCount.value = re.Data.Statistic.ExperimentCount;
-  starCount.value = re.Data.Statistic.StarCount;
+  if (re.Data.Statistic) {
+    followingCount.value = re.Data.Statistic.FollowingCount;
+    followerCount.value = re.Data.Statistic.FollowerCount;
+    postCount.value = re.Data.Statistic.ExperimentCount;
+    starCount.value = re.Data.Statistic.StarCount;
+  }
   ID = re.Data.User.ID;
   if (re.Data.Relation === 1 || re.Data.Relation === 3) {
     isFollowing.value = true;
@@ -123,7 +126,7 @@ async function followUser() {
     showMessage("success", t("ui.messages.followSuccess"));
     isFollowing.value = true;
   } else {
-    if (re.Status === 400 && re.Data === "TargetID") {
+    if (re.Status === 400 && (re.Data as unknown) === "TargetID") {
       showMessage("error", t("userCard.cantFollowYourself"));
     } else {
       showMessage("error", re.Message);

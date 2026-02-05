@@ -93,12 +93,14 @@ class ErrorLogger {
     }
 
     if (Array.isArray(obj)) {
-      return obj.slice(0, 10).map((item) => this.limitJsonDepth(item, depth + 1));
+      return obj
+        .slice(0, 10)
+        .map((item) => this.limitJsonDepth(item, depth + 1));
     }
 
     const result: any = {};
     const keys = Object.keys(obj).slice(0, 20);
-    
+
     for (const key of keys) {
       try {
         result[key] = this.limitJsonDepth(obj[key], depth + 1);
@@ -207,7 +209,10 @@ class ErrorLogger {
   captureError(context: ErrorContext) {
     // Always record API/network errors: even in non-debug mode we want these for diagnostics.
     // Other non-vital logs still respect debugMode.
-    if (!this.debugMode && !["vue", "window", "promise", "api", "network"].includes(context.type)) {
+    if (
+      !this.debugMode &&
+      !["vue", "window", "promise", "api", "network"].includes(context.type)
+    ) {
       return;
     }
 
@@ -220,18 +225,25 @@ class ErrorLogger {
       userId: storageManager.getObj("userInfo")?.value?.ID || "unknown",
       url: window.location.href,
       ...context,
-      responseData: context.responseData ? this.limitJsonDepth(context.responseData) : context.responseData,
-      requestData: context.requestData ? this.limitJsonDepth(context.requestData) : context.requestData,
-      breadcrumbs: context.breadcrumbs?.map(bc => ({
-        ...bc,
-        data: bc.data ? this.limitJsonDepth(bc.data) : bc.data,
-      })) || [],
+      responseData: context.responseData
+        ? this.limitJsonDepth(context.responseData)
+        : context.responseData,
+      requestData: context.requestData
+        ? this.limitJsonDepth(context.requestData)
+        : context.requestData,
+      breadcrumbs:
+        context.breadcrumbs?.map((bc) => ({
+          ...bc,
+          data: bc.data ? this.limitJsonDepth(bc.data) : bc.data,
+        })) || [],
     };
 
     // Deduplication: if the same message+stack appears within dedupInterval, treat as duplicate
-    const signature = `${context.message || ''}||${context.stack || ''}`;
+    const signature = `${context.message || ""}||${context.stack || ""}`;
     const now = Date.now();
-    const isDuplicate = signature === this.lastErrorSignature && (now - this.lastErrorTime) < this.dedupInterval;
+    const isDuplicate =
+      signature === this.lastErrorSignature &&
+      now - this.lastErrorTime < this.dedupInterval;
 
     // push to storage regardless
     if (this.logs.value.length >= this.maxLogs) this.logs.value.shift();
@@ -261,7 +273,10 @@ class ErrorLogger {
 
     // Console output: be concise to avoid double noise (browser already prints native errors)
     const rawContext = { ...context };
-    console.groupCollapsed(`%c[${context.type.toUpperCase()}] ${context.message}`, "color: red; font-weight: bold");
+    console.groupCollapsed(
+      `%c[${context.type.toUpperCase()}] ${context.message}`,
+      "color: red; font-weight: bold",
+    );
     if (rawContext.error) {
       // print the original Error object so it can be expanded when needed
       console.error("Error object:", rawContext.error);
@@ -286,7 +301,7 @@ class ErrorLogger {
     };
 
     this.breadcrumbs.push(breadcrumb);
-    
+
     if (this.breadcrumbs.length > this.maxBreadcrumbs) {
       this.breadcrumbs.shift();
     }
@@ -298,7 +313,10 @@ class ErrorLogger {
   writeLog(message: any, category = "info", data?: any) {
     if (!this.debugMode) return;
 
-    const messageStr = typeof message === "string" ? message : JSON.stringify(this.limitJsonDepth(message));
+    const messageStr =
+      typeof message === "string"
+        ? message
+        : JSON.stringify(this.limitJsonDepth(message));
     this.addBreadcrumb(category, messageStr, data);
 
     this.captureError({
@@ -311,14 +329,22 @@ class ErrorLogger {
   /**
    * 记录 API 错误
    */
-  captureApiError(method: string, path: string, statusCode: number, responseData?: any, requestData?: any) {
+  captureApiError(
+    method: string,
+    path: string,
+    statusCode: number,
+    responseData?: any,
+    requestData?: any,
+  ) {
     this.captureError({
       type: "api",
       message: `API Error: ${method} ${path}`,
       method,
       url: path,
       statusCode,
-      responseData: responseData ? this.limitJsonDepth(responseData) : undefined,
+      responseData: responseData
+        ? this.limitJsonDepth(responseData)
+        : undefined,
       requestData: requestData ? this.limitJsonDepth(requestData) : undefined,
       breadcrumbs: [...this.breadcrumbs],
     });
@@ -329,7 +355,8 @@ class ErrorLogger {
   }
 
   private showErrorNotification(errorLog: ErrorLog, repeatCount = 1) {
-    const shortDescription = repeatCount > 1 ? `Occurred ${repeatCount} times` : "";
+    const shortDescription =
+      repeatCount > 1 ? `Occurred ${repeatCount} times` : "";
 
     showNotification({
       title: "Error",
@@ -437,7 +464,7 @@ class ErrorLogger {
           content += `  - [${new Date(bc.timestamp).toISOString()}] ${bc.category}: ${bc.message}\n`;
         });
       }
-      content += `\n${  "=".repeat(50)  }\n`;
+      content += `\n${"=".repeat(50)}\n`;
     });
 
     if (content === "") content = "No error logs available.";
