@@ -110,6 +110,12 @@
                         Array.isArray(data.Description)
                           ? data.Description.join('\n')
                           : data.Description,
+                        data.Subject,
+                        storageManager.getObj('userInfo').value.Nickname,
+                        storageManager.getObj('userInfo').value.ID,
+                        data.User.Nickname,
+                        data.User.ID,
+                        data.Coauthors,
                       )
                   "
                   class="intro"

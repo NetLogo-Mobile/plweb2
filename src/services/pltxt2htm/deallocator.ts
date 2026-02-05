@@ -4,7 +4,7 @@ export async function getDeallocator(): Promise<(ptr: number) => void> {
   const wasmInstance = await getWasmInstance();
   const instanceAny: any = wasmInstance;
   if (!instanceAny.__deallocate_fn) {
-    instanceAny.__deallocate_fn = wasmInstance.cwrap("deallocate", null, [
+    instanceAny.__deallocate_fn = wasmInstance.cwrap("free", null, [
       "number",
     ]);
   }
