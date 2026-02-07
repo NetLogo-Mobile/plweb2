@@ -2,7 +2,9 @@ import { getWasmInstance } from "./wasmLoader";
 import { getDeallocator } from "./deallocator";
 import hljs from "highlight.js";
 import dompurify from "dompurify";
-// import renderMathInElement from "katex/contrib/auto-render/auto-render.js";
+// @ts-ignore
+import renderMathInElement from "katex/contrib/auto-render/auto-render.js";
+import "katex/dist/katex.min.css";
 
 async function advancedParser(text: string, host: string, project: string, visitor: string,
     author : string, coauthors: string): Promise<string> {
@@ -35,17 +37,22 @@ async function parse(source: string, project: string, visitor_name: string, visi
   if (!rawHtml) return "";
   const tempDiv = document.createElement("div");
   tempDiv.innerHTML = rawHtml;
-  // if (typeof renderMathInElement === "function") {
-  //   renderMathInElement(tempDiv, {
-  //     delimiters: [
-  //       { left: "$$", right: "$$", display: true },
-  //       { left: "$", right: "$", display: false },
-  //       { left: "\\(", right: "\\)", display: false },
-  //       { left: "\\[", right: "\\]", display: true },
-  //     ],
-  //     ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code"],
-  //   });
-  // }
+  // 渲染数学公式
+  if (typeof renderMathInElement === "function") {
+    renderMathInElement(tempDiv, {
+      delimiters: [
+        { left: "$$", right: "$$", display: true },
+        { left: "$", right: "$", display: false },
+        { left: "\\(", right: "\\)", display: false },
+        { left: "\\[", right: "\\]", display: true },
+      ],
+      ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code"],
+      // 错误处理
+      errorCallback: (err: any, expr: string) => {
+        console.warn(`KaTeX 错误: ${err.message}`, expr);
+      }
+    });
+  }
   tempDiv.querySelectorAll("pre code").forEach((block) => {
     hljs.highlightElement(block as HTMLElement);
   });

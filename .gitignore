@@ -23,6 +23,7 @@ dev-dist
 *.njsproj
 *.sln
 *.sw?
+.qoder/*
 
 # Archives
 **/*.zip
