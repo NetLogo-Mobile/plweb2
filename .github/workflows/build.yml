@@ -1,4 +1,4 @@
-name: Run ts and eslint checks
+name: Deploy to gh-pages branch
 
 on:
   push:
@@ -8,36 +8,50 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 jobs:
-  deploy:
+  deploy-on-gh-pages-branch:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 22
-
-      - name: Install Git
-        run: sudo apt-get install git -y
+          cache: npm
 
       - name: Configure git user
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Install dependencies
-        run: npm install
+      - name: Switch to gh-pages branch and merge main
+        run: |
+          git fetch origin gh-pages || true
+          if git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
+            git switch -c gh-pages --track origin/gh-pages
+          else
+            git switch --create gh-pages
+          fi
+          git merge main --allow-unrelated-histories -m "Merge from main branch" || echo "Already up to date"
 
-      - name: Eslint checks
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
         run: npm run eslint
 
-      - name: Building test
+      - name: Build project
         run: npm run build
 
+      - name: Commit and push gh-pages
+        run: |
+          git add -A
+          git commit -m "Deploy from main to gh-pages" || echo "No changes to commit"
+          git pull --rebase origin gh-pages || echo "Nothing to rebase"
+          git push origin gh-pages -f

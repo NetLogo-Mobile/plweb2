@@ -3,7 +3,11 @@ import vue from "@vitejs/plugin-vue";
 import { VitePWA } from "vite-plugin-pwa";
 
 // https://vite.dev/config/
+const isGithubPagesBuild = process.env.GITHUB_ACTIONS === "true";
+const repositoryName = process.env.GITHUB_REPOSITORY?.split("/")[1] ?? "";
+
 export default defineConfig({
+  base: isGithubPagesBuild && repositoryName ? `/${repositoryName}/` : "/",
   plugins: [
     vue(),
     VitePWA({
@@ -20,24 +24,24 @@ export default defineConfig({
         theme_color: "#3397e9ff",
         icons: [
           {
-            src: "/assets/icons/logo-192.png",
+            src: "assets/icons/logo-192.png",
             sizes: "192x192",
             type: "image/png",
           },
           {
-            src: "/assets/icons/logo-512.png",
+            src: "assets/icons/logo-512.png",
             sizes: "512x512",
             type: "image/png",
           },
         ],
         screenshots: [
           {
-            src: "/assets/mobile.png",
+            src: "assets/mobile.png",
             sizes: "818x1339",
             type: "image/png",
           },
           {
-            src: "/assets/desktop.png",
+            src: "assets/desktop.png",
             sizes: "1033x698",
             type: "image/png",
             form_factor: "wide",

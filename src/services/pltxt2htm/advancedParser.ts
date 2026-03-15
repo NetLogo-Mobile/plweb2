@@ -2,7 +2,7 @@ import { getWasmInstance } from "./wasmLoader";
 import { getDeallocator } from "./deallocator";
 import hljs from "highlight.js";
 import dompurify from "dompurify";
-// @ts-ignore
+// @ts-expect-error -- auto-render js module has no bundled TypeScript declaration
 import renderMathInElement from "katex/contrib/auto-render/auto-render.js";
 import "katex/dist/katex.min.css";
 
