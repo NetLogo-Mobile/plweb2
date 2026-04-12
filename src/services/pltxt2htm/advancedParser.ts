@@ -28,11 +28,11 @@ async function advancedParser(text: string, host: string, project: string, visit
   return result;
 }
 
-async function parse(source: string, project: string, visitor_name: string, visitor_id: string, author_name: string, author_id: string, coauthors: string[]) {
+async function parse(source: string, project: string = "", visitor_name: string = "", visitor_id: string = "", author_name: string = "", author_id: string = "", coauthors: string[] = []) {
   console.log(source);
   // TODO i18n support for 'None'
   const rawHtml = await advancedParser(source, import.meta.env.VITE_ROOT_URL, project, `<span class='RUser' data-user='${visitor_id}'>${dompurify.sanitize(visitor_name)}</span>`,
-     `<span class='RUser' data-user='${author_id}'>${dompurify.sanitize(author_name)}</span>`, coauthors.length ? coauthors.join(",") : "None");
+     `<span class='RUser' data-user='${author_id}'>${dompurify.sanitize(author_name)}</span>`, coauthors?.length ? coauthors.join(",") : "None");
   console.log(rawHtml);
   if (!rawHtml) return "";
   const tempDiv = document.createElement("div");
@@ -56,7 +56,11 @@ async function parse(source: string, project: string, visitor_name: string, visi
   tempDiv.querySelectorAll("pre code").forEach((block) => {
     hljs.highlightElement(block as HTMLElement);
   });
-  return dompurify.sanitize(tempDiv.innerHTML);
+  return dompurify.sanitize(tempDiv.innerHTML, {
+    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'span', 'div', 'img', 'pre', 'code', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'table', 'thead', 'tbody', 'tr', 'td', 'th', 'user', 'discussion', 'experiment'],
+    ALLOWED_ATTR: ['src', 'alt', 'width', 'height', 'class', 'data-user', 'href', 'title', 'internal'],
+    ALLOW_DATA_ATTR: false,
+  });
 }
 
 export default parse;

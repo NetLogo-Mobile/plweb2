@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" @click="handleClick">
     <router-view v-slot="{ Component }">
       <!-- keep alive源自于vue-router的缓存 -->
       <!-- keep alive comes from cach function from vue-router -->
@@ -19,7 +19,15 @@
   </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import showUserCard from "@popup/userProfileDialog.ts";
+function handleClick(event: MouseEvent) {
+  const target = event.target as HTMLElement;
+  if (target.classList.contains("RUser")) {
+    showUserCard(target.dataset.user || "");
+  }
+}
+</script>
 
 <style>
 html,

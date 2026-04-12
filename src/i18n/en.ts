@@ -85,6 +85,7 @@ export default {
       'The content you entered "...{word}..." contains inappropriate words',
     apiErrorTitle: "Request Error",
     apiErrorMessage: "{path} returned {status}: {message}",
+    tagNotFound: "Tag {tag} not found",
   },
   expeSummary: {
     enterExp: "Enter experience ",

@@ -91,14 +91,15 @@ function fillInTemplate(data: string, message: Message) {
       /{Users}/g,
       message.Users.map(
         (user: any, index: any) =>
-          `<user=${user}>${message.UserNames[index]}</user>`,
+          `<user=${user}>${message.UserNames[index]}</user>`
+          // `<span class='RUser' data-user='${user}'>${message.UserNames[index]}</span>`,
       ).join(" "),
     )
     .replace(
       /{Experiment}/g,
       message.Fields?.Discussion
         ? `<discussion=${message.Fields?.DiscussionID}>${message.Fields?.Discussion}</discussion>`
-        : `<experiment${message.Fields?.ExperimentID}>${message.Fields?.Experiment}</experiment>`,
+        : `<experiment=${message.Fields?.ExperimentID}>${message.Fields?.Experiment}</experiment>`,
     )
     .replace(/{\$Content}/g, message.Fields.Content)
     .replace(

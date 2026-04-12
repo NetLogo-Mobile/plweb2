@@ -742,9 +742,11 @@ export default function (tag: string): string {
   if (tag.startsWith("C-")) return tag;
   const tagObj = tagConfig.find((t) => t.Identifier === tag);
   if (!tagObj) {
-    showMessage("error", i18n.global.t("errors.tagNotFound", { tag }), {
-      duration: 5000,
-    });
+    // showMessage("error", i18n.global.t("errors.tagNotFound", { tag }), {
+    //   duration: 5000,
+    // });
+    // some tag does not contains translations? Like数学
+    // I donnot know whether it is a bug or not
     return tag;
   }
   return (tagObj?.Subject as any)[i18n.global.locale.value] || "";

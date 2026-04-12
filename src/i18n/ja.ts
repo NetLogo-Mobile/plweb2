@@ -85,6 +85,7 @@ export default {
       '入力したコンテンツ "...{word}..." に不適切な単語が含まれています',
     apiErrorTitle: "リクエストエラー",
     apiErrorMessage: "{path} が {status} を返しました: {message}",
+    tagNotFound: "タグ {tag} が見つかりません",
   },
   expeSummary: {
     enterExp: "実験を入力 ",

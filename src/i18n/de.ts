@@ -87,6 +87,7 @@ export default {
       'Der eingegebene Inhalt "...{word}..." enthält unangemessene Wörter',
     apiErrorTitle: "Fehler bei der Anfrage",
     apiErrorMessage: "{path} hat {status} zurückgegeben: {message}",
+    tagNotFound: "Tag {tag} nicht gefunden",
   },
   expeSummary: {
     enterExp: "Experiment eingeben ",

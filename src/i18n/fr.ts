@@ -86,6 +86,7 @@ export default {
       'Le contenu que vous avez saisi "...{word}..." contient des mots inappropriés',
     apiErrorTitle: "Erreur de requête",
     apiErrorMessage: "{path} a retourné {status} : {message}",
+    tagNotFound: "Balise {tag} non trouvée",
   },
   expeSummary: {
     enterExp: "Entrer dans l'expérience ",

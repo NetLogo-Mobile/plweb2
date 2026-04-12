@@ -83,6 +83,7 @@ export default {
     contentFilter: '您输入的内容"...{word}..."中包含不适合词句',
     apiErrorTitle: "请求错误",
     apiErrorMessage: "{path} 返回 {status}：{message}",
+    tagNotFound: "标签 {tag} 未找到",
   },
   expeSummary: {
     enterExp: "进入实验 ",

@@ -17,7 +17,7 @@
           <!-- 我认为是在没必要专门像APP一样渲染邮件，所以暂时这样 -->
           <!-- I think it's unnecessary to render emails like an app, so I'll do it this way for now -->
           <n-ellipsis
-            v-richText="() => parse(notification.msg)"
+            v-richText="() => parse(notification.msg,'','','','','',[''])"
             expand-trigger="click"
             line-clamp="2"
             :tooltip="false"
@@ -31,7 +31,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue";
-import parse from "@services/pltxt2htm/commonParser";
+import parse from "@services/pltxt2htm/advancedParser";
 import { NEllipsis } from "naive-ui";
 import showUserCard from "@popup/userProfileDialog.ts";
 import { getAvatarUrl } from "@services/getUserCurentAvatarByID";
