@@ -1,15 +1,12 @@
-name: Run ts and eslint checks
+name: Deploy
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 jobs:
   deploy:
@@ -23,24 +20,19 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 22
-
-      - name: Install Git
-        run: sudo apt-get install git -y
-
-      - name: Install build essentials (Linux)
-        run: sudo apt-get install -y build-essential python3
-
-      - name: Configure git user
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Eslint checks
+      - name: Run ESLint
         run: npm run eslint
 
-      - name: Building test
+      - name: Build project
         run: npm run build
 
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
