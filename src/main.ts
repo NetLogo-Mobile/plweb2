@@ -32,7 +32,10 @@ app.directive("richText", {
       el.innerHTML = html;
     });
   },
-  updated(el: HTMLElement, binding: DirectiveBinding<any>) {
+  updated(
+    el: HTMLElement,
+    binding: DirectiveBinding<() => Promise<string> | string>,
+  ) {
     Promise.resolve(binding.value()).then((html) => {
       el.innerHTML = html;
     });

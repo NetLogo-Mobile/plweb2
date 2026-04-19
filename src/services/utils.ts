@@ -9,6 +9,7 @@ import i18n from "@i18n/index";
 import storageManager from "./storage";
 import { showDialog } from "@popup/naiveui";
 import router from "../router/index";
+import type { ExperimentQuery } from "../pl-serve-type-main/type/main";
 
 type PUser = {
   ID: string;
@@ -89,7 +90,12 @@ export function getCoverUrl(data: PProjects): string {
  * router.push(`/list/${EncodeAPITargetLink(input)}`);
  */
 export function EncodeAPITargetLink(input: string) {
-  const result: any = {
+  const result: Partial<ExperimentQuery> & {
+    Category: "Discussion" | "Experiment" | null;
+    Tags: string[] | null;
+    ExcludeTags: string[] | null;
+    [key: string]: unknown;
+  } = {
     Category: null,
     Tags: null,
     ExcludeTags: null,
@@ -237,10 +243,11 @@ export function formatDate(
  * @param obj Incoming obkect which may contains key "token|authcode"
  * @returns any
  */
-export function removeToken(obj: any) {
+export function removeToken<T>(obj: T): T {
   if (obj && typeof obj === "object") {
-    for (const key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+    const record = obj as Record<string, unknown>;
+    for (const key in record) {
+      if (Object.prototype.hasOwnProperty.call(record, key)) {
         if (
           key === "token" ||
           key === "authCode" ||
@@ -248,9 +255,12 @@ export function removeToken(obj: any) {
           key === "AuthCode"
         ) {
           // eslint-disable-next-line max-depth
-          if (obj[key]) obj[key] = `${obj[key].slice(0, 6)}******`;
-        } else if (typeof obj[key] === "object") {
-          removeToken(obj[key]);
+          const value = record[key];
+          if (typeof value === "string") {
+            record[key] = `${value.slice(0, 6)}******`;
+          }
+        } else if (typeof record[key] === "object") {
+          removeToken(record[key]);
         }
       }
     }

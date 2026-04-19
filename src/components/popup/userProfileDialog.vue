@@ -81,7 +81,7 @@ const fragmentCount = ref(0);
 const isFollowing = ref(false);
 let ID = "";
 
-const jumpToUser = (id: any) => {
+const jumpToUser = (id: string) => {
   props.close();
   window.open(`${getPath("/@root")}/profile/${id}`, "_self");
 };

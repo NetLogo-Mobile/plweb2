@@ -46,6 +46,10 @@ import parse from "@services/pltxt2htm/commonParser";
 import postComment from "@services/postComment.ts";
 import { useI18n } from "vue-i18n";
 import { NInput } from "naive-ui";
+import type {
+  Category,
+  CommentResult,
+} from "@services/../pl-serve-type-main/type/main";
 
 const { t } = useI18n();
 const route = useRoute();
@@ -67,16 +71,16 @@ const goBack = () => {
   window.history.back();
 };
 
-function handleMsgClick(item: any) {
-  replyID.value = item.userID;
-  comment.value = t("ui.messages.replyToUser", { user: item.msg_title });
+function handleMsgClick(item: CommentResult) {
+  replyID.value = item.UserID;
+  comment.value = `${t("ui.messages.replyToUser")}@${item.Nickname}: `;
 }
 
 const handleEnter = async () => {
   await postComment(
     comment,
     isLoading,
-    route.params.category as string,
+    route.params.category as Category,
     route.params.id as string,
     replyID,
     upDate,

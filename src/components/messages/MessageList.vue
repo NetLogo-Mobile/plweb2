@@ -6,7 +6,7 @@
     @load="handleLoad"
   >
     <template #default="{ items }">
-      <div v-for="item in items as PMessageItem[]" :key="item.id">
+      <div v-for="item in items as CommentResult[]" :key="item.ID">
         <MessageItem
           :message="item"
           @msgClick="handleMsgClick"
@@ -29,15 +29,12 @@ import InfiniteScroll from "../utils/infiniteScroll.vue";
 import { useI18n } from "vue-i18n";
 import { checkLogin } from "@services/utils.ts";
 import { NDivider } from "naive-ui";
-import type { Category as CategoryType } from "@services/../pl-serve-type-main/type/main";
+import type {
+  Category as CategoryType,
+  CommentResult,
+} from "@services/../pl-serve-type-main/type/main";
 
-interface PMessageItem {
-  id: string;
-  userID: string;
-  msg_title: string;
-  msg: string;
-  type: string;
-}
+type PMessageItem = CommentResult;
 
 const { ID, Category, upDate } = defineProps<{
   ID: string;
@@ -49,14 +46,14 @@ let items = ref<PMessageItem[]>([]); // 前端的消息列表  front-end message
 const loading = ref(false);
 let noMore = ref(false);
 let skip = ref(0);
-let from: any = null;
+let from: CommentResult["ID"] | null = null;
 const { t } = useI18n();
 
 const emit = defineEmits(["msgClick"]);
 
-async function deleteMsg(message: PMessageItem) {
-  const index = items.value.findIndex((item: any) => item.id === message.id);
-  let removed: PMessageItem[] = [];
+async function deleteMsg(message: CommentResult) {
+  const index = items.value.findIndex((item) => item.ID === message.ID);
+  let removed: CommentResult[] = [];
   if (index !== -1) {
     removed = items.value.splice(index, 1);
     // splice方法会直接改动数据的
@@ -65,8 +62,8 @@ async function deleteMsg(message: PMessageItem) {
   }
   try {
     const re = await getData("/Messages/RemoveComment", {
-      TargetType: message.type,
-      CommentID: message.id,
+      TargetType: Category,
+      CommentID: message.ID,
     });
     // 删除未成功，加回列表原有位置
     // if the delete failed, add the removed item back to the original position
@@ -77,7 +74,7 @@ async function deleteMsg(message: PMessageItem) {
     window.$Logger.logEvent({
       category: "Community",
       action: "Remove",
-      label: message.type,
+      label: Category,
       timestamp: Date.now(),
     });
   } catch (error) {
@@ -89,7 +86,7 @@ async function deleteMsg(message: PMessageItem) {
   }
 }
 
-function handleMsgClick(message: PMessageItem) {
+function handleMsgClick(message: CommentResult) {
   emit("msgClick", message);
 }
 
@@ -111,7 +108,7 @@ const handleLoad = async () => {
     Skip: skip.value || 0,
   });
 
-  if (getMessagesResponse.Status !== 200) {
+  if (getMessagesResponse.Status !== 200 || !getMessagesResponse.Data) {
     showAPiError(
       t("errors.apiErrorTitle"),
       t("errors.apiErrorMessage", {
@@ -155,19 +152,9 @@ const handleLoad = async () => {
   const messages = getMessagesResponse.Data.Comments;
   const _length = messages.length;
   if (from) messages.shift();
-  from = messages[messages.length - 1]?.ID;
+  from = messages[messages.length - 1]?.ID ?? null;
 
-  const defaultItems = messages.map(
-    (message: any): PMessageItem => ({
-      id: message.ID,
-      userID: message.UserID,
-      msg_title: message.Nickname,
-      msg: message.Content,
-      type: Category,
-    }),
-  );
-
-  items.value = [...items.value, ...defaultItems];
+  items.value = [...items.value, ...messages];
   loading.value = false;
   skip.value += 20;
   if (_length < 20) {

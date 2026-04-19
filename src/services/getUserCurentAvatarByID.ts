@@ -2,8 +2,11 @@ import { getData } from "./api/getData";
 import { getUserUrl } from "./utils";
 import { getPath } from "./utils";
 import storageManager from "./storage";
+import type { ResultOf, Users } from "../pl-serve-type-main/type/main";
 
-let cache = (() => {
+type AvatarCache = Record<string, [number, number]>;
+
+let cache: AvatarCache = (() => {
   const result = storageManager.getObj("userIDAndAvatarIDMap");
   return result.status === "success" && result.value ? result.value : {};
 })();
@@ -34,11 +37,11 @@ export async function getAvatarUrl(ID: string, useCache = true) {
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error("请求超时")), 30000); // 30秒 30s
       });
-      const response = await Promise.race([
+      const response = (await Promise.race([
         getData("/Users/GetUser", { ID }),
         timeoutPromise,
-      ]);
-      avatarIndex = (response as any).Data?.User?.Avatar;
+      ])) as ResultOf<Users["GetUser"]>;
+      avatarIndex = response.Data?.User?.Avatar ?? 0;
       if (!avatarIndex) {
         return getPath("/@base/assets/user/default-avatar.png");
       }

@@ -152,7 +152,7 @@ export default {
       uploadSuccess: "Couverture modifiée avec succès",
       uploadFailed: "Échec du téléversement du fichier",
       changeCoverFailed: "Échec du changement de couverture, veuillez réessayer plus tard",
-      replyToUser: "Répondre à @{user} : ",
+      replyToUser: "Répondre à : ",
     },
     labels: {
       my: "Mon",

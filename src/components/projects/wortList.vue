@@ -3,7 +3,7 @@
     <template #default="{ items }">
       <n-grid :cols="row || 3" :x-gap="16" :y-gap="16" responsive="screen">
         <n-gi v-for="item in items as Summary[]" :key="item.ID">
-          <Works :item="item" :show-name="!q?.userID" />
+          <Works :item="item" :show-name="!q?.UserID" />
         </n-gi> </n-grid
     ></template>
   </infiniteScroll>
@@ -13,7 +13,10 @@
 import { NGrid, NGi } from "naive-ui";
 import Works from "./item.vue";
 import { ref } from "vue";
-import type { Summary } from "@services/../pl-serve-type-main/type/main";
+import type {
+  ExperimentQuery,
+  Summary,
+} from "@services/../pl-serve-type-main/type/main";
 import { getData } from "@services/api/getData.ts";
 import { showAPiError } from "@popup/index.ts";
 import { removeToken } from "@services/utils.ts";
@@ -23,7 +26,7 @@ import { useI18n } from "vue-i18n";
 
 const { q } = defineProps<{
   row?: number;
-  q?: Record<string, any>;
+  q?: Partial<ExperimentQuery>;
 }>();
 
 const { t } = useI18n();

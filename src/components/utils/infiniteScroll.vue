@@ -30,7 +30,7 @@
 import { ref, onMounted, onUnmounted, watch } from "vue";
 
 interface Props {
-  initialItems?: any[];
+  initialItems?: unknown[];
   hasMore: boolean;
   scrollTarget?: string | null;
   marginTop?: number;

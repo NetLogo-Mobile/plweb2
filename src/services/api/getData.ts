@@ -21,13 +21,14 @@ import { normalizePath } from "./types.ts";
  */
 
 import type { ApiPath, APIParam, APIResult } from "./types.ts";
+import type { Device, ResultOf, Users } from "../../pl-serve-type-main/type/main";
 
 export function getData<Path extends ApiPath>(
   path: Path,
   body: APIParam<Path>,
 ): Promise<APIResult<Path>>;
-export function getData(path: string, body?: unknown): Promise<any>;
-export function getData(path: string, body?: unknown): Promise<any> {
+export function getData(path: string, body?: unknown): Promise<unknown>;
+export function getData(path: string, body?: unknown): Promise<unknown> {
   const npath = normalizePath(String(path));
   const beforeRes = beforeRequest(npath);
   if (beforeRes.continue === false) {
@@ -122,11 +123,7 @@ export async function login(
   arg1: string | null,
   arg2: string | null,
   is_token = false,
-): Promise<{
-  Status: number;
-  Message: string;
-  Data: any;
-}> {
+): Promise<ResultOf<Users["Authenticate"]>> {
   let messageRef = showMessage("loading", i18n.global.t("ui.messages.loading"), {
     duration: 6000,
   });
@@ -135,8 +132,9 @@ export async function login(
   let header = { "Content-Type": "application/json" };
   // It works ,though i do not konw why it works
   // If the server respones with status 500, please check everything about these params
-  let Device = {
+  let Device: Device = {
     Identifier: await getVisitorId(),
+
     Language: toApiLanguage(i18n.global.locale.value),
   };
   if (is_token && arg1 && arg2) {
@@ -162,9 +160,14 @@ export async function login(
         showMessage("error", i18n.global.t("errors.networkError"), {
           duration: 5000,
         });
+        return {
+          Status: response.status,
+          Message: "",
+          Data: null,
+        } as ResultOf<Users["Authenticate"]>;
       });
     }
-    return response.json().then((data) => {
+    return response.json().then((data: ResultOf<Users["Authenticate"]>) => {
       // Exclude(排除) user who has authenticated successfully but still does an null-null login to get homepage data
       if (sm.getObj("userAuthInfo").value?.token == null) {
         sm.setObj(

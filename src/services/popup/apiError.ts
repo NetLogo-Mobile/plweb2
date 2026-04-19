@@ -3,19 +3,20 @@ import type { Ref } from "vue";
 import ApiErrorDialog from "../../components/popup/ApiErrorDialog.vue";
 import i18n from "@i18n/index";
 import { showMessage } from "./naiveui";
+import type { Result } from "../../pl-serve-type-main/type/main";
 
 // Single dialog state for reuse (prevents stacking)
 let current: {
   close: () => void;
   title: Ref<string>;
   message: Ref<string>;
-  retry?: () => Promise<any> | void;
+  retry?: () => Promise<unknown> | void;
 } | null = null;
 
 export function showAPiError(
   title: string,
   message: string,
-  retry?: () => Promise<any> | void,
+  retry?: () => Promise<unknown> | void,
 ) {
   // If there's already a dialog, update its content and retry handler and reuse it
   if (current) {
@@ -42,7 +43,7 @@ export function showAPiError(
       if (!current?.retry) return;
       try {
         const res = await current.retry();
-        if (res && typeof res === "object" && (res as any).Status === 200) {
+        if ((res as Result | null)?.Status === 200) {
           showMessage(
             "success",
             (i18n.global.t("ui.retrySuccess") as string) || "Success",

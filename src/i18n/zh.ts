@@ -148,7 +148,7 @@ export default {
       uploadSuccess: "封面更换成功",
       uploadFailed: "上传失败",
       changeCoverFailed: "更换封面失败，请稍后再试",
-      replyToUser: "回复@{user}: ",
+      replyToUser: "回复 ",
     },
     labels: {
       my: "我的",

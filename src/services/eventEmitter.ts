@@ -1,6 +1,12 @@
 // 这就是一个主流的正常的发布订阅模式
 //  publish-subscribe pattern
 
+import type {
+  ContentTag,
+  ResultOf,
+  Users,
+} from "../pl-serve-type-main/type/main";
+
 type Events =
   | "loginRequired"
   | "updateTagConfig"
@@ -9,14 +15,13 @@ type Events =
 
 type EventHandlerMap = {
   loginRequired: () => void;
-  loading: (msg: string, duration: number) => void;
-  updateTagConfig: (data: any) => void;
-  updateUserConfig: (data: any) => void;
-  userLogin: (res: any) => void;
+  updateTagConfig: (data: ContentTag[]) => void;
+  updateUserConfig: (data: Record<string, unknown>) => void;
+  userLogin: (res: ResultOf<Users["Authenticate"]>) => void;
 };
 
 class EventEmitter {
-  private events: Partial<Record<Events, Set<(...args: any[]) => void>>> = {};
+  private events: Partial<Record<Events, Set<EventHandlerMap[Events]>>> = {};
 
   emit<K extends Events>(event: K, ...args: Parameters<EventHandlerMap[K]>) {
     const listeners = this.events[event];

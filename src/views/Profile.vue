@@ -204,6 +204,13 @@ import { getCoverUrl, getUserUrl } from "@services/utils.ts";
 import { useI18n } from "vue-i18n";
 import showActionSheet from "@popup/actionSheet.ts";
 import { showMessage } from "@popup/naiveui";
+import type {
+  CommentResult,
+  Statistic,
+  Summary,
+  UserInfo,
+} from "@services/../pl-serve-type-main/type/main";
+
 
 const { t } = useI18n();
 let comment = ref("");
@@ -218,12 +225,22 @@ const router = useRouter();
 
 let coverUrl = ref("");
 
-let userData = ref({
+type ProfileUserData = {
+  User: UserInfo;
+  Statistic: Pick<
+    Statistic,
+    "CommentCount" | "ExperimentCount" | "FollowerCount" | "FollowingCount"
+  > & {
+    Cover: Pick<Statistic["Cover"], "ID" | "Category" | "Subject" | "Image">;
+  };
+};
+
+let userData = ref<ProfileUserData>({
   User: {
     ID: "",
     Nickname: "Loading...",
     Signature: "",
-    Verification: "loading...",
+    Verification: "Banned",
     Avatar: 322,
     AvatarRegion: 0,
     Decoration: 0,
@@ -252,13 +269,7 @@ let userData = ref({
   },
 });
 
-// Despite called ExpDataType, expData actually contains disccusions as well
-interface ExpDataType {
-  [key: string]: any[];
-  // key is the tab name, value is the array of experiments/discussions
-  // Server will respond with up to 4 tabs, but we donnot konw their names in advance
-}
-let expData = ref<ExpDataType>({});
+let expData = ref<Record<string, Summary[]>>({});
 
 async function fetchProfile() {
   const expRes = await getData(`/Contents/GetProfile`, {
@@ -286,11 +297,15 @@ async function fetchProfile() {
     console.error(`/Contents/GetProfile returned ${expRes.Status}`, _res);
     return;
   }
+  if (!expRes.Data) return;
   expData.value = expRes.Data.Experiments;
   const userRes = await getData(`/Users/GetUser`, {
     ID: route.params.id,
   });
-  userData.value = userRes.Data;
+  if (userRes.Status !== 200 || !userRes.Data?.User || !userRes.Data.Statistic) {
+    return;
+  }
+  userData.value = userRes.Data as ProfileUserData;
 
   // Check if viewing own profile
   const currentUser = storageManager.getObj("userInfo")?.value;
@@ -322,9 +337,9 @@ onMounted(() => {
   fetchProfile();
 });
 
-function handleMsgClick(item: any) {
-  replyID.value = item.userID;
-  comment.value = t("ui.messages.replyToUser", { user: item.msg_title });
+function handleMsgClick(item: CommentResult) {
+  replyID.value = item.UserID;
+  comment.value = `${t("ui.messages.replyToUser")}@${item.Nickname}: `;
 }
 
 async function handleEnter() {

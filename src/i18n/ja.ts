@@ -151,7 +151,7 @@ export default {
       uploadSuccess: "カバーの変更に成功しました",
       uploadFailed: "ファイルのアップロードに失敗しました",
       changeCoverFailed: "カバーの変更に失敗しました。しばらくしてから再試行してください",
-      replyToUser: "@{user} に返信: ",
+      replyToUser: "に返信 ",
     },
     labels: {
       my: "マイ",

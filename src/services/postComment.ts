@@ -3,11 +3,12 @@ import { isRateLimitResponse } from "./api/Interceptor";
 import type { Ref } from "vue";
 import i18n from "@i18n/index";
 import { showMessage } from "@popup/naiveui";
+import type { Category } from "../pl-serve-type-main/type/main";
 
 export default async function postComment(
   comment: Ref<string>,
   isLoading: Ref<boolean>,
-  category: string,
+  category: Category,
   id: string,
   replyID: Ref<string>,
   updateTrigger: Ref<number>,

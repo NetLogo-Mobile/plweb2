@@ -4,15 +4,15 @@
       <img
         id="avatar"
         :src="avatarUrl"
-        @click.stop="showUserCard(message.userID)"
+        @click.stop="showUserCard(message.UserID)"
       />
     </div>
     <div id="notification" class="notification">
       <div id="notification_title" class="notification_title">
-        <div class="name">{{ message.msg_title }}</div>
-        <div class="time">{{ formatDate(message.id, true) }}</div>
+        <div class="name">{{ message.Nickname }}</div>
+        <div class="time">{{ formatDate(message.ID, true) }}</div>
         <div
-          v-if="currentUserId === message.userID"
+          v-if="currentUserId === message.UserID"
           class="delete"
           @click.stop="deleteMsg"
         >
@@ -22,7 +22,13 @@
       <div id="notification_message" class="notification_message">
         <div
           id="notification_text"
-          v-richText="() => parse(message.msg, { visitorId: currentUserId, authorId: currentUserId })"
+          v-richText="
+            () =>
+              parse(message.Content, {
+                visitorId: currentUserId,
+                authorId: message.UserID,
+              })
+          "
           class="notification_text"
         ></div>
       </div>
@@ -37,17 +43,10 @@ import showUserCard from "@popup/userProfileDialog.ts";
 import { getAvatarUrl } from "@services/getUserCurentAvatarByID";
 import storageManager from "@storage/index.ts";
 import { formatDate, getPath } from "@services/utils";
-
-interface MessageItemData {
-  id: string;
-  userID: string;
-  msg: string;
-  msg_title: string;
-  type: string;
-}
+import type { CommentResult } from "@services/../pl-serve-type-main/type/main";
 
 const props = defineProps<{
-  message: MessageItemData;
+  message: CommentResult;
 }>();
 
 const emit = defineEmits(["msgClick", "deleteMsg"]);
@@ -55,16 +54,15 @@ const currentUserId = storageManager.getObj("userInfo")?.value?.ID || "";
 const avatarUrl = ref(getPath("/assets/user/default-avatar.png"));
 
 const setCurrentAvatar = async () => {
-  // console.log(props.message.userID === "");
-  if (props.message.userID !== "") {
+  if (props.message.UserID !== "") {
     // 有些地方是匿名的，所以userID为空，不设置心得头像就会沿用默认头像
     // Some places are anonymous, so if userID is empty, the default avatar will be used.
-    avatarUrl.value = await getAvatarUrl(props.message.userID);
+    avatarUrl.value = await getAvatarUrl(props.message.UserID);
   }
 };
 
 onMounted(setCurrentAvatar);
-watch(() => props.message.userID, setCurrentAvatar);
+watch(() => props.message.UserID, setCurrentAvatar);
 
 function handleReply() {
   emit("msgClick", props.message);

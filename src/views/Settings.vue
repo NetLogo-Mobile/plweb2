@@ -74,7 +74,20 @@ import storageManager from "../services/storage";
 import sysConfig from "../config/system.config";
 import i18n from "@i18n/index";
 
-const settingsConfig = reactive(s);
+type SettingsItem = {
+  key: string;
+  type: "link" | "toggle" | "button";
+  value?: string;
+  options?: Array<{ label: string; value: string }>;
+  callBack?: (value?: string) => void;
+};
+
+type SettingsSection = {
+  title: string;
+  items: SettingsItem[];
+};
+
+const settingsConfig = reactive(s as SettingsSection[]);
 
 // Initialize settings from storage
 const savedValues = storageManager.getObj("userConfig")?.value || {};
@@ -88,12 +101,12 @@ settingsConfig.forEach((section) => {
 
 // Restore language setting on component mount
 if (savedValues.language) {
-  i18n.global.locale.value = savedValues.language as any;
+  i18n.global.locale.value = savedValues.language as typeof i18n.global.locale.value;
 }
 
 function saveSettings() {
   const currentConfig = storageManager.getObj("userConfig")?.value || {};
-  const saveData: Record<string, any> = { ...currentConfig };
+  const saveData: Record<string, string | boolean | undefined> = { ...currentConfig };
   settingsConfig.forEach((section) => {
     section.items.forEach((item) => {
       if (item.type !== "button") {
@@ -104,7 +117,7 @@ function saveSettings() {
   storageManager.setObj("userConfig", saveData);
 }
 
-function handleSelectChange(item: any, newValue: string) {
+function handleSelectChange(item: SettingsItem, newValue: string) {
   item.value = newValue;
   saveSettings();
   if (item.callBack) {
@@ -112,7 +125,7 @@ function handleSelectChange(item: any, newValue: string) {
   }
 }
 
-function handleToggleChange(item: any, event: Event) {
+function handleToggleChange(item: SettingsItem, event: Event) {
   const target = event.target as HTMLInputElement;
   item.value = target.checked ? "on" : "off";
   saveSettings();
@@ -121,7 +134,7 @@ function handleToggleChange(item: any, event: Event) {
   }
 }
 
-function handleButtonClick(item: any) {
+function handleButtonClick(item: SettingsItem) {
   if (item.callBack) {
     item.callBack();
   }

@@ -9,7 +9,7 @@
       <div v-show="!loading" class="block-container">
         <n-grid :x-gap="12" :y-gap="12" :cols="blockItemsPerRow">
           <n-gi
-            v-for="block in blocks.filter((i: any) => i.Summaries.length > 0)"
+            v-for="block in blocks.filter((i) => i.Summaries.length > 0)"
             :key="block.Subject"
           >
             <div class="block" style="height: 100%">
@@ -53,12 +53,16 @@ import { removeToken } from "@services/utils.ts";
 import { useI18n } from "vue-i18n";
 import { NGrid, NGi } from "naive-ui";
 import { getPath } from "@services/utils.ts";
+import type {
+  ListBlock,
+  TopicBlock as TopicBlockType,
+} from "@services/../pl-serve-type-main/type/main";
 
 import "../layout/loading.css";
 import "../layout/startPage.css";
 
 const loading = ref(true);
-const blocks = ref<any>([]);
+const blocks = ref<Array<ListBlock | TopicBlockType>>([]);
 
 const goToWebCommunity = () => {
   window.$Logger.logEvent({

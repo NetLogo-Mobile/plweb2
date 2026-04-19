@@ -151,7 +151,7 @@ export default {
       uploadSuccess: "Cover changed successfully",
       uploadFailed: "Failed to upload file",
       changeCoverFailed: "Failed to change cover, please try again later",
-      replyToUser: "Reply @{user}: ",
+      replyToUser: "Reply ",
     },
     labels: {
       my: "My",

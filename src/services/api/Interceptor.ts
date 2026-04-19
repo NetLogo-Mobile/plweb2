@@ -29,7 +29,6 @@ function getUserId(): string {
   const userAuthInfo = storageManager.getObj("userAuthInfo").value;
   return (
     userInfo?.ID ||
-    userInfo?.id ||
     userAuthInfo?.userId ||
     userAuthInfo?.userID ||
     userAuthInfo?.ID ||
@@ -153,8 +152,8 @@ export function beforeRequest(path: string): IIntercetporResponse {
   return { continue: true, data: null };
 }
 
-export function afterRequest(response: any): IIntercetporResponse {
-  let re = response;
+export function afterRequest(response: Result): IIntercetporResponse {
+  const re = response;
   if (messageRef && re.Data && !noDestroyPath.some((p) => re.Data.$type === p))
     messageRef.destroy();
   // re.Status = 400;

@@ -305,6 +305,21 @@ export interface CommentResult extends CommentCore, UserInComment {
   Timestamp: TimeStamp;
 }
 export type Comment = CommentResult;
+export interface MessageTemplate {
+  Action: unknown;
+  AvailableFrom: TimeStamp;
+  AvailableUntil: TimeStamp;
+  Bonuses: Record<string, int32> | null;
+  CategoryID: int32;
+  CombineLimit: int32;
+  Content: Record<Language, string | null>;
+  Description: string | null;
+  ID: ID;
+  Identifier: string;
+  Management: boolean;
+  Push: int32;
+  Subject: Record<Language, string | null>;
+}
 export interface UserInfo {
   Avatar: int32;
   AvatarRegion: int32;
@@ -642,6 +657,10 @@ export interface Message {
     ExperimentID: ID;
     TargetName: string;
     Until:string;
+    // plweb2 - edited
+    User: string;
+    // plweb2 - edited
+    UserID: ID;
     Editor: string;
   };
   Handled: int32;
@@ -718,7 +737,7 @@ export interface Contents {
   ): Promise<Result<Derivatives>>;
   GetProfile(
     q: Param<{ ID: ID }>,
-  ): Promise<Result<{ Experiments: Record<string, Summary>; Survey: unknown }>>;
+  ): Promise<Result<{ Experiments: Record<string, Summary[]>; Survey: unknown }>>;
   ConfirmExperiment(
     q: Param<{
       Category: string;
@@ -810,5 +829,5 @@ export interface Messages {
       Skip: int32;
       Take: int32;
     }>,
-  ): Promise<Result<{ Messages: Message[]; Templates: unknown }>>;
+  ): Promise<Result<{ Messages: Message[]; Templates: MessageTemplate[] }>>;
 }

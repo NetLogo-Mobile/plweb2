@@ -748,5 +748,6 @@ export default function (tag: string): string {
     // I donnot know whether it is a bug or not
     return tag;
   }
-  return (tagObj?.Subject as any)[i18n.global.locale.value] || "";
+  const locale = i18n.global.locale.value as keyof typeof tagObj.Subject;
+  return tagObj.Subject[locale] || "";
 }

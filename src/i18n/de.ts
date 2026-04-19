@@ -153,7 +153,7 @@ export default {
       uploadSuccess: "Cover erfolgreich geändert",
       uploadFailed: "Datei-Upload fehlgeschlagen",
       changeCoverFailed: "Cover konnte nicht geändert werden, bitte später erneut versuchen",
-      replyToUser: "Antwort an @{user}: ",
+      replyToUser: "Antwort an ",
     },
     labels: {
       my: "Mein",

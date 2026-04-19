@@ -28,7 +28,7 @@ interface Props {
   confirmLabel?: string;
   cancelLabel?: string;
   confirmingLabel?: string;
-  onConfirm?: () => Promise<any> | void;
+  onConfirm?: () => Promise<unknown> | void;
   close?: () => void;
 }
 

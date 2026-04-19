@@ -20,7 +20,10 @@ import InfiniteScroll from "../utils/infiniteScroll.vue";
 import { NDivider } from "naive-ui";
 import { useI18n } from "vue-i18n";
 import storageManager from "@storage/index.ts";
-import type { Message } from "@services/../pl-serve-type-main/type/main";
+import type {
+  Message,
+  MessageTemplate,
+} from "@services/../pl-serve-type-main/type/main";
 
 onActivated(() => {
   window.$Logger.logPageView({
@@ -31,11 +34,17 @@ onActivated(() => {
 
 const { locale, t } = useI18n();
 
-const items = ref<Array<Message & { msg_title: string; msg: string; msg_type: number }>>([]);
+type NotificationMessage = Message & {
+  msg_title: string;
+  msg: string;
+  msg_type: number;
+};
+
+const items = ref<NotificationMessage[]>([]);
 const loading = ref(false);
 let skip = ref(0); // 获取消息API的必要参数 A necessary parameter for the GetMessages API
 const noMore = ref(false);
-let templates: any = [
+let templates: MessageTemplate[] = [
   {
     ID: "5c90f172a2409b51dc5cb945",
     Identifier: "Letter-Test",
@@ -85,12 +94,12 @@ const { CategoryID } = defineProps<{
 }>();
 
 
-function fillInTemplate(data: string, message: Message) {
-  const re = data
+function fillInTemplate(data: string | null, message: Message) {
+  const re = (data ?? "")
     .replace(
       /{Users}/g,
       message.Users.map(
-        (user: any, index: any) =>
+        (user: string, index: number) =>
           `<user=${user}>${message.UserNames[index]}</user>`
           // `<span class='RUser' data-user='${user}'>${message.UserNames[index]}</span>`,
       ).join(" "),
@@ -105,7 +114,8 @@ function fillInTemplate(data: string, message: Message) {
     .replace(
       /{\$TargetName}/g,
       message.Fields.TargetName ||
-        storageManager.getObj("userInfo").value?.NickName,
+        storageManager.getObj("userInfo").value?.Nickname ||
+        "",
     )
     .replace(/{\$Until}/g, message.Fields.Until)
     .replace(/{\$Editor}/g, message.Fields.Editor)
@@ -172,8 +182,7 @@ const handleLoad = async (noTemplates = true) => {
       templates = getMessagesResponse.Data.Templates;
     }
 
-    const messages = getMessagesResponse.Data
-      .Messages as Message[];
+    const messages = getMessagesResponse.Data.Messages;
 
     if (messages.length === 0) {
       noMore.value = true;
@@ -182,7 +191,15 @@ const handleLoad = async (noTemplates = true) => {
 
      
     const defaultItems = messages.map((message) => {
-      const template = templates.find((t: any) => t.ID === message.TemplateID);
+      const template = templates.find((t) => t.ID === message.TemplateID);
+      if (!template) {
+        return {
+          ...message,
+          msg_title: "",
+          msg: message.Fields.Content,
+          msg_type: message.CategoryID,
+        };
+      }
 
       const lang = (
         [
@@ -199,7 +216,7 @@ const handleLoad = async (noTemplates = true) => {
         ].includes(locale.value)
           ? locale.value
           : "Chinese"
-      ) as keyof typeof template.Subject;
+      ) as keyof MessageTemplate["Subject"];
       return {
         ...message,
         msg_title: fillInTemplate(template.Subject[lang], message),

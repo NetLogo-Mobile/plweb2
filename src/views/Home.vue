@@ -41,7 +41,7 @@
             <Actions />
           </n-gi> -->
           <n-gi
-            v-for="block in blocks.filter((i: any) => i.Summaries.length > 0)"
+            v-for="block in blocks.filter((i) => i.Summaries.length > 0)"
             :key="block.Subject"
           >
             <div class="block">
@@ -82,9 +82,15 @@ import Footer from "../components/utils/Footer.vue";
 import Block from "../components/blocks/Block.vue";
 import TopicBlock from "../components/blocks/TopicBlock.vue";
 import { showLoginModel } from "@popup/index";
+import type {
+  ListBlock,
+  ResultOf,
+  TopicBlock as TopicBlockType,
+  Users,
+} from "@services/../pl-serve-type-main/type/main";
 
 const isLoading = ref(true);
-const blocks = ref<any>([]);
+const blocks = ref<Array<ListBlock | TopicBlockType>>([]);
 const { t } = useI18n();
 
 const _user = sm.getObj("userInfo")?.value;
@@ -115,6 +121,7 @@ onMounted(async () => {
     const ua = sm.getObj("userAuthInfo");
     if (ua.status === "success" && ua.value?.token != null) {
       const res = await login(ua.value.token, ua.value.authCode, true);
+      if (!res.Data?.User) return;
       user.value = {
         coins: res.Data.User.Gold,
         gems: res.Data.User.Diamond,
@@ -140,6 +147,7 @@ onActivated(() => {
 });
 
 Emitter.on("userLogin", (res) => {
+  if (!res.Data?.User) return;
   user.value = {
     coins: res.Data.User.Gold,
     gems: res.Data.User.Diamond,
@@ -152,15 +160,18 @@ Emitter.on("userLogin", (res) => {
 // It is astonishing that server respond with projects data when login with (null,null)
 // And responed with user data when login with token/password
 // Fourtunately, both data has the same structure
-async function loadPageData(response: any) {
+async function loadPageData(response: ResultOf<Users["Authenticate"]>) {
+  if (!response.Data) return;
   isLoading.value = false;
-  Emitter.emit("updateTagConfig", response.Data.ContentTags);
-  blocks.value = [...response.Data.Library.Blocks];
+  if (response.Data.ContentTags) {
+    Emitter.emit("updateTagConfig", response.Data.ContentTags);
+  }
+  blocks.value = [...(response.Data.Library?.Blocks ?? [])];
   const userData = response.Data.User;
 
   // Both null-null-login or real-login can get user data,but the previous one is fake
   // The nickName is null in fake user data
-  if (userData.Nickname != null) {
+  if (userData?.Nickname != null) {
     user.value = {
       coins: userData.Gold,
       gems: userData.Diamond,

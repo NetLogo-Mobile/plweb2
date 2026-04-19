@@ -78,17 +78,19 @@ const msg_icon_url = computed(() => {
 // 跳转到对话上下文，以后会直接跳转到这句对话的索引所在
 // Jump to the context of the conversation, and later it will directly jump to the index where this sentence is located
 function showComment() {
-  if (props.notification.msg_type === 2) {
+  if (props.notification.msg_type === 3) {
     window.open(
       `${getPath("/@root")}/Comments/${
-        props.notification.Fields?.Discussion ? "Discussion" : "Experiment"
+        props.notification.Fields?.Discussion ? "Discussion" : props.notification.Fields?.Experiment
+          ? "Experiment"
+          : "User"
       }/${
         props.notification.Fields?.DiscussionID ||
         props.notification.TargetID
       }/${
         props.notification.Fields?.Discussion ||
         props.notification.Fields?.Experiment ||
-        ""
+        props.notification.Fields.User
       }`,
       "_self",
     );

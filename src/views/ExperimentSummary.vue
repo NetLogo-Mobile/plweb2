@@ -184,6 +184,10 @@ import { useI18n } from "vue-i18n";
 import showActionSheet from "@popup/actionSheet.ts";
 import { showMessage } from "@popup/naiveui";
 import storageManager from "@storage/index.ts";
+import type {
+  Category,
+  CommentResult,
+} from "@services/../pl-serve-type-main/type/main";
 
 const comment = ref("");
 const isLoading = ref(false);
@@ -279,16 +283,16 @@ onMounted(() => {
   fetchSummary();
 });
 
-function handleMsgClick(item: any) {
-  replyID.value = item.userID;
-  comment.value = t("ui.messages.replyToUser", { user: item.msg_title });
+function handleMsgClick(item: CommentResult) {
+  replyID.value = item.UserID;
+  comment.value = `${t("ui.messages.replyToUser")}@${item.Nickname}: `;
 }
 
 async function handleEnter() {
   await postComment(
     comment,
     isLoading,
-    route.params.category as string,
+    route.params.category as Category,
     route.params.id as string,
     replyID,
     upDate,
@@ -316,7 +320,7 @@ function copySubject() {
     { label: t("expeSummary.copyInternalLink") },
     { label: t("expeSummary.copyExternalLink") },
   ];
-  if (data.value.User.ID === storageManager.getObj("userInfo")?.value?.id) {
+  if (data.value.User.ID === storageManager.getObj("userInfo")?.value?.ID) {
     list.push({ label: t("expeSummary.changeCover") });
   }
   // eslint-disable-next-line max-lines-per-function
@@ -338,9 +342,10 @@ function copySubject() {
         input.type = "file";
         input.accept = "image/*";
         // eslint-disable-next-line max-lines-per-function
-        input.onchange = async (e: any) => {
+        input.onchange = async (e: Event) => {
           try {
-            const file = e.target.files && e.target.files[0];
+            const target = e.target as HTMLInputElement | null;
+            const file = target?.files?.[0];
             if (!file) return;
             const summaryRes = await getData(`/Contents/GetSummary`, {
               ContentID: route.params.id,

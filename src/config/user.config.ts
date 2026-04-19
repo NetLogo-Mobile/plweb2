@@ -82,6 +82,7 @@ export const settingsConfig = [
             positiveText: i18n.global.t("login.confirm"),
             onPositiveClick: async () => {
               storageManager.remove("userInfo");
+              storageManager.remove("userAuthInfo");
               window.$Logger.logEvent({
                 category: "Account",
                 action: "Toggle-Error-Logger",
