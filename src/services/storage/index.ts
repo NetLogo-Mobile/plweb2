@@ -8,6 +8,7 @@ type localStorages =
   | "userConfig"
   | "visitorId"
   | "requestHistoryMap"
+  | "apiResponseCache"
   | "userIDAndAvatarIDMap"
   | "userAuthInfo";
 

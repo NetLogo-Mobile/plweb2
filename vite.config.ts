@@ -8,6 +8,9 @@ export default defineConfig({
   plugins: [
     vue(),
     VitePWA({
+      strategies: "injectManifest",
+      srcDir: "src",
+      filename: "sw.ts",
       registerType: "autoUpdate",
       injectRegister: "auto",
       devOptions: {
@@ -46,33 +49,8 @@ export default defineConfig({
         ],
       },
 
-      workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
-        runtimeCaching: [
-          {
-            urlPattern: /^\/static\//,
-            handler: "CacheFirst",
-            options: {
-              cacheName: "static-images",
-              expiration: {
-                maxEntries: 10000,
-                maxAgeSeconds: 300 * 24 * 60 * 60, // 300 days
-              },
-            },
-          },
-          {
-            urlPattern: /^\/api\//,
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "api-cache",
-              networkTimeoutSeconds: 6,
-              expiration: {
-                maxEntries: 1000,
-                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 day
-              },
-            },
-          },
-        ],
+      injectManifest: {
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp}"],
       },
     }),
   ],
