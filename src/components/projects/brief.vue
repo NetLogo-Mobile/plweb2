@@ -36,7 +36,7 @@ const imgUrl = getCoverUrl(data);
 const formattedDate = computed(() => {
   return formatDate(data.ID);
 });
-const summaryHref = `/${data.Category || "Experiment"}/${data.ID}`;
+const summaryHref = `https://plweb-ai-friendly.netlify.app/black-hole/${data.Category || "Experiment"}/${data.ID}`;
 </script>
 
 <style scoped>
