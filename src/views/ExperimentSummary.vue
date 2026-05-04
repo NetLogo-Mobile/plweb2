@@ -177,7 +177,7 @@ import parse from "@services/pltxt2htm/advancedParser";
 import parseInline from "@services/pltxt2htm/commonParser";
 import showUserCard from "@popup/userProfileDialog.ts";
 import postComment from "@services/postComment.ts";
-import { getCoverUrl, getUserUrl, getPath } from "@services/utils.ts";
+import { copyText, getCoverUrl, getUserUrl, getPath } from "@services/utils.ts";
 import BiLayout from "../layout/BiLayout.vue";
 import "../layout/BiLayout.css";
 import { useI18n } from "vue-i18n";
@@ -303,15 +303,13 @@ function goBack() {
   window.history.back();
 }
 
-function copy(text: string) {
-  navigator.clipboard
-    .writeText(text)
-    .then(() => {
-      showMessage("info", t("ui.messages.copySuccess"), { duration: 1000 });
-    })
-    .catch(() => {
-      showMessage("error", t("ui.messages.copyFailed"), { duration: 2000 });
-    });
+async function copy(text: string) {
+  const ok = await copyText(text);
+  if (ok) {
+    showMessage("info", t("ui.messages.copySuccess"), { duration: 1000 });
+  } else {
+    showMessage("error", t("ui.messages.copyFailed"), { duration: 2000 });
+  }
 }
 // eslint-disable-next-line max-lines-per-function
 function copySubject() {

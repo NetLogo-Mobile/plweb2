@@ -72,6 +72,43 @@ export function getCoverUrl(data: PProjects): string {
 }
 
 /**
+ * 复制文本到剪贴板，优先使用 Clipboard API，失败时回退到 execCommand。
+ *
+ * Copy text to clipboard. Prefer Clipboard API and fallback to execCommand.
+ */
+export async function copyText(text: string): Promise<boolean> {
+  if (
+    typeof navigator !== "undefined" &&
+    navigator.clipboard &&
+    typeof navigator.clipboard.writeText === "function"
+  ) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // fallback below
+    }
+  }
+
+  try {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.setAttribute("readonly", "");
+    textArea.style.position = "fixed";
+    textArea.style.top = "-1000px";
+    textArea.style.opacity = "0";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(textArea);
+    return ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * 将物理实验 API 返回的 targetLink 转换为查询参数对象。
  *
  * 数据流顺序：

@@ -200,7 +200,7 @@ import Block from "../components/blocks/Block.vue";
 import postComment from "@services/postComment.ts";
 import BiLayout from "../layout/BiLayout.vue";
 import "../layout/BiLayout.css";
-import { getCoverUrl, getUserUrl } from "@services/utils.ts";
+import { copyText, getCoverUrl, getUserUrl } from "@services/utils.ts";
 import { useI18n } from "vue-i18n";
 import showActionSheet from "@popup/actionSheet.ts";
 import { showMessage } from "@popup/naiveui";
@@ -382,17 +382,13 @@ function getLink(name: string) {
 }
 
 // Copy text to clipboard
-// It well be replaced with a better method later
-// 此方法兼容性不足，日后替换
-function copy(text: string) {
-  navigator.clipboard
-    .writeText(text)
-    .then(() => {
-      showMessage("info", t("ui.messages.copySuccess"), { duration: 1000 });
-    })
-    .catch(() => {
-      showMessage("error", t("ui.messages.copyFailed"), { duration: 2000 });
-    });
+async function copy(text: string) {
+  const ok = await copyText(text);
+  if (ok) {
+    showMessage("info", t("ui.messages.copySuccess"), { duration: 1000 });
+  } else {
+    showMessage("error", t("ui.messages.copyFailed"), { duration: 2000 });
+  }
 }
 
 function copyUser() {
