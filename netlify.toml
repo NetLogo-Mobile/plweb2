@@ -1,0 +1,36 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[[plugins]]
+  package = "netlify-plugin-prerender-spa"
+
+  [plugins.inputs]
+    render_paths = ["/", "/#/blackhole"]
+    # Wait for API fetch + DOM updates before snapshot output.
+    post_process = "window.dispatchEvent(new Event('ai-friendly-prerender'))"
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://physics-api-cn.turtlesim.com/:splat"
+  status = 200
+  force = true
+  headers = {Referer = "https://www.turtlesim.com/"}
+
+[[redirects]]
+  from = "/static/*"
+  to = "https://physics-static-cn.turtlesim.com/:splat"
+  status = 200
+  force = true
+  headers = {Referer = "https://www.turtlesim.com/"}
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "index, follow"
+    Access-Control-Allow-Origin = "*"
