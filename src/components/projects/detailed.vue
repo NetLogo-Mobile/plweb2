@@ -1,5 +1,5 @@
 <template>
-  <div @click="goToExperimentSummary">
+  <a :href="summaryHref">
     <!-- 早期实验区作品类型为null -->
     <!-- Early works in the experimental area have a type of null -->
     <div class="card">
@@ -16,7 +16,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </a>
 </template>
 
 <script setup lang="ts">
@@ -24,27 +24,17 @@ import Tag from "../utils/Tag.vue";
 import type { Summary } from "@services/../pl-serve-type-main/type/main";
 import parse from "@services/pltxt2htm/commonParser";
 import { getCoverUrl, getPath } from "@services/utils";
-import { useRouter } from "vue-router";
 
 const { data } = defineProps<{
   data: Summary;
 }>();
 
-const router = useRouter();
 const imgUrl =
   data.Image != -1
     ? getCoverUrl(data)
     : getPath("/@base/assets/messages/Experiment-Default.png");
 
-function goToExperimentSummary() {
-  router.push({
-    name: "ExperimentSummary",
-    params: {
-      category: data.Category || "Experiment",
-      id: data.ID,
-    },
-  });
-}
+const summaryHref = `/${data.Category || "Experiment"}/${data.ID}`;
 </script>
 
 <style scoped>
