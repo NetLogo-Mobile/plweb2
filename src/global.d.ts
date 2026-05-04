@@ -6,9 +6,8 @@ declare global {
   interface Window {
     $Logger: Logger;
     $ErrorLogger: ErrorLogger;
+    prerenderReady: boolean;
   }
 }
 
 export {};
-
-// global augmentations (window helpers are declared above)

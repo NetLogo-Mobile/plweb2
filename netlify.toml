@@ -1,0 +1,38 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://physics-api-cn.turtlesim.com/:splat"
+  status = 200
+  force = true
+  headers = {Referer = "https://www.turtlesim.com/"}
+
+[[redirects]]
+  from = "/static/*"
+  to = "https://physics-static-cn.turtlesim.com/:splat"
+  status = 200
+  force = true
+  headers = {Referer = "https://www.turtlesim.com/"}
+
+[[redirects]]
+  from = "/__ai_snapshot"
+  to = "/.netlify/functions/ai-snapshot"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/__ai_snapshot"
+  [headers.values]
+    Content-Type = "text/html; charset=utf-8"
+    Cache-Control = "no-store"
+    X-Robots-Tag = "index, follow"

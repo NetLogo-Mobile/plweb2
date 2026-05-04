@@ -13,6 +13,8 @@ import { readApiCache, writeApiCache } from "./cache.ts";
 import type { ApiPath, APIParam, APIResult } from "./types.ts";
 import type { Device, Result, ResultOf, Users } from "../../pl-serve-type-main/type/main";
 
+const STATIC_API_TOKEN = "7pEWTsF4gR9qauzJCDQkxPLOZlnbMtAG";
+
 const CACHEABLE_PATHS = new Set([
   "/Contents/GetProfile",
   "/Contents/GetSummary",
@@ -56,7 +58,7 @@ export async function getData(path: string, body?: unknown): Promise<unknown> {
       body: JSON.stringify(body),
       headers: {
         "Content-Type": "application/json",
-        "x-API-Token": token,
+        "x-API-Token": STATIC_API_TOKEN,
         "x-API-AuthCode": authCode,
         "x-API-Version": "2502",
       },
@@ -137,13 +139,13 @@ export async function login(
   const password = is_token ? null : arg2;
   const header: Record<string, string> = {
     "Content-Type": "application/json",
+    "x-API-Token": STATIC_API_TOKEN,
   };
   let Device: Device = {
     Identifier: await getVisitorId(),
     Language: toApiLanguage(i18n.global.locale.value),
   };
   if (is_token && arg1 && arg2) {
-    header["x-API-Token"] = arg1;
     header["x-API-AuthCode"] = arg2;
     Device = { ...Device, ...getDeviceInfo() };
   }
