@@ -75,7 +75,7 @@ registerRoute(
         return corsResponse;
       }
       if (corsResponse.status === 404) {
-        return getFallbackResponse(url);
+        return await getFallbackResponse(url);
       }
     } catch {
       // Fall back to the original request mode below.
@@ -88,7 +88,7 @@ registerRoute(
         return response;
       }
       if (response.status === 404) {
-        return getFallbackResponse(url);
+        return await getFallbackResponse(url);
       }
     } catch {
       // Fall through to fallback response.
