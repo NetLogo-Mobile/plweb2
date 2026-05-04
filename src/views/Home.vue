@@ -66,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onActivated } from "vue";
+import { ref, onMounted, onActivated, nextTick } from "vue";
 import { NGi, NGrid } from "naive-ui";
 import router from "../router";
 import { checkLogin, getPath, getUserUrl } from "@services/utils";
@@ -136,7 +136,15 @@ onMounted(async () => {
     const res = await login(null, null);
     loadPageData(res);
   }
-  await Promise.allSettled([processAuthInfo(), processHomepageProjects()]);
+
+  try {
+    await Promise.allSettled([processAuthInfo(), processHomepageProjects()]);
+  } finally {
+      await nextTick();
+    setTimeout(() => {
+      window.prerenderReady = true;
+    }, 0);
+  }
 });
 
 onActivated(() => {
@@ -162,7 +170,6 @@ Emitter.on("userLogin", (res) => {
 // Fourtunately, both data has the same structure
 async function loadPageData(response: ResultOf<Users["Authenticate"]>) {
   if (!response.Data) return;
-  isLoading.value = false;
   if (response.Data.ContentTags) {
     Emitter.emit("updateTagConfig", response.Data.ContentTags);
   }
