@@ -3,6 +3,7 @@ import { getDeallocator } from "./deallocator";
 import hljs from "highlight.js";
 import renderMathInElement from "katex/contrib/auto-render/auto-render.js";
 import "katex/dist/katex.min.css";
+import { escapeToHtml, isPrerenderRuntime } from "./prerender";
 
 interface ParseContext {
   host?: string;
@@ -51,7 +52,11 @@ async function advancedParser(
 
 async function parse(source: string, context: ParseContext = {}) {
   if (!source) return "";
-  const rawHtml = await advancedParser(
+  if (isPrerenderRuntime()) return escapeToHtml(source);
+
+  let rawHtml = "";
+  try {
+    rawHtml = await advancedParser(
     source,
     context.host ?? import.meta.env.VITE_ROOT_URL ?? "",
     context.project ?? "",
@@ -59,6 +64,9 @@ async function parse(source: string, context: ParseContext = {}) {
     context.authorId ?? "",
     context.coauthorIds?.filter(Boolean).join(",") || "None",
   );
+  } catch {
+    return escapeToHtml(source);
+  }
 
   if (!rawHtml) return "";
   const tempDiv = document.createElement("div");

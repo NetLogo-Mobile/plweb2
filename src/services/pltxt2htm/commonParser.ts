@@ -1,5 +1,6 @@
 import { getWasmInstance } from "./wasmLoader";
 import { getDeallocator } from "./deallocator";
+import { escapeToHtml, isPrerenderRuntime } from "./prerender";
 
 async function commonParser(text: string): Promise<string> {
   const wasmInstance = await getWasmInstance();
@@ -20,7 +21,13 @@ async function commonParser(text: string): Promise<string> {
 }
 
 async function parse(source: string) {
-  return commonParser(source);
+  if (!source) return "";
+  if (isPrerenderRuntime()) return escapeToHtml(source);
+  try {
+    return await commonParser(source);
+  } catch {
+    return escapeToHtml(source);
+  }
 }
 
 export default parse;
