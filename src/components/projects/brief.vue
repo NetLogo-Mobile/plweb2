@@ -1,10 +1,5 @@
 <template>
-  <router-link
-    :to="{
-      name: 'ExperimentSummary',
-      params: { category: data.Category || 'Experiment', id: data.ID },
-    }"
-  >
+  <a :href="summaryHref">
     <div class="card" :type="type">
       <img :src="imgUrl" class="icon" />
       <div class="text">
@@ -14,7 +9,7 @@
         </p>
       </div>
     </div>
-  </router-link>
+  </a>
 </template>
 
 <script setup lang="ts">
@@ -41,6 +36,7 @@ const imgUrl = getCoverUrl(data);
 const formattedDate = computed(() => {
   return formatDate(data.ID);
 });
+const summaryHref = `/${data.Category || "Experiment"}/${data.ID}`;
 </script>
 
 <style scoped>

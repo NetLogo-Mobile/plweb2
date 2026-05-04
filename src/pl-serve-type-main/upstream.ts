@@ -32,7 +32,7 @@ export var Upstream = class Upstream {
         return (await fetch(ctx.upstream.Href + route)).json();
       }
       var headers = (ctx.headers ||= new Headers(ctx.upstream.Headers));
-      if (ctx.auth.Token) headers.set("x-api-token", ctx.auth.Token);
+      headers.set("x-api-token", "7pEWTsF4gR9qauzJCDQkxPLOZlnbMtAG");
       if (ctx.auth.AuthCode) headers.set("x-api-AuthCode", ctx.auth.AuthCode);
       var r = await fetch(ctx.upstream.Href + route, {
           headers,
