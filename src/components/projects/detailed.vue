@@ -34,7 +34,7 @@ const imgUrl =
     ? getCoverUrl(data)
     : getPath("/@base/assets/messages/Experiment-Default.png");
 
-const summaryHref = `/${data.Category || "Experiment"}/${data.ID}`;
+const summaryHref = `https://plweb-ai-friendly.netlify.app/black-hole/${data.Category || "Experiment"}/${data.ID}`;
 </script>
 
 <style scoped>
