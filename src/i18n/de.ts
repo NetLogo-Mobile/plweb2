@@ -99,6 +99,7 @@ export default {
     copyInternalLink: "Internen Link kopieren",
     copyExternalLink: "Externen Link kopieren",
     changeCover: "Cover ändern",
+    supportersTitle: "Unterstützer",
   },
   date: {
     justNow: "Gerade eben",

@@ -95,6 +95,7 @@ export default {
     copyInternalLink: "复制内部链接",
     copyExternalLink: "复制外部链接",
     changeCover: "更换封面",
+    supportersTitle: "支持者",
   },
   date: {
     justNow: "刚刚",

@@ -31,6 +31,35 @@
           </div>
         </div>
         <div style="margin-top: auto" class="coverBottom">
+          <div class="interactionPanel">
+            <div class="counterBtn" @click.stop="toggleFavorite">
+              <span class="counterIcon">{{ isStarred ? "★" : "☆" }}</span>
+              <span>{{ data.Stars }}</span>
+            </div>
+            <div class="supportRow">
+              <div class="counterBtn supportBtn" @click.stop="toggleSupport">
+                <span class="counterIcon">{{ isSupported ? "♥" : "♡" }}</span>
+              </div>
+              <div class="supportersList">
+                <img
+                  v-for="supporter in visibleSupporters"
+                  :key="supporter.id"
+                  :src="supporter.avatarUrl"
+                  :alt="supporter.nickname"
+                  class="supporterAvatar"
+                  @click.stop="openSupporterCard(supporter.id)"
+                />
+                <button
+                  v-if="remainingSupporterCount > 0"
+                  class="supporterOverflow"
+                  type="button"
+                  @click.stop="openSupportersModal"
+                >
+                  +{{ remainingSupporterCount }}
+                </button>
+              </div>
+            </div>
+          </div>
           <div
             class="btns"
             style="display: flex; justify-content: space-around"
@@ -162,15 +191,33 @@
       </div>
     </template>
   </BiLayout>
+  <n-modal v-model:show="showSupportersModal" preset="dialog">
+    <template #header>{{ t("expeSummary.supportersTitle") }}</template>
+    <div class="supportersDialogList">
+      <div
+        v-for="supporter in supporters"
+        :key="supporter.id"
+        class="supporterItem"
+        @click="openSupporterCard(supporter.id)"
+      >
+        <img
+          :src="supporter.avatarUrl"
+          :alt="supporter.nickname"
+          class="supporterItemAvatar"
+        />
+        <span>{{ supporter.nickname }}</span>
+      </div>
+    </div>
+  </n-modal>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onActivated } from "vue";
+import { computed, ref, onMounted, onActivated } from "vue";
 import { useRoute } from "vue-router";
 import { getData } from "@services/api/getData.ts";
 import { showAPiError } from "@popup/index.ts";
 import { removeToken } from "@services/utils.ts";
-import { NTabs, NTabPane, NInput, NButton } from "naive-ui";
+import { NTabs, NTabPane, NInput, NButton, NModal } from "naive-ui";
 import Tag from "../components/utils/TagLarger.vue";
 import MessageList from "../components/messages/MessageList.vue";
 import parse from "@services/pltxt2htm/advancedParser";
@@ -178,6 +225,7 @@ import parseInline from "@services/pltxt2htm/commonParser";
 import showUserCard from "@popup/userProfileDialog.ts";
 import postComment from "@services/postComment.ts";
 import { getCoverUrl, getUserUrl, getPath } from "@services/utils.ts";
+import { getAvatarUrl } from "@services/getUserCurentAvatarByID.ts";
 import BiLayout from "../layout/BiLayout.vue";
 import "../layout/BiLayout.css";
 import { useI18n } from "vue-i18n";
@@ -187,6 +235,7 @@ import storageManager from "@storage/index.ts";
 import type {
   Category,
   CommentResult,
+  SupporterRecord,
 } from "@services/../pl-serve-type-main/type/main";
 
 const comment = ref("");
@@ -197,8 +246,21 @@ const replyID = ref("");
 const selectedTab = ref("Intro");
 const route = useRoute();
 const { t } = useI18n();
+const isStarred = ref(false);
+const isSupported = ref(false);
+const showSupportersModal = ref(false);
 const returnImagePath = ref(
   getPath("/@base/assets/library/Navigation-Return.png"),
+);
+type Supporter = {
+  id: string;
+  nickname: string;
+  avatarUrl: string;
+};
+const supporters = ref<Supporter[]>([]);
+const visibleSupporters = computed(() => supporters.value.slice(0, 11));
+const remainingSupporterCount = computed(() =>
+  Math.max(0, data.value.Supports - visibleSupporters.value.length),
 );
 
 const data = ref({
@@ -270,6 +332,7 @@ async function fetchSummary() {
   }
   data.value = res.Data;
   avatarUrl.value = getUserUrl(data.value.User);
+  await fetchSupporters(30);
   // Civitas-john always procrastinate on addressing the request to solve the anti-leeching issue.
   // That's why the below occurs
   await fetch(getCoverUrl(res.Data), {
@@ -277,6 +340,99 @@ async function fetchSummary() {
     mode: "no-cors",
   });
   coverUrl.value = getCoverUrl(res.Data);
+}
+
+function normalizeSupporters(
+  input: unknown,
+): SupporterRecord[] {
+  if (!input) return [];
+  if (Array.isArray(input)) return input as SupporterRecord[];
+  if (typeof input === "object" && input !== null && "$values" in input) {
+    const values = (input as { $values?: unknown }).$values;
+    if (Array.isArray(values)) return values as SupporterRecord[];
+  }
+  return [];
+}
+
+async function mapSupporter(item: SupporterRecord): Promise<Supporter> {
+  const profile = item.User ?? item;
+  const id = String(profile.ID || item.UserID || "");
+  const nickname = String(profile.Nickname || profile.Name || id || "Unknown");
+  let avatarUrl = getPath("/@base/assets/user/default-avatar.png");
+  const avatar = profile.Avatar;
+  if (id && typeof avatar === "number") {
+    avatarUrl = getUserUrl({
+      ID: id,
+      Avatar: avatar,
+      AvatarRegion: Number(profile.AvatarRegion || 0),
+    });
+  } else if (id) {
+    avatarUrl = await getAvatarUrl(id);
+  }
+  return { id, nickname, avatarUrl };
+}
+
+async function fetchSupporters(take = 50) {
+  const supportersRes = await getData("/Contents/GetSupporters", {
+    ContentID: route.params.id as string,
+    Category: route.params.category as string,
+    Skip: 0,
+    Take: take,
+  });
+  if (supportersRes.Status !== 200) {
+    return;
+  }
+  const list = normalizeSupporters(supportersRes.Data);
+  supporters.value = await Promise.all(list.map((item) => mapSupporter(item)));
+  const myID = storageManager.getObj("userInfo")?.value?.ID;
+  isSupported.value = Boolean(myID && supporters.value.some((s) => s.id === myID));
+}
+
+async function toggleFavorite() {
+  const targetStatus = !isStarred.value;
+  const res = await getData("/Contents/StarContent", {
+    ContentID: route.params.id as string,
+    Category: route.params.category as string,
+    Status: targetStatus,
+    Type: "Star",
+  });
+  if (res.Status !== 200) {
+    showMessage("error", res.Message || t("errors.unknownError"), {
+      duration: 2000,
+    });
+    return;
+  }
+  isStarred.value = targetStatus;
+  data.value.Stars += targetStatus ? 1 : -1;
+}
+
+async function toggleSupport() {
+  const targetStatus = !isSupported.value;
+  const res = await getData("/Contents/StarContent", {
+    ContentID: route.params.id as string,
+    Category: route.params.category as string,
+    Status: targetStatus,
+    Type: "Support",
+  });
+  if (res.Status !== 200) {
+    showMessage("error", res.Message || t("errors.unknownError"), {
+      duration: 2000,
+    });
+    return;
+  }
+  isSupported.value = targetStatus;
+  data.value.Supports += targetStatus ? 1 : -1;
+  await fetchSupporters(30);
+}
+
+function openSupporterCard(id: string) {
+  if (!id) return;
+  showUserCard(id);
+}
+
+async function openSupportersModal() {
+  await fetchSupporters(200);
+  showSupportersModal.value = true;
 }
 
 onMounted(() => {
@@ -637,6 +793,93 @@ onActivated(() => {
   background-color: #333;
 }
 
+.interactionPanel {
+  position: absolute;
+  left: 20px;
+  bottom: 120px;
+  display: none;
+  flex-direction: column;
+  gap: 14px;
+  z-index: 120;
+}
+
+.counterBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  border-radius: 22px;
+  background: rgba(0, 0, 0, 0.42);
+  color: #fff;
+  font-size: 28px;
+  line-height: 1;
+  padding: 8px 20px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.counterIcon {
+  font-size: 44px;
+  line-height: 0.7;
+}
+
+.supportRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.supportBtn {
+  min-width: 42px;
+  justify-content: center;
+}
+
+.supportersList {
+  display: flex;
+  align-items: center;
+}
+
+.supporterAvatar,
+.supporterOverflow {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  margin-left: -10px;
+}
+
+.supporterAvatar:first-child,
+.supporterOverflow:first-child {
+  margin-left: 0;
+}
+
+.supporterOverflow {
+  color: #fff;
+  background: rgba(20, 86, 150, 0.78);
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.supportersDialogList {
+  max-height: 52vh;
+  overflow-y: auto;
+}
+
+.supporterItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  cursor: pointer;
+}
+
+.supporterItemAvatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+}
+
 .context {
   display: flex;
   flex-direction: column;
@@ -694,13 +937,15 @@ onActivated(() => {
     width: 80%;
     bottom: 50px;
   }
+
+  .interactionPanel {
+    display: flex;
+  }
 }
 
 @media (max-aspect-ratio: 1/1) {
   .return {
-    display: blobk;
-    /* 等到做了收藏和支持，这里会被隐藏 */
-    /* Wait until you do the collection and support, this will be hidden */
+    display: block;
   }
 }
 

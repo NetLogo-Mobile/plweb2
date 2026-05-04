@@ -98,6 +98,7 @@ export default {
     copyInternalLink: "Copier le lien interne",
     copyExternalLink: "Copier le lien de partage",
     changeCover: "Changer la couverture",
+    supportersTitle: "Soutiens",
   },
   date: {
     justNow: "À l'instant",

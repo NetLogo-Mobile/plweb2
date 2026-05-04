@@ -644,6 +644,18 @@ export interface Derivatives {
   Supporters: unknown;
   Survey: unknown;
 }
+export interface SupporterRecord {
+  Avatar?: int32;
+  AvatarRegion?: int32;
+  Decoration?: int32;
+  ID?: ID;
+  Name?: string;
+  Nickname?: string;
+  Signature?: string;
+  Verification?: Verification | string | null;
+  User?: UserInfo;
+  UserID?: ID;
+}
 
 export interface Message {
   CategoryID: int32;
@@ -753,8 +765,21 @@ export interface Contents {
     q: Param<{ Category: string; SummaryID: ID; Target: string }>,
   ): Promise<Result<Summary>>;
   StarContent(
-    q: Param<{ Category: string; ContentID: ID; Status: boolean; Type: int32 }>,
+    q: Param<{
+      Category: string;
+      ContentID: ID;
+      Status: boolean;
+      Type: int32 | "Star" | "Support";
+    }>,
   ): Promise<Result<RelationList>>;
+  GetSupporters(
+    q: Param<{
+      Category: string;
+      ContentID: ID;
+      Skip: int32;
+      Take: int32;
+    }>,
+  ): Promise<Result<{ $values: SupporterRecord[] } | SupporterRecord[]>>;
 }
 export interface Users {
   // Users Report(cat,id),UpdateAvatar(img),SwitchRegion(Region, Transfer)

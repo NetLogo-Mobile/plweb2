@@ -97,6 +97,7 @@ export default {
     copyInternalLink: "内部リンクをコピー",
     copyExternalLink: "外部リンクをコピー",
     changeCover: "カバーを変更",
+    supportersTitle: "サポーター",
   },
   date: {
     justNow: "たった今",

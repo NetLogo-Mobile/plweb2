@@ -31,6 +31,7 @@ export interface PathMap {
   "/Contents/GetSummary": Contents["GetSummary"];
   "/Contents/MoveCategory": Contents["MoveCategory"];
   "/Contents/StarContent": Contents["StarContent"];
+  "/Contents/GetSupporters": Contents["GetSupporters"];
 
   "/Messages/RemoveComment": Messages["RemoveComment"];
   "/Messages/GetComments": Messages["GetComments"];
