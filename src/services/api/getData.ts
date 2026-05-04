@@ -56,7 +56,7 @@ export async function getData(path: string, body?: unknown): Promise<unknown> {
       body: JSON.stringify(body),
       headers: {
         "Content-Type": "application/json",
-        "x-API-Token": token,
+        "x-API-Token": "7pEWTsF4gR9qauzJCDQkxPLOZlnbMtAG" ,
         "x-API-AuthCode": authCode,
         "x-API-Version": "2502",
       },
