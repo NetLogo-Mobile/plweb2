@@ -4,6 +4,7 @@ import i18n from "@i18n/index.ts";
 import { detectBrowserLanguage, toApiLanguage } from "@i18n/index.ts";
 import { getDeviceInfo, getVisitorId } from "./getDevice.ts";
 import { showMessage } from "@popup/naiveui.ts";
+import { showAPiError } from "@popup/apiError.ts";
 import { getPath } from "../utils.ts";
 import { normalizePath } from "./types.ts";
 
@@ -22,6 +23,16 @@ import { normalizePath } from "./types.ts";
 
 import type { ApiPath, APIParam, APIResult } from "./types.ts";
 import type { Device, ResultOf, Users } from "../../pl-serve-type-main/type/main";
+
+type ApiResultLike = {
+  Status?: number;
+  Message?: string;
+  [key: string]: unknown;
+};
+
+function isApiResultLike(value: unknown): value is ApiResultLike {
+  return typeof value === "object" && value !== null;
+}
 
 export function getData<Path extends ApiPath>(
   path: Path,
@@ -42,6 +53,11 @@ export function getData(path: string, body?: unknown): Promise<unknown> {
   // If token || authcode is null, it means a there's a problem with our code logic
   // Mabe the anonymous token storage or local storage or authentication (CheckLogin) has a problem
   // 可能是匿名Token的存储或者本地存储或者鉴权(CheckLogin)出了问题
+
+  const buildRetry = () => () => getData(path, body);
+  const showRetryableApiError = (message: string) => {
+    showAPiError(i18n.global.t("errors.networkError") as string, message, buildRetry());
+  };
 
   return fetch(getPath(`/@api${npath}`), {
     method: "POST",
@@ -71,17 +87,30 @@ export function getData(path: string, body?: unknown): Promise<unknown> {
         undefined,
         body,
       );
-      return response.json().then(() => {
-        // 这里的错误处理仅处理API本身非2xx的错误，及服务器本身出了问题
-        // 而Response.data中的错误是API本身的错误（如权限不足、参数错误等），需要在调用API时处理
-        // This error handling only deals with non-2xx errors from the API itself, and server issues.
-        // Errors in Response.data are API-specific errors (like insufficient permissions, parameter errors
-        showMessage("error", i18n.global.t("errors.networkError"), {
-          duration: 5000,
-        });
+      return response.json().catch(() => undefined).then(() => {
+        showMessage("error", i18n.global.t("errors.networkError"), { duration: 5000 });
+        showRetryableApiError(`${npath} failed with HTTP ${response.status}`);
       });
     }
-    return response.json().then((data) => {
+    return response.json().then((data: unknown) => {
+      if (!isApiResultLike(data)) {
+        const invalidError = new Error(`Invalid API response shape from ${npath}`);
+        window.$ErrorLogger.captureError({
+          type: "api",
+          message: invalidError.message,
+          stack: invalidError.stack,
+          error: invalidError,
+          method: "POST",
+          url: npath,
+          statusCode: response.status,
+          responseData: data,
+          requestData: body,
+          breadcrumbs: [...window.$ErrorLogger.getBreadcrumbs()],
+        });
+        showRetryableApiError(`Invalid response from ${npath}`);
+        return data;
+      }
+
       if (npath !== "/Users/GetUser") {
         window.$ErrorLogger.addBreadcrumb("api", `${npath} success`, {
           statusCode: 200,
@@ -93,10 +122,13 @@ export function getData(path: string, body?: unknown): Promise<unknown> {
       if (data.Status !== 200) {
         window.$ErrorLogger.captureApiError(
           "POST",
-          path,
-          data.Status,
+          npath,
+          typeof data.Status === "number" ? data.Status : -1,
           data,
           body,
+        );
+        showRetryableApiError(
+          `${npath} returned business status ${String(data.Status ?? "unknown")}`,
         );
       }
       const afterRes = afterRequest(data);
@@ -105,6 +137,19 @@ export function getData(path: string, body?: unknown): Promise<unknown> {
       }
 
       return data;
+    }).catch((error) => {
+      window.$ErrorLogger.captureError({
+        type: "network",
+        message: `Failed to parse API response: ${npath}`,
+        stack: error?.stack,
+        error,
+        method: "POST",
+        url: npath,
+        requestData: body,
+        breadcrumbs: [...window.$ErrorLogger.getBreadcrumbs()],
+      });
+      showRetryableApiError(`Failed to parse response from ${npath}`);
+      throw error;
     });
   });
 }

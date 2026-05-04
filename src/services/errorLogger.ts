@@ -143,8 +143,8 @@ class ErrorLogger {
           url: log.url,
           type: log.type,
           message: log.message,
-          // keep only the first line of stack to save space and still be useful
-          stack: log.stack ? String(log.stack).split("\n")[0] : undefined,
+          // keep full stack to preserve actionable debugging details
+          stack: log.stack ? String(log.stack) : undefined,
           statusCode: log.statusCode,
           responseData: log.responseData,
           requestData: log.requestData,
@@ -271,22 +271,18 @@ class ErrorLogger {
       this.showErrorNotification(errorLog, this.lastErrorCount);
     }
 
-    // Console output: be concise to avoid double noise (browser already prints native errors)
+    // Console output: always print a standard error entry so stack frames stay visible in dev/prod.
     const rawContext = { ...context };
-    console.groupCollapsed(
-      `%c[${context.type.toUpperCase()}] ${context.message}`,
-      "color: red; font-weight: bold",
-    );
     if (rawContext.error) {
-      // print the original Error object so it can be expanded when needed
-      console.error("Error object:", rawContext.error);
+      console.error(`[${context.type.toUpperCase()}] ${context.message}`, rawContext.error);
     } else if (context.stack) {
-      console.error("Stack:", context.stack);
+      console.error(`[${context.type.toUpperCase()}] ${context.message}\n${context.stack}`);
+    } else {
+      console.error(`[${context.type.toUpperCase()}] ${context.message}`);
     }
     if (this.debugMode) {
       console.debug("Full context (sanitized):", errorLog);
     }
-    console.groupEnd();
   }
 
   /**
