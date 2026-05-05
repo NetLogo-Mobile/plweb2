@@ -6,7 +6,7 @@
       <div id="title">{{ props.block.Header }}</div>
       <router-link
         id="more"
-        :to="`/list/${EncodeAPITargetLink(props.block.TargetLink)}`"
+        :to="`/l/${EncodeAPITargetLink(props.block.TargetLink)}`"
       >
         <div>{{ $t("worklist.more") }}</div>
       </router-link>

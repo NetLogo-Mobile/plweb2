@@ -17,7 +17,7 @@ const { tag, category } = defineProps<{ tag: string; category: string }>();
 const tagName = getTagName(tag);
 const APILink = `${category.toLowerCase()}://Tags/${tag}`;
 const jump = () => {
-  router.push(`/list/${EncodeAPITargetLink(APILink)}`);
+  router.push(`/l/${EncodeAPITargetLink(APILink)}`);
 };
 </script>
 

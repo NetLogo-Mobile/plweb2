@@ -18,7 +18,7 @@ const tagName = getTagName(tag);
 const APILink = `${category.toLowerCase()}://Tags/${tag}`;
 const jump = () => {
   if (category === "User") return;
-  router.push(`/list/${EncodeAPITargetLink(APILink)}`);
+  router.push(`/l/${EncodeAPITargetLink(APILink)}`);
 };
 </script>
 

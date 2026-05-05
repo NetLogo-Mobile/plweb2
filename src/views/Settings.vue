@@ -147,7 +147,7 @@ function goBack() {
 onActivated(() => {
   if (window.$Logger) {
     window.$Logger.logPageView({
-      pageLink: "/settings",
+      pageLink: "/s",
       timeStamp: Date.now(),
     });
   }

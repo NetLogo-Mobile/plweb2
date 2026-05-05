@@ -358,7 +358,7 @@ function goBack() {
 }
 
 function goToSettings() {
-  router.push("/settings");
+  router.push("/s");
 }
 
 // Sort 2 means soted by popularity; Sort 1 means sorted by latest;Sort 3 means random sorted

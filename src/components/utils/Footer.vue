@@ -17,7 +17,7 @@
         </svg>
         <span>{{ $t("footer.home") }}</span>
       </router-link>
-      <router-link to="/black-hole">
+      <router-link to="/b">
         <svg
           fill="none"
           stroke="currentColor"
@@ -40,7 +40,7 @@
         </svg>
         <span>我的</span>
       </router-link> -->
-      <router-link to="/friends">
+      <router-link to="/f">
         <svg
           fill="currentColor"
           viewBox="0 0 24 24"
@@ -52,7 +52,7 @@
         </svg>
         <span>{{ $t("footer.friends") }}</span>
       </router-link>
-      <router-link to="/notifications">
+      <router-link to="/n">
         <svg
           fill="none"
           stroke="currentColor"

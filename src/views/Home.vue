@@ -190,7 +190,7 @@ async function loadPageData(response: ResultOf<Users["Authenticate"]>) {
 
 function showModalFn() {
   if (checkLogin(false)) {
-    router.push(`/profile/${user.value.ID}`);
+    router.push(`/u/${user.value.ID}`);
     window.$Logger.logPageView({
       pageLink: "/Profile/",
       timeStamp: Date.now(),

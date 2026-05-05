@@ -40,7 +40,7 @@ const imgUrl = getCoverUrl(item);
 const avartarUrl = getUserUrl(item.User);
 
 const handleClick = () => {
-  router.push(`/ExperimentSummary/${item.Category}/${item.ID}`);
+  router.push(`/p/${item.Category}/${item.ID}`);
 };
 </script>
 
