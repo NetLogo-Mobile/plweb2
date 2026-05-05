@@ -35,7 +35,13 @@
             class="btns"
             style="display: flex; justify-content: space-around"
           >
-            <n-button type="info" strong round disabled class="enter">
+            <n-button
+              type="info"
+              strong
+              round
+              class="enter"
+              @click="goToExperiment"
+            >
               {{ t("expeSummary.enterExp") }}
             </n-button>
           </div>
@@ -301,6 +307,13 @@ async function handleEnter() {
 
 function goBack() {
   window.history.back();
+}
+
+function goToExperiment() {
+  const category = (route.params.category as string).toLowerCase();
+  const contentType = category === "experiment" ? "experiment" : "discussion";
+  const target = `physics://chinese/${contentType}/${route.params.id as string}`;
+  window.location.href = target;
 }
 
 async function copy(text: string) {
