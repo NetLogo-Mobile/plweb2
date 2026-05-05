@@ -51,6 +51,19 @@ const { t } = useI18n();
 
 const emit = defineEmits(["msgClick"]);
 
+async function fetchComments(options?: {
+  from?: CommentResult["ID"] | null;
+  skip?: number;
+}) {
+  return getData("/Messages/GetComments", {
+    TargetID: ID,
+    TargetType: Category,
+    CommentID: options?.from || "",
+    Take: 20,
+    Skip: options?.skip || 0,
+  });
+}
+
 async function deleteMsg(message: CommentResult) {
   const index = items.value.findIndex((item) => item.ID === message.ID);
   let removed: CommentResult[] = [];
@@ -100,12 +113,9 @@ const handleLoad = async () => {
   }
   if (loading.value || noMore.value === true) return;
   loading.value = true;
-  const getMessagesResponse = await getData("/Messages/GetComments", {
-    TargetID: ID,
-    TargetType: Category,
-    CommentID: from || "",
-    Take: 20,
-    Skip: skip.value || 0,
+  const getMessagesResponse = await fetchComments({
+    from,
+    skip: skip.value || 0,
   });
 
   if (getMessagesResponse.Status !== 200 || !getMessagesResponse.Data) {
@@ -117,12 +127,9 @@ const handleLoad = async () => {
         message: getMessagesResponse?.Message || "",
       }),
       async () => {
-        return getData("/Messages/GetComments", {
-          TargetID: ID,
-          TargetType: Category,
-          CommentID: from || "",
-          Take: 20,
-          Skip: skip.value || 0,
+        return fetchComments({
+          from,
+          skip: skip.value || 0,
         });
       },
     );
@@ -170,12 +177,20 @@ handleLoad();
 
 watch(
   () => upDate,
-  () => {
-    items.value = [];
-    skip.value = 0;
-    noMore.value = false;
-    from = null;
-    handleLoad();
+  async () => {
+    const latestResponse = await fetchComments({ from: null, skip: 0 });
+    if (latestResponse.Status !== 200 || !latestResponse.Data?.Comments) {
+      return;
+    }
+    const latestComments = latestResponse.Data.Comments;
+    const existingIds = new Set(items.value.map((item) => item.ID));
+    const commentsToPrepend = latestComments.filter(
+      (item) => !existingIds.has(item.ID),
+    );
+
+    if (commentsToPrepend.length > 0) {
+      items.value = [...commentsToPrepend, ...items.value];
+    }
   },
 );
 
