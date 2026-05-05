@@ -10,7 +10,9 @@ const breakpoints = {
 };
 
 function getViewportHeight() {
-  return Math.round(window.visualViewport?.height ?? window.innerHeight);
+  // Avoid mobile keyboard / visualViewport changes causing layout jitter.
+  // Keep layout height based on layout viewport instead of visual viewport.
+  return Math.round(window.innerHeight);
 }
 
 function getBlockItemsPerRow(w: number) {
@@ -100,19 +102,11 @@ export function useResponsive() {
     window.addEventListener("orientationchange", handleResize, {
       passive: true,
     });
-    window.visualViewport?.addEventListener("resize", handleResize, {
-      passive: true,
-    });
-    window.visualViewport?.addEventListener("scroll", handleResize, {
-      passive: true,
-    });
   });
 
   onUnmounted(() => {
     window.removeEventListener("resize", handleResize);
     window.removeEventListener("orientationchange", handleResize);
-    window.visualViewport?.removeEventListener("resize", handleResize);
-    window.visualViewport?.removeEventListener("scroll", handleResize);
   });
 
   return {
