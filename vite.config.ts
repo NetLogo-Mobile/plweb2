@@ -51,6 +51,7 @@ export default defineConfig({
 
       injectManifest: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp}"],
+        globIgnores: ["assets/icons/logo-192.png", "assets/icons/logo-512.png"],
       },
     }),
   ],
