@@ -10,7 +10,18 @@
         />
         <!-- 阻止冒泡，使得只有点击遮罩才关闭 -->
         <!-- Prevents bubbling, so that only clicking on the overlay will close it -->
-        <p class="username">{{ name }}</p>
+        <p
+          class="username"
+          @click="copyUserID"
+          @touchstart="onNamePressStart"
+          @touchend="onNamePressEnd"
+          @touchcancel="onNamePressEnd"
+          @mousedown="onNamePressStart"
+          @mouseup="onNamePressEnd"
+          @mouseleave="onNamePressEnd"
+        >
+          {{ name }}
+        </p>
         <p class="snt">{{ snt || t("user.noSignature") }}</p>
       </div>
       <div class="stats">
@@ -59,7 +70,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { getData } from "@services/api/getData.ts";
-import { getUserUrl, getPath } from "@services/utils";
+import { copyText, getUserUrl, getPath } from "@services/utils";
 import storageManager from "@services/storage/index.ts";
 import { useI18n } from "vue-i18n";
 import { showMessage } from "@popup/naiveui";
@@ -80,6 +91,48 @@ const starCount = ref(0);
 const fragmentCount = ref(0);
 const isFollowing = ref(false);
 let ID = "";
+
+
+const LONG_PRESS_MS = 450;
+let namePressTimer: number | null = null;
+let didLongPress = false;
+
+async function copyTextWithMessage(text: string) {
+  const ok = await copyText(text);
+  if (ok) {
+    showMessage("info", t("ui.messages.copySuccess"));
+  } else {
+    showMessage("error", t("ui.messages.copyFailed"));
+  }
+}
+
+function copyUserID() {
+  if (didLongPress) {
+    didLongPress = false;
+    return;
+  }
+  copyTextWithMessage(ID);
+}
+
+function copyUserInternalLink() {
+  copyTextWithMessage(`<user=${ID}>${name.value}</user>`);
+}
+
+function onNamePressStart() {
+  didLongPress = false;
+  if (namePressTimer) window.clearTimeout(namePressTimer);
+  namePressTimer = window.setTimeout(() => {
+    didLongPress = true;
+    copyUserInternalLink();
+  }, LONG_PRESS_MS);
+}
+
+function onNamePressEnd() {
+  if (namePressTimer) {
+    window.clearTimeout(namePressTimer);
+    namePressTimer = null;
+  }
+}
 
 const jumpToUser = (id: string) => {
   props.close();
