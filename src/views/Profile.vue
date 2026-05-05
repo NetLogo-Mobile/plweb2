@@ -557,7 +557,7 @@ function copyUser() {
 
 .coverProject {
   position: absolute;
-  bottom: 30px;
+  bottom: calc(30px + env(safe-area-inset-bottom));
   left: 20px;
   right: 20px;
   color: white;

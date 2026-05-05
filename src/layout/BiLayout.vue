@@ -29,6 +29,8 @@
 .layout-left {
   position: relative;
   height: 28vh;
+  height: 28svh;
+  height: 28dvh;
   flex: 0 0 auto;
   overflow: auto;
 }
