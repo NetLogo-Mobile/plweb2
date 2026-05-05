@@ -83,7 +83,7 @@ let ID = "";
 
 const jumpToUser = (id: string) => {
   props.close();
-  window.open(`${getPath("/@root")}/profile/${id}`, "_self");
+  window.open(`${getPath("/@root")}/u/${id}`, "_self");
 };
 
 onMounted(async () => {

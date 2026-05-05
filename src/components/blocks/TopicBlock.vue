@@ -11,7 +11,7 @@
         backgroundRepeat: 'no-repeat',
         backgroundSize: 'cover',
       }"
-      @click="() => router.push(`/list/${block.TargetLink}`)"
+      @click="() => router.push(`/l/${block.TargetLink}`)"
     >
       <h2 class="title">{{ block.Subject }}</h2>
       <div class="box" @click.stop="">

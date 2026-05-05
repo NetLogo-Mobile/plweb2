@@ -80,7 +80,7 @@ const msg_icon_url = computed(() => {
 function showComment() {
   if (props.notification.msg_type === 3) {
     window.open(
-      `${getPath("/@root")}/Comments/${
+      `${getPath("/@root")}/c/${
         props.notification.Fields?.Discussion ? "Discussion" : props.notification.Fields?.Experiment
           ? "Experiment"
           : "User"
