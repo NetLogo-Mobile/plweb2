@@ -29,15 +29,15 @@
         </div>
         <div class="num">
           <img
-            src="/assets/user/Image-Experiments.png"
+            :src="getPath('/@base/assets/user/Image-Experiments.png')"
             style="filter: brightness(0.9); height: 25px"
           />
           <img
-            src="/assets/user/Image-Stars.png"
+            :src="getPath('/@base/assets/user/Image-Stars.png')"
             style="filter: brightness(0.9); height: 25px"
           />
           <img
-            src="/assets/user/Image-Prestige.png"
+            :src="getPath('/@base/assets/user/Image-Prestige.png')"
             style="filter: brightness(0.9); height: 25px"
           />
         </div>
@@ -72,7 +72,7 @@ const props = defineProps<{
 const { t } = useI18n();
 const name = ref(t("ui.messages.loading"));
 const snt = ref(t("ui.messages.loading"));
-const avatar = ref(getPath("/assets/user/default-avatar.png"));
+const avatar = ref(getPath("/@base/assets/user/default-avatar.png"));
 const followingCount = ref(0);
 const followerCount = ref(0);
 const postCount = ref(0);
