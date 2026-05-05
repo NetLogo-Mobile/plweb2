@@ -705,7 +705,7 @@ onActivated(() => {
     position: absolute;
     padding: 10px 10%;
     width: 80%;
-    bottom: 50px;
+    bottom: calc(50px + env(safe-area-inset-bottom));
   }
 }
 
