@@ -19,11 +19,17 @@ precacheAndRoute(self.__WB_MANIFEST);
 cleanupOutdatedCaches();
 
 function isAvatarRequest(url: URL): boolean {
-  return url.pathname.includes("/users/avatars/");
+  return (
+    url.pathname.includes("/@static/users/avatars/") ||
+    url.pathname.includes("/users/avatars/")
+  );
 }
 
 function isCoverRequest(url: URL): boolean {
-  return url.pathname.includes("/experiments/images/");
+  return (
+    url.pathname.includes("/@static/experiments/images/") ||
+    url.pathname.includes("/experiments/images/")
+  );
 }
 
 function isManagedImageRequest(request: Request, url: URL): boolean {
