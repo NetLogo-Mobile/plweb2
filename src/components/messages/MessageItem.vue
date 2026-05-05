@@ -42,7 +42,7 @@ import parse from "@services/pltxt2htm/advancedParser";
 import showUserCard from "@popup/userProfileDialog.ts";
 import { getAvatarUrl } from "@services/getUserCurentAvatarByID";
 import storageManager from "@storage/index.ts";
-import { formatDate, getPath } from "@services/utils";
+import { formatDate, getPath, getAnonymousAvatarByNickname } from "@services/utils";
 import type { CommentResult } from "@services/../pl-serve-type-main/type/main";
 
 const props = defineProps<{
@@ -54,15 +54,24 @@ const currentUserId = storageManager.getObj("userInfo")?.value?.ID || "";
 const avatarUrl = ref(getPath("/@base/assets/user/default-avatar.png"));
 
 const setCurrentAvatar = async () => {
-  if (props.message.UserID !== "") {
+  const isAnonymous = props.message.Flags?.includes("Anonymous");
+
+  if (!isAnonymous && props.message.UserID !== "") {
     // 有些地方是匿名的，所以userID为空，不设置心得头像就会沿用默认头像
     // Some places are anonymous, so if userID is empty, the default avatar will be used.
     avatarUrl.value = await getAvatarUrl(props.message.UserID);
+  } else if (/^\d{4}$/.test(props.message.Nickname)) {
+    avatarUrl.value = getAnonymousAvatarByNickname(props.message.Nickname);
+  } else {
+    avatarUrl.value = getPath("/@base/assets/user/default-avatar.png");
   }
 };
 
 onMounted(setCurrentAvatar);
-watch(() => props.message.UserID, setCurrentAvatar);
+watch(
+  () => [props.message.UserID, props.message.Nickname, props.message.Flags],
+  setCurrentAvatar,
+);
 
 function handleReply() {
   emit("msgClick", props.message);

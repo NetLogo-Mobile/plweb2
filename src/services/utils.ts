@@ -63,6 +63,29 @@ export function getUserUrl(user: PUser): string {
   return getPath(url);
 }
 
+/**
+ * 为匿名四位数字昵称生成稳定头像（SVG Data URL）。
+ * Generate a stable avatar (SVG Data URL) for anonymous 4-digit nicknames.
+ */
+export function getAnonymousAvatarByNickname(nickname: string): string {
+  if (!/^\d{4}$/.test(nickname)) {
+    return getPath("/@base/assets/user/default-avatar.png");
+  }
+
+  const seed = Number.parseInt(nickname, 10);
+  const hue = seed % 360;
+  const bg = `hsl(${hue} 70% 55%)`;
+  const fg = `hsl(${(hue + 210) % 360} 85% 98%)`;
+  const a = nickname[0];
+  const b = nickname[1];
+  const c = nickname[2];
+  const d = nickname[3];
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="anonymous-avatar-${nickname}"><defs><clipPath id="clip"><circle cx="50" cy="50" r="50"/></clipPath></defs><g clip-path="url(#clip)"><rect width="100" height="100" fill="${bg}"/><circle cx="28" cy="32" r="${10 + Number(a)}" fill="${fg}" opacity="0.35"/><rect x="${8 + Number(b) * 2}" y="${56 - Number(c)}" width="${52 + Number(d) * 3}" height="${22 + Number(a)}" rx="12" fill="${fg}" opacity="0.4"/><path d="M18 ${76 - Number(c)} Q50 ${32 + Number(d)} 82 ${76 - Number(b)}" stroke="${fg}" stroke-width="${5 + (seed % 4)}" fill="none" opacity="0.85"/></g></svg>`;
+
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}
+
 export function getCoverUrl(data: PProjects): string {
   const url = `/@static/experiments/images/${data.ID.slice(0, 4)}/${data.ID.slice(
     4,
