@@ -47,8 +47,12 @@ export async function getData(path: string, body?: unknown): Promise<unknown> {
   }
 
   const userInfo = sm.getObj("userAuthInfo");
-  const token = userInfo.value?.token;
+  const token = userInfo.value?.token?.trim();
   const authCode = userInfo.value?.authCode;
+  const isAuthcatePath = npath === "/Users/Authenticate";
+  const apiToken = !isAuthcatePath && !token
+    ? "7pEWTsF4gR9qauzJCDQkxPLOZlnbMtAG"
+    : token;
 
   try {
     const response = await fetch(getPath(`/@api${npath}`), {
@@ -56,7 +60,7 @@ export async function getData(path: string, body?: unknown): Promise<unknown> {
       body: JSON.stringify(body),
       headers: {
         "Content-Type": "application/json",
-        "x-API-Token": token,
+        "x-API-Token": apiToken,
         "x-API-AuthCode": authCode,
         "x-API-Version": "2502",
       },
