@@ -3,7 +3,7 @@
     <div class="overlay" @click="onCancel" />
     <div class="dialog" role="dialog" aria-modal="true">
       <h3 class="title">{{ displayTitle }}</h3>
-      <p class="message" v-html="displayMessage"></p>
+      <p class="message">{{ displayMessage }}</p>
       <div class="buttons">
         <button class="btn cancel" @click="onCancel">{{ cancelLabel }}</button>
         <button class="btn confirm" :disabled="loading" @click="onConfirmClick">
