@@ -41,13 +41,12 @@ And most importantly, we sincerely thanks to the previous contributors: Arenfell
 ## TO do list
 
 If you want to start a contribution, here is some directions:
-- [ ] Complete the settings page(including i18n switch, export error log etc), the components in ./views/settings user.config.ts system.config.ts already have a prototype
+- [x] Complete the settings page(including i18n switch, export error log etc), the components in ./views/settings user.config.ts system.config.ts already have a prototype
 - [ ] Redesign the error log, the format now is terrible
-- [ ] Some errors in runtime may not be detected
-- [ ] Fix the style when the window is too large
-- [ ] Improve the responsive design, there are problems with font size and others now
+- [x] Fix the style when the window is too large
+- [x] Improve the responsive design, there are problems with font size and others now
 - [ ] Make the work item and work block, as well as tags responsive
-- [ ] Finish the error handling when API fails(We seldom check it, Im to blame)
+- [x] Finish the error handling when API fails(We seldom check it, Im to blame)
 - [ ] Better storage management(**Using indexDB**).Some requests can be cached, and when we need to fetch them again, we can use the cached version first, and fetch the real source in the same time, then update it(Vue has an incredible stratege to make accurate dom element update). 
 - [ ] Transpile the code to support older browsers, using plugins(assigned to @wsxiaolin)
 - [ ] Shorten the route names in router, e.g. change #experiment-summary/:id to #p/:id , userProfile to u etc.
