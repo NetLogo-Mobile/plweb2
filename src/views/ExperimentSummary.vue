@@ -118,7 +118,9 @@
                           : data.Description,
                         {
                           project: data.Subject,
-                          visitorId: storageManager.getObj('userInfo').value.ID,
+                          visitorId:
+                            storageManager.getObj('userInfo')?.value?.ID ??
+                            '',
                           authorId: data.User.ID,
                           coauthorIds: data.Coauthors,
                         },
