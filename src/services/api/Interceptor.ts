@@ -16,7 +16,8 @@ interface IIntercetporResponse {
 const RATE_LIMIT_STATUS = 429;
 const RATE_LIMIT_MESSAGE = "Server.Offline";
 
-const noMessagesPath = ["/Users/GetUser"];
+// No loading message for these paths
+const noMessagesPath = ["/Users/GetUser","/Messages/PostComment"];
 const noDestroyPath = ["Quantum.Models.Packages.UserPackage, Quantum Models"];
 
 type RequestHistoryPayload = {
