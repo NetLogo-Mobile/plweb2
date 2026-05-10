@@ -144,6 +144,8 @@ export default {
       unfollowSuccess: "取关成功",
       rateLimitExceeded: "频率过快",
       copySuccess: "复制成功",
+      copyIDSuccess: "用户ID复制成功",
+      copyInternalLinkSuccess: "内部链接复制成功",
       copyFailed: "复制失败",
       uploadSuccess: "封面更换成功",
       uploadFailed: "上传失败",

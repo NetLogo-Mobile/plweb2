@@ -147,6 +147,8 @@ export default {
       unfollowSuccess: "フォロー解除に成功しました",
       rateLimitExceeded: "リクエストが多すぎます",
       copySuccess: "コピーしました",
+      copyIDSuccess: "IDのコピーに成功しました",
+      copyInternalLinkSuccess: "内部リンクのコピーに成功しました",
       copyFailed: "テキストのコピーに失敗しました",
       uploadSuccess: "カバーの変更に成功しました",
       uploadFailed: "ファイルのアップロードに失敗しました",

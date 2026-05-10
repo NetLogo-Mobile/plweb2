@@ -147,6 +147,8 @@ export default {
       unfollowSuccess: "Unfollow successful",
       rateLimitExceeded: "Too frequent requests",
       copySuccess: "Copied",
+      copyIDSuccess: "ID copied successfully",
+      copyInternalLinkSuccess: "Internal link copied successfully",
       copyFailed: "Failed to copy text",
       uploadSuccess: "Cover changed successfully",
       uploadFailed: "Failed to upload file",

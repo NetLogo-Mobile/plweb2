@@ -148,6 +148,8 @@ export default {
       unfollowSuccess: "Désabonnement réussi",
       rateLimitExceeded: "Trop de demandes",
       copySuccess: "Copié",
+      copyIDSuccess: "ID copié avec succès",
+      copyInternalLinkSuccess: "Lien interne copié avec succès",
       copyFailed: "Échec de la copie du texte",
       uploadSuccess: "Couverture modifiée avec succès",
       uploadFailed: "Échec du téléversement du fichier",

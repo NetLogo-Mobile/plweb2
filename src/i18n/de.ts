@@ -149,6 +149,8 @@ export default {
       unfollowSuccess: "Erfolgreich entfolgt",
       rateLimitExceeded: "Zu viele Anfragen",
       copySuccess: "Kopiert",
+      copyIDSuccess: "ID erfolgreich kopiert",
+      copyInternalLinkSuccess: "Interner Link erfolgreich kopiert",
       copyFailed: "Text konnte nicht kopiert werden",
       uploadSuccess: "Cover erfolgreich geändert",
       uploadFailed: "Datei-Upload fehlgeschlagen",
