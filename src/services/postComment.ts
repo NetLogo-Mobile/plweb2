@@ -15,7 +15,7 @@ export default async function postComment(
 ) {
   const t = i18n.global.t;
   try {
-    if (isLoading.value) return;
+    if (isLoading.value || !comment.value.trim()) return;
     isLoading.value = true;
 
     const response = await getData("/Messages/PostComment", {

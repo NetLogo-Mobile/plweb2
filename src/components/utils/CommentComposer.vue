@@ -13,6 +13,7 @@
         :show-count="!isUltraCompact"
         :maxlength="maxlength"
         :loading="loading"
+        :disabled="loading"
         :placeholder="placeholder"
         @update:value="emit('update:modelValue', $event)"
         @focus="handleFocus"
@@ -25,18 +26,11 @@
         secondary
         class="comment-composer__send"
         :loading="loading"
-        :disabled="disabled"
-        @click="emit('submit')"
+        :disabled="isSubmitDisabled"
+        @click="handleSubmit"
       >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M4 19L20 12L4 5L4 11L15 12L4 13L4 19Z"
-            fill="currentColor"
-          />
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 19L20 12L4 5L4 11L15 12L4 13L4 19Z" fill="currentColor" />
         </svg>
       </n-button>
     </div>
@@ -44,11 +38,11 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, ref } from "vue";
+import { computed, nextTick, ref } from "vue";
 import { NButton, NInput } from "naive-ui";
 import { useResponsive } from "../../layout/useResponsive";
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     modelValue: string;
     placeholder: string;
@@ -70,11 +64,17 @@ const emit = defineEmits<{
 
 const inputRef = ref<{ $el?: HTMLElement } | null>(null);
 const { isCompact, isUltraCompact } = useResponsive();
+const isSubmitDisabled = computed(() => props.disabled || props.loading);
+
+function handleSubmit() {
+  if (isSubmitDisabled.value) return;
+  emit("submit");
+}
 
 function handleKeydown(event: KeyboardEvent) {
   if (event.isComposing) return;
   event.preventDefault();
-  emit("submit");
+  handleSubmit();
 }
 
 async function handleFocus() {
@@ -95,13 +95,12 @@ async function handleFocus() {
   bottom: 0;
   z-index: 6;
   padding-bottom: max(env(safe-area-inset-bottom, 0px), 4px);
-  background:
-    linear-gradient(
-      180deg,
-      rgba(248, 251, 255, 0) 0%,
-      rgba(248, 251, 255, 0.92) 28%,
-      rgba(248, 251, 255, 1) 100%
-    );
+  background: linear-gradient(
+    180deg,
+    rgba(248, 251, 255, 0) 0%,
+    rgba(248, 251, 255, 0.92) 28%,
+    rgba(248, 251, 255, 1) 100%
+  );
 }
 
 .comment-composer__surface {

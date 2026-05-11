@@ -142,7 +142,7 @@ export default {
       noMore: "没有更多了",
       followSuccess: "关注成功",
       unfollowSuccess: "取关成功",
-      rateLimitExceeded: "频率过快",
+      rateLimitExceeded: "服务器繁忙，请稍等。",
       copySuccess: "复制成功",
       copyIDSuccess: "用户ID复制成功",
       copyInternalLinkSuccess: "内部链接复制成功",

@@ -119,8 +119,7 @@
                         {
                           project: data.Subject,
                           visitorId:
-                            storageManager.getObj('userInfo')?.value?.ID ??
-                            '',
+                            storageManager.getObj('userInfo')?.value?.ID ?? '',
                           authorId: data.User.ID,
                           coauthorIds: data.Coauthors.map((user) => user.ID),
                         },
@@ -161,6 +160,7 @@
                   show-count
                   :maxlength="400"
                   :loading="isLoading"
+                  :disabled="isLoading"
                   @keyup.enter="handleEnter"
                 />
               </div>
@@ -600,11 +600,9 @@ function copySubject() {
               coverUrl.value = getCoverUrl(refreshed.Data);
             }, 800);
           } catch (_err) {
-            showMessage(
-              "error",
-              t("ui.messages.changeCoverFailed"),
-              { duration: 2000 },
-            );
+            showMessage("error", t("ui.messages.changeCoverFailed"), {
+              duration: 2000,
+            });
           }
         };
         input.click();

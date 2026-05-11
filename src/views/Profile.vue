@@ -175,6 +175,7 @@
                   show-count
                   :maxlength="300"
                   :loading="isLoading"
+                  :disabled="isLoading"
                   @keyup.enter="handleEnter"
                 />
               </div>
@@ -210,7 +211,6 @@ import type {
   Summary,
   UserInfo,
 } from "@services/../pl-serve-type-main/type/main";
-
 
 const { t } = useI18n();
 let comment = ref("");
@@ -306,7 +306,11 @@ async function fetchProfile() {
   const userRes = await getData(`/Users/GetUser`, {
     ID: userId,
   });
-  if (userRes.Status !== 200 || !userRes.Data?.User || !userRes.Data.Statistic) {
+  if (
+    userRes.Status !== 200 ||
+    !userRes.Data?.User ||
+    !userRes.Data.Statistic
+  ) {
     return;
   }
   userData.value = userRes.Data as ProfileUserData;
