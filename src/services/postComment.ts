@@ -14,10 +14,10 @@ export default async function postComment(
   updateTrigger: Ref<number>,
 ) {
   const t = i18n.global.t;
-  try {
-    if (isLoading.value || !comment.value.trim()) return;
-    isLoading.value = true;
+  if (isLoading.value || !comment.value.trim()) return;
 
+  isLoading.value = true;
+  try {
     const response = await getData("/Messages/PostComment", {
       TargetID: id,
       TargetType: category,
