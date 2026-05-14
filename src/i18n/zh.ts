@@ -23,6 +23,12 @@ export default {
     reLoginContent:
       "配置项需要重新登录以后才能启用，也可以关闭此弹窗暂时不启用",
   },
+  cookieNotice: {
+    title: "Cookie 提示",
+    message:
+      "我们可能会使用 Cookie 或浏览器本地能力来支持登录、安全、语言偏好和性能优化。本提示只用于告知，不会额外保存你的选择。",
+    dismiss: "知道了",
+  },
   user: {
     level: "等级",
     clickToLogin: "点击登录",

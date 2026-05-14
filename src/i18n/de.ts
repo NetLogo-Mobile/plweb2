@@ -25,6 +25,12 @@ export default {
     reLoginContent:
       "Die Konfiguration muss erneut aktiviert werden, oder Sie können dieses Pop-up schließen",
   },
+  cookieNotice: {
+    title: "Cookie-Hinweis",
+    message:
+      "Wir können Cookies oder Browserfunktionen verwenden, um Anmeldung, Sicherheit, Spracheinstellungen und Leistung zu unterstützen. Dieser Hinweis dient nur zur Information und speichert deine Auswahl nicht zusätzlich.",
+    dismiss: "Verstanden",
+  },
   user: {
     level: "Stufe",
     clickToLogin: "Zum Anmelden klicken",
@@ -154,7 +160,8 @@ export default {
       copyFailed: "Text konnte nicht kopiert werden",
       uploadSuccess: "Cover erfolgreich geändert",
       uploadFailed: "Datei-Upload fehlgeschlagen",
-      changeCoverFailed: "Cover konnte nicht geändert werden, bitte später erneut versuchen",
+      changeCoverFailed:
+        "Cover konnte nicht geändert werden, bitte später erneut versuchen",
       replyToUser: "Antwort an ",
     },
     labels: {

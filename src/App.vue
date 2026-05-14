@@ -1,5 +1,6 @@
 <template>
   <div id="app" @click="handleClick">
+    <CookieNotice />
     <router-view v-slot="{ Component }">
       <!-- keep alive源自于vue-router的缓存 -->
       <!-- keep alive comes from cach function from vue-router -->
@@ -21,6 +22,7 @@
 
 <script setup lang="ts">
 import showUserCard from "@popup/userProfileDialog.ts";
+import CookieNotice from "@components/utils/CookieNotice.vue";
 function handleClick(event: MouseEvent) {
   const target = event.target as HTMLElement;
   if (target.classList.contains("RUser")) {

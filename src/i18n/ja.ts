@@ -24,6 +24,12 @@ export default {
     reLoginContent:
       "設定を有効にするには再度ログインする必要があります。ポップアップを閉じてスキップすることもできます",
   },
+  cookieNotice: {
+    title: "Cookie に関するお知らせ",
+    message:
+      "ログイン、セキュリティ、言語設定、パフォーマンスをサポートするために、Cookie またはブラウザー機能を使用する場合があります。このお知らせは案内のみで、選択内容を別途保存しません。",
+    dismiss: "了解しました",
+  },
   user: {
     level: "レベル",
     clickToLogin: "ログインするをクリック",
@@ -152,7 +158,8 @@ export default {
       copyFailed: "テキストのコピーに失敗しました",
       uploadSuccess: "カバーの変更に成功しました",
       uploadFailed: "ファイルのアップロードに失敗しました",
-      changeCoverFailed: "カバーの変更に失敗しました。しばらくしてから再試行してください",
+      changeCoverFailed:
+        "カバーの変更に失敗しました。しばらくしてから再試行してください",
       replyToUser: "に返信 ",
     },
     labels: {

@@ -24,6 +24,12 @@ export default {
     reLoginContent:
       "La configuration doit être réactivée, ou vous pouvez fermer cette fenêtre contextuelle",
   },
+  cookieNotice: {
+    title: "Avis sur les cookies",
+    message:
+      "Nous pouvons utiliser des cookies ou des fonctionnalités du navigateur pour la connexion, la sécurité, les préférences linguistiques et les performances. Cet avis est uniquement informatif et n’enregistre pas votre choix séparément.",
+    dismiss: "Compris",
+  },
   user: {
     level: "Niveau",
     clickToLogin: "Cliquez pour vous connecter",
@@ -153,7 +159,8 @@ export default {
       copyFailed: "Échec de la copie du texte",
       uploadSuccess: "Couverture modifiée avec succès",
       uploadFailed: "Échec du téléversement du fichier",
-      changeCoverFailed: "Échec du changement de couverture, veuillez réessayer plus tard",
+      changeCoverFailed:
+        "Échec du changement de couverture, veuillez réessayer plus tard",
       replyToUser: "Répondre à : ",
     },
     labels: {

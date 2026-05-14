@@ -24,6 +24,12 @@ export default {
     reLoginContent:
       "The configuration item needs to be logged in again before it can be enabled, or you can close this pop-up window and not enable it for the time being",
   },
+  cookieNotice: {
+    title: "Cookie notice",
+    message:
+      "We may use cookies or browser features to support sign-in, security, language preferences, and performance. This notice is informational only and does not save your choice separately.",
+    dismiss: "Got it",
+  },
   user: {
     level: "Level",
     clickToLogin: "Click to login",
