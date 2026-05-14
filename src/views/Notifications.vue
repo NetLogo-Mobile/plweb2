@@ -52,8 +52,12 @@ import { NTabs, NTabPane } from "naive-ui";
 import Footer from "../components/utils/Footer.vue";
 import { onActivated } from "vue";
 import { checkLogin } from "@services/utils";
+import { clearNotificationUnread } from "@services/notificationUnread";
 
-onActivated(checkLogin);
+onActivated(() => {
+  clearNotificationUnread();
+  checkLogin();
+});
 // onMounted(checkLogin);
 </script>
 

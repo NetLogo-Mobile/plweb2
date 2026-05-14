@@ -52,27 +52,58 @@
         </svg>
         <span>{{ $t("footer.friends") }}</span>
       </router-link>
-      <router-link to="/n">
-        <svg
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-          ></path>
-        </svg>
+      <router-link to="/n" class="notification-link">
+        <span class="notification-icon-wrapper">
+          <svg
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+            ></path>
+            <circle
+              v-if="hasUnreadNotification"
+              class="notification-dot"
+              cx="18"
+              cy="6"
+              r="3.5"
+              fill="#EF4444"
+              stroke="white"
+              stroke-width="2"
+            ></circle>
+          </svg>
+        </span>
         <span>{{ $t("footer.notifications") }}</span>
       </router-link>
     </nav>
   </footer>
 </template>
 
-<script setup></script>
+<script setup lang="ts">
+import { onMounted, onUnmounted, ref } from "vue";
+import Emitter from "@services/eventEmitter";
+import { hasUnreadNotifications } from "@services/notificationUnread";
+
+const hasUnreadNotification = ref(hasUnreadNotifications());
+
+function handleNotificationUnreadChanged(hasUnread: boolean) {
+  hasUnreadNotification.value = hasUnread;
+}
+
+onMounted(() => {
+  Emitter.on("notificationUnreadChanged", handleNotificationUnreadChanged);
+  hasUnreadNotification.value = hasUnreadNotifications();
+});
+
+onUnmounted(() => {
+  Emitter.off("notificationUnreadChanged", handleNotificationUnreadChanged);
+});
+</script>
 
 <style scoped>
 footer {
@@ -118,6 +149,16 @@ nav a span {
   font-size: 12px;
   font-weight: 500;
   margin-top: 4px;
+}
+
+.notification-icon-wrapper {
+  position: relative;
+  display: inline-flex;
+  margin-top: 0;
+}
+
+.notification-dot {
+  pointer-events: none;
 }
 
 footer a.router-link-exact-active {

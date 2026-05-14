@@ -11,12 +11,14 @@ type Events =
   | "loginRequired"
   | "updateTagConfig"
   | "updateUserConfig"
+  | "notificationUnreadChanged"
   | "userLogin";
 
 type EventHandlerMap = {
   loginRequired: () => void;
   updateTagConfig: (data: ContentTag[]) => void;
   updateUserConfig: (data: Record<string, unknown>) => void;
+  notificationUnreadChanged: (hasUnread: boolean) => void;
   userLogin: (res: ResultOf<Users["Authenticate"]>) => void;
 };
 

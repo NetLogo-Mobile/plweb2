@@ -9,6 +9,7 @@ import { showMessage } from "@popup/naiveui.ts";
 import { getPath } from "../utils.ts";
 import { normalizePath } from "./types.ts";
 import { readApiCache, writeApiCache } from "./cache.ts";
+import { updateNotificationUnread } from "../notificationUnread.ts";
 
 import type { ApiPath, APIParam, APIResult } from "./types.ts";
 import type { Device, Result, ResultOf, Users } from "../../pl-serve-type-main/type/main";
@@ -194,6 +195,12 @@ export async function login(
     const data = (await response.json()) as ResultOf<Users["Authenticate"]>;
     if (data.Status === 200) {
       writeApiCache(cacheKey, requestBody, data);
+      const isRealLogin = Boolean(
+        (is_token && arg1 && arg2) || (!is_token && arg1 && arg2),
+      );
+      if (isRealLogin) {
+        updateNotificationUnread(data.Data?.Statistic);
+      }
     }
 
     if (sm.getObj("userAuthInfo").value?.token == null) {
