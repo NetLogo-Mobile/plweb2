@@ -63,6 +63,12 @@ const routes = [
     meta: { keepAlive: false },
   },
   {
+    path: "/royter",
+    name: "RoyterMarkdownEditor",
+    component: () => import("../views/RoyterMarkdownEditor.vue"),
+    meta: { keepAlive: false },
+  },
+  {
     path: "/:catchAll(.*)",
     component: () => import("../views/NotFound.vue"),
     meta: { keepAlive: true },
