@@ -22,7 +22,7 @@
 
 <script setup lang="ts">
 import showUserCard from "@popup/userProfileDialog.ts";
-import CookieNotice from "@components/utils/CookieNotice.vue";
+import CookieNotice from "./components/utils/CookieNotice.vue";
 function handleClick(event: MouseEvent) {
   const target = event.target as HTMLElement;
   if (target.classList.contains("RUser")) {
