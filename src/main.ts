@@ -1,15 +1,15 @@
-import { createApp } from "vue";
-import App from "./App.vue";
-import router from "./router/index";
-import i18n from "@i18n/index";
-import ErrorLogger from "./services/errorLogger.ts";
-import { LogManager } from "@api/logWriter.ts";
-import type { DirectiveBinding } from "vue";
-import "highlight.js/styles/github.css";
+import { createApp } from 'vue'
+import App from './App.vue'
+import router from './router/index'
+import i18n from '@i18n/index'
+import ErrorLogger from './services/errorLogger.ts'
+import { LogManager } from '@api/logWriter.ts'
+import type { DirectiveBinding } from 'vue'
+import 'highlight.js/styles/github.css'
 
-const app = createApp(App);
-app.use(router);
-app.use(i18n);
+const app = createApp(App)
+app.use(router)
+app.use(i18n)
 
 // mobile/embedded browser viewport-vh fix:
 // set a CSS variable --vh to 1% of the innerHeight and update on resize.
@@ -25,23 +25,20 @@ app.use(i18n);
 // setVh();
 
 // Richtext Render
-app.directive("richText", {
+app.directive('richText', {
   mounted(el, binding: DirectiveBinding<() => Promise<string>>) {
-    el.innerHTML = "rendering...";
+    el.innerHTML = 'rendering...'
     Promise.resolve(binding.value()).then((html) => {
-      el.innerHTML = html;
-    });
+      el.innerHTML = html
+    })
   },
-  updated(
-    el: HTMLElement,
-    binding: DirectiveBinding<() => Promise<string> | string>,
-  ) {
+  updated(el: HTMLElement, binding: DirectiveBinding<() => Promise<string> | string>) {
     Promise.resolve(binding.value()).then((html) => {
-      el.innerHTML = html;
-    });
+      el.innerHTML = html
+    })
   },
-});
+})
 
-app.mount("#app");
-window.$ErrorLogger = new ErrorLogger(app);
-window.$Logger = LogManager;
+app.mount('#app')
+window.$ErrorLogger = new ErrorLogger(app)
+window.$Logger = LogManager

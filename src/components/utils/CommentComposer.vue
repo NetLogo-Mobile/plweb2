@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="comment-composer"
-    :class="{ 'comment-composer--compact': isCompact }"
-  >
+  <div class="comment-composer" :class="{ 'comment-composer--compact': isCompact }">
     <div class="comment-composer__surface">
       <n-input
         ref="inputRef"
@@ -38,54 +35,54 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref } from "vue";
-import { NButton, NInput } from "naive-ui";
-import { useResponsive } from "../../layout/useResponsive";
+import { computed, nextTick, ref } from 'vue'
+import { NButton, NInput } from 'naive-ui'
+import { useResponsive } from '../../layout/useResponsive'
 
 const props = withDefaults(
   defineProps<{
-    modelValue: string;
-    placeholder: string;
-    maxlength?: number;
-    loading?: boolean;
-    disabled?: boolean;
+    modelValue: string
+    placeholder: string
+    maxlength?: number
+    loading?: boolean
+    disabled?: boolean
   }>(),
   {
     maxlength: 300,
     loading: false,
     disabled: false,
   },
-);
+)
 
 const emit = defineEmits<{
-  (e: "update:modelValue", value: string): void;
-  (e: "submit"): void;
-}>();
+  (e: 'update:modelValue', value: string): void
+  (e: 'submit'): void
+}>()
 
-const inputRef = ref<{ $el?: HTMLElement } | null>(null);
-const { isCompact, isUltraCompact } = useResponsive();
-const isSubmitDisabled = computed(() => props.disabled || props.loading);
+const inputRef = ref<{ $el?: HTMLElement } | null>(null)
+const { isCompact, isUltraCompact } = useResponsive()
+const isSubmitDisabled = computed(() => props.disabled || props.loading)
 
 function handleSubmit() {
-  if (isSubmitDisabled.value) return;
-  emit("submit");
+  if (isSubmitDisabled.value) return
+  emit('submit')
 }
 
 function handleKeydown(event: KeyboardEvent) {
-  if (event.isComposing) return;
-  event.preventDefault();
-  handleSubmit();
+  if (event.isComposing) return
+  event.preventDefault()
+  handleSubmit()
 }
 
 async function handleFocus() {
-  await nextTick();
+  await nextTick()
   setTimeout(() => {
     inputRef.value?.$el?.scrollIntoView({
-      block: "nearest",
-      inline: "nearest",
-      behavior: "smooth",
-    });
-  }, 180);
+      block: 'nearest',
+      inline: 'nearest',
+      behavior: 'smooth',
+    })
+  }, 180)
 }
 </script>
 

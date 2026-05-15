@@ -2,7 +2,7 @@
   <div class="work-box" @click="handleClick">
     <div class="cover" :style="{ height: projectsHeight }">
       <img :src="imgUrl" alt="" />
-      <div class="time">{{ formatDate(item.ID, false, "date") }}</div>
+      <div class="time">{{ formatDate(item.ID, false, 'date') }}</div>
     </div>
     <div class="info">
       <div class="title">{{ item.Subject }}</div>
@@ -25,23 +25,23 @@
 </template>
 
 <script setup lang="ts">
-import router from "../../router";
-import type { Summary } from "@services/../pl-serve-type-main/type/main";
-import { getCoverUrl, getUserUrl, formatDate } from "@services/utils";
-import { useResponsive } from "../../layout/useResponsive";
+import router from '../../router'
+import type { Summary } from '@services/../pl-serve-type-main/type/main'
+import { getCoverUrl, getUserUrl, formatDate } from '@services/utils'
+import { useResponsive } from '../../layout/useResponsive'
 
-const { projectsHeight, fontSizeS } = useResponsive();
+const { projectsHeight, fontSizeS } = useResponsive()
 const { item } = defineProps<{
-  item: Summary;
-  showName?: boolean;
-}>();
+  item: Summary
+  showName?: boolean
+}>()
 
-const imgUrl = getCoverUrl(item);
-const avartarUrl = getUserUrl(item.User);
+const imgUrl = getCoverUrl(item)
+const avartarUrl = getUserUrl(item.User)
 
 const handleClick = () => {
-  router.push(`/p/${item.Category}/${item.ID}`);
-};
+  router.push(`/p/${item.Category}/${item.ID}`)
+}
 </script>
 
 <style scoped>

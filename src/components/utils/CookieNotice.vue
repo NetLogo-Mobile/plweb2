@@ -1,35 +1,28 @@
 <template>
-  <aside
-    v-if="isVisible"
-    class="cookie-notice"
-    role="status"
-    aria-live="polite"
-  >
+  <aside v-if="isVisible" class="cookie-notice" role="status" aria-live="polite">
     <div class="cookie-notice__content">
-      <strong class="cookie-notice__title">{{
-        t("cookieNotice.title")
-      }}</strong>
+      <strong class="cookie-notice__title">{{ t('cookieNotice.title') }}</strong>
       <p class="cookie-notice__message">
-        {{ t("cookieNotice.message") }}
+        {{ t('cookieNotice.message') }}
       </p>
     </div>
     <button class="cookie-notice__button" type="button" @click="dismissNotice">
-      {{ t("cookieNotice.dismiss") }}
+      {{ t('cookieNotice.dismiss') }}
     </button>
   </aside>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { useI18n } from "vue-i18n";
-import storageManager from "@storage/index";
+import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import storageManager from '@storage/index'
 
-const { t } = useI18n();
-const isVisible = ref(storageManager.getObj("cookieConsent").status !== "success");
+const { t } = useI18n()
+const isVisible = ref(storageManager.getObj('cookieConsent').status !== 'success')
 
 function dismissNotice() {
-  storageManager.setObj("cookieConsent", true);
-  isVisible.value = false;
+  storageManager.setObj('cookieConsent', true)
+  isVisible.value = false
 }
 </script>
 

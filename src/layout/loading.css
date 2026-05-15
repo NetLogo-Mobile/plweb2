@@ -9,7 +9,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-image: url("/assets/messages/Message-Default.png");
+  background-image: url('/assets/messages/Message-Default.png');
   background-position: center;
   background-size: contain;
   background-repeat: no-repeat;

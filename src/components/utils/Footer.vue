@@ -15,7 +15,7 @@
             stroke-width="2"
           ></path>
         </svg>
-        <span>{{ $t("footer.home") }}</span>
+        <span>{{ $t('footer.home') }}</span>
       </router-link>
       <router-link to="/b">
         <svg
@@ -31,7 +31,7 @@
             stroke-width="2"
           ></path>
         </svg>
-        <span>{{ $t("footer.blackHole") }}</span>
+        <span>{{ $t('footer.blackHole') }}</span>
       </router-link>
       <!-- <router-link to="/my-lab">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -41,16 +41,12 @@
         <span>我的</span>
       </router-link> -->
       <router-link to="/f">
-        <svg
-          fill="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
+        <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
           ></path>
         </svg>
-        <span>{{ $t("footer.friends") }}</span>
+        <span>{{ $t('footer.friends') }}</span>
       </router-link>
       <router-link to="/n" class="notification-link">
         <span class="notification-icon-wrapper">
@@ -78,31 +74,31 @@
             ></circle>
           </svg>
         </span>
-        <span>{{ $t("footer.notifications") }}</span>
+        <span>{{ $t('footer.notifications') }}</span>
       </router-link>
     </nav>
   </footer>
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from "vue";
-import Emitter from "@services/eventEmitter";
-import { hasUnreadNotifications } from "@services/notificationUnread";
+import { onMounted, onUnmounted, ref } from 'vue'
+import Emitter from '@services/eventEmitter'
+import { hasUnreadNotifications } from '@services/notificationUnread'
 
-const hasUnreadNotification = ref(hasUnreadNotifications());
+const hasUnreadNotification = ref(hasUnreadNotifications())
 
 function handleNotificationUnreadChanged(hasUnread: boolean) {
-  hasUnreadNotification.value = hasUnread;
+  hasUnreadNotification.value = hasUnread
 }
 
 onMounted(() => {
-  Emitter.on("notificationUnreadChanged", handleNotificationUnreadChanged);
-  hasUnreadNotification.value = hasUnreadNotifications();
-});
+  Emitter.on('notificationUnreadChanged', handleNotificationUnreadChanged)
+  hasUnreadNotification.value = hasUnreadNotifications()
+})
 
 onUnmounted(() => {
-  Emitter.off("notificationUnreadChanged", handleNotificationUnreadChanged);
-});
+  Emitter.off('notificationUnreadChanged', handleNotificationUnreadChanged)
+})
 </script>
 
 <style scoped>

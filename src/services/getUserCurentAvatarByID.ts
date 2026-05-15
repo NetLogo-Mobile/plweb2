@@ -1,15 +1,15 @@
-import { getData } from "./api/getData";
-import { getUserUrl } from "./utils";
-import { getPath } from "./utils";
-import storageManager from "./storage";
-import type { ResultOf, Users } from "../pl-serve-type-main/type/main";
+import { getData } from './api/getData'
+import { getUserUrl } from './utils'
+import { getPath } from './utils'
+import storageManager from './storage'
+import type { ResultOf, Users } from '../pl-serve-type-main/type/main'
 
-type AvatarCache = Record<string, [number, number]>;
+type AvatarCache = Record<string, [number, number]>
 
 let cache: AvatarCache = (() => {
-  const result = storageManager.getObj("userIDAndAvatarIDMap");
-  return result.status === "success" && result.value ? result.value : {};
-})();
+  const result = storageManager.getObj('userIDAndAvatarIDMap')
+  return result.status === 'success' && result.value ? result.value : {}
+})()
 
 /**
  * 根据ID获取用户头像，默认缓存，三秒超时，调用本操作后，请等待全部异步结束之后调用saveCache()
@@ -19,7 +19,7 @@ let cache: AvatarCache = (() => {
  */
 
 export async function getAvatarUrl(ID: string, useCache = true) {
-  let avatarIndex = 0;
+  let avatarIndex = 0
   // 72小时缓存, 注意，在任何getUser请求都会刷新本缓存
   // 72-hour cache, note that any getUser request will refresh this cache
   if (
@@ -29,33 +29,33 @@ export async function getAvatarUrl(ID: string, useCache = true) {
     cache[ID][0] !== undefined &&
     cache[ID][0] !== null
   ) {
-    avatarIndex = cache[ID][0];
+    avatarIndex = cache[ID][0]
   } else {
     try {
       // Promise用于超时
       // Promise is used for timeout
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error("请求超时")), 30000); // 30秒 30s
-      });
+        setTimeout(() => reject(new Error('请求超时')), 30000) // 30秒 30s
+      })
       const response = (await Promise.race([
-        getData("/Users/GetUser", { ID }),
+        getData('/Users/GetUser', { ID }),
         timeoutPromise,
-      ])) as ResultOf<Users["GetUser"]>;
-      avatarIndex = response.Data?.User?.Avatar ?? 0;
+      ])) as ResultOf<Users['GetUser']>
+      avatarIndex = response.Data?.User?.Avatar ?? 0
       if (!avatarIndex) {
-        return getPath("/@base/assets/user/default-avatar.png");
+        return getPath('/@base/assets/user/default-avatar.png')
       }
-      cache[ID] = [avatarIndex, Date.now()];
-      storageManager.setObj("userIDAndAvatarIDMap", cache, 72 * 60 * 60 * 1000); // 72小时 72 hours
+      cache[ID] = [avatarIndex, Date.now()]
+      storageManager.setObj('userIDAndAvatarIDMap', cache, 72 * 60 * 60 * 1000) // 72小时 72 hours
     } catch (error) {
-      console.error("Getting avatar error", error);
-      return getPath("/@base/assets/user/default-avatar.png");
+      console.error('Getting avatar error', error)
+      return getPath('/@base/assets/user/default-avatar.png')
     }
   }
-  const user = { ID, Avatar: avatarIndex };
-  return getUserUrl(user);
+  const user = { ID, Avatar: avatarIndex }
+  return getUserUrl(user)
 }
 
 export function saveCache() {
-  storageManager.setObj("userIDAndAvatarIDMap", cache, 72 * 60 * 60 * 1000);
+  storageManager.setObj('userIDAndAvatarIDMap', cache, 72 * 60 * 60 * 1000)
 }

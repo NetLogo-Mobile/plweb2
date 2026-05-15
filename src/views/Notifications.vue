@@ -1,6 +1,6 @@
 <template>
   <Header>
-    <h1>{{ t("notifications.title") }}</h1>
+    <h1>{{ t('notifications.title') }}</h1>
   </Header>
   <main>
     <div class="outer">
@@ -44,20 +44,20 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from "vue-i18n";
-const { t } = useI18n();
-import NotificationList from "../components/messages/NotificationList.vue";
-import Header from "../components/utils/Header.vue";
-import { NTabs, NTabPane } from "naive-ui";
-import Footer from "../components/utils/Footer.vue";
-import { onActivated } from "vue";
-import { checkLogin } from "@services/utils";
-import { clearNotificationUnread } from "@services/notificationUnread";
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
+import NotificationList from '../components/messages/NotificationList.vue'
+import Header from '../components/utils/Header.vue'
+import { NTabs, NTabPane } from 'naive-ui'
+import Footer from '../components/utils/Footer.vue'
+import { onActivated } from 'vue'
+import { checkLogin } from '@services/utils'
+import { clearNotificationUnread } from '@services/notificationUnread'
 
 onActivated(() => {
-  clearNotificationUnread();
-  checkLogin();
-});
+  clearNotificationUnread()
+  checkLogin()
+})
 // onMounted(checkLogin);
 </script>
 

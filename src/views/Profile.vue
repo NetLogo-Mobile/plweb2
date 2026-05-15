@@ -76,24 +76,16 @@
           </div>
           <Tag
             category="User"
-            :tag="
-              userData.User?.Verification
-                ? 'C-' + userData.User?.Verification
-                : 'C-user'
-            "
+            :tag="userData.User?.Verification ? 'C-' + userData.User?.Verification : 'C-user'"
             style="color: aquamarine; font-weight: bold"
           ></Tag>
           <Tag
             category="User"
-            :tag="
-              t('profile.fans', { count: userData.Statistic.FollowerCount })
-            "
+            :tag="t('profile.fans', { count: userData.Statistic.FollowerCount })"
           ></Tag>
           <Tag
             category="User"
-            :tag="
-              t('profile.follows', { count: userData.Statistic.FollowingCount })
-            "
+            :tag="t('profile.follows', { count: userData.Statistic.FollowingCount })"
           ></Tag>
         </div>
         <div v-if="userData.Statistic?.Cover" class="coverProject coverBottom">
@@ -113,7 +105,7 @@
             "
           >
             <p style="margin: 0; font-size: smaller">
-              {{ t("profile.coverTip") }}
+              {{ t('profile.coverTip') }}
             </p>
             <p style="margin: 0; font-size: medium">
               {{ userData.Statistic.Cover?.Subject }}
@@ -124,11 +116,7 @@
     </template>
     <template #right>
       <div class="container">
-        <n-tabs
-          v-model:value="selectedTab"
-          justify-content="space-evenly"
-          type="line"
-        >
+        <n-tabs v-model:value="selectedTab" justify-content="space-evenly" type="line">
           <n-tab-pane name="Intro" :tab="t('profile.works')" animated>
             <div id="project-list" class="projects">
               <div v-for="[t, d] in Object.entries(expData)" :key="t">
@@ -153,9 +141,7 @@
           </n-tab-pane>
           <n-tab-pane
             name="Comment"
-            :tab="
-              t('profile.comments', { count: userData.Statistic.CommentCount })
-            "
+            :tab="t('profile.comments', { count: userData.Statistic.CommentCount })"
           >
             <div class="right-bottom-container">
               <div class="message-wrapper">
@@ -188,59 +174,59 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { getData } from "@services/api/getData.ts";
-import { showAPiError } from "@popup/index.ts";
-import { removeToken } from "@services/utils.ts";
-import { NTabs, NTabPane, NInput } from "naive-ui";
-import Tag from "../components/utils/TagLarger.vue";
-import MessageList from "../components/messages/MessageList.vue";
-import storageManager from "@services/storage";
-import Block from "../components/blocks/Block.vue";
-import postComment from "@services/postComment.ts";
-import BiLayout from "../layout/BiLayout.vue";
-import "../layout/BiLayout.css";
-import { copyText, getCoverUrl, getUserUrl } from "@services/utils.ts";
-import { useI18n } from "vue-i18n";
-import showActionSheet from "@popup/actionSheet.ts";
-import { showMessage } from "@popup/naiveui";
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { getData } from '@services/api/getData.ts'
+import { showAPiError } from '@popup/index.ts'
+import { removeToken } from '@services/utils.ts'
+import { NTabs, NTabPane, NInput } from 'naive-ui'
+import Tag from '../components/utils/TagLarger.vue'
+import MessageList from '../components/messages/MessageList.vue'
+import storageManager from '@services/storage'
+import Block from '../components/blocks/Block.vue'
+import postComment from '@services/postComment.ts'
+import BiLayout from '../layout/BiLayout.vue'
+import '../layout/BiLayout.css'
+import { copyText, getCoverUrl, getUserUrl } from '@services/utils.ts'
+import { useI18n } from 'vue-i18n'
+import showActionSheet from '@popup/actionSheet.ts'
+import { showMessage } from '@popup/naiveui'
 import type {
   CommentResult,
   Statistic,
   Summary,
   UserInfo,
-} from "@services/../pl-serve-type-main/type/main";
+} from '@services/../pl-serve-type-main/type/main'
 
-const { t } = useI18n();
-let comment = ref("");
-let isLoading = ref(false);
-let upDate = ref(1);
-let replyID = ref("");
-let isOwnProfile = ref(false);
+const { t } = useI18n()
+let comment = ref('')
+let isLoading = ref(false)
+let upDate = ref(1)
+let replyID = ref('')
+let isOwnProfile = ref(false)
 
-const selectedTab = ref("Intro");
-const route = useRoute();
-const router = useRouter();
+const selectedTab = ref('Intro')
+const route = useRoute()
+const router = useRouter()
 
-let coverUrl = ref("");
+let coverUrl = ref('')
 
 type ProfileUserData = {
-  User: UserInfo;
+  User: UserInfo
   Statistic: Pick<
     Statistic,
-    "CommentCount" | "ExperimentCount" | "FollowerCount" | "FollowingCount"
+    'CommentCount' | 'ExperimentCount' | 'FollowerCount' | 'FollowingCount'
   > & {
-    Cover: Pick<Statistic["Cover"], "ID" | "Category" | "Subject" | "Image">;
-  };
-};
+    Cover: Pick<Statistic['Cover'], 'ID' | 'Category' | 'Subject' | 'Image'>
+  }
+}
 
 let userData = ref<ProfileUserData>({
   User: {
-    ID: "",
-    Nickname: "Loading...",
-    Signature: "",
-    Verification: "Banned",
+    ID: '',
+    Nickname: 'Loading...',
+    Signature: '',
+    Verification: 'Banned',
     Avatar: 322,
     AvatarRegion: 0,
     Decoration: 0,
@@ -251,16 +237,16 @@ let userData = ref<ProfileUserData>({
     Experience: 0,
     Prestige: 0,
     Subscription: 0,
-    SubscriptionUntil: "",
+    SubscriptionUntil: '',
     IsBinded: true,
     Regions: [1],
     Socials: {},
   },
   Statistic: {
     Cover: {
-      ID: "",
-      Category: "",
-      Subject: "",
+      ID: '',
+      Category: '',
+      Subject: '',
       Image: 1,
     },
     CommentCount: 0,
@@ -268,57 +254,45 @@ let userData = ref<ProfileUserData>({
     FollowerCount: 0,
     FollowingCount: 0,
   },
-});
+})
 
-let expData = ref<Record<string, Summary[]>>({});
+let expData = ref<Record<string, Summary[]>>({})
 
 async function fetchProfile() {
-  const userId = Array.isArray(route.params.id)
-    ? route.params.id[0] || ""
-    : route.params.id;
+  const userId = Array.isArray(route.params.id) ? route.params.id[0] || '' : route.params.id
   const expRes = await getData(`/Contents/GetProfile`, {
     ID: userId,
-  });
+  })
   if (expRes.Status !== 200) {
     showAPiError(
-      t("errors.apiErrorTitle"),
-      t("errors.apiErrorMessage", {
-        path: "/Contents/GetProfile",
+      t('errors.apiErrorTitle'),
+      t('errors.apiErrorMessage', {
+        path: '/Contents/GetProfile',
         status: expRes.Status,
-        message: expRes?.Message || "",
+        message: expRes?.Message || '',
       }),
       fetchProfile,
-    );
-    const _req = removeToken({ ID: userId });
-    const _res = removeToken(expRes);
-    window.$ErrorLogger.captureApiError(
-      "POST",
-      "/Contents/GetProfile",
-      expRes.Status,
-      _res,
-      _req,
-    );
-    console.error(`/Contents/GetProfile returned ${expRes.Status}`, _res);
-    return;
+    )
+    const _req = removeToken({ ID: userId })
+    const _res = removeToken(expRes)
+    window.$ErrorLogger.captureApiError('POST', '/Contents/GetProfile', expRes.Status, _res, _req)
+    console.error(`/Contents/GetProfile returned ${expRes.Status}`, _res)
+    return
   }
-  if (!expRes.Data) return;
-  expData.value = expRes.Data.Experiments;
+  if (!expRes.Data) return
+  expData.value = expRes.Data.Experiments
   const userRes = await getData(`/Users/GetUser`, {
     ID: userId,
-  });
-  if (
-    userRes.Status !== 200 ||
-    !userRes.Data?.User ||
-    !userRes.Data.Statistic
-  ) {
-    return;
+  })
+  if (userRes.Status !== 200 || !userRes.Data?.User || !userRes.Data.Statistic) {
+    return
   }
-  userData.value = userRes.Data as ProfileUserData;
+  userData.value = userRes.Data as ProfileUserData
 
   // Check if viewing own profile
-  const currentUser = storageManager.getObj("userInfo")?.value;
+  const currentUser = storageManager.getObj('userInfo')?.value
   if (currentUser && currentUser.ID === userId) {
-    isOwnProfile.value = true;
+    isOwnProfile.value = true
   }
 
   // Civitas-john always procrastinate on addressing the request to solve the anti-leeching issue.
@@ -327,99 +301,88 @@ async function fetchProfile() {
   // So does it really works? No one knows...
   const _url = userData.value.Statistic.Cover
     ? getCoverUrl(userData.value.Statistic.Cover)
-    : getUserUrl(userRes.Data.User);
+    : getUserUrl(userRes.Data.User)
   await fetch(_url, {
     // We annot get the response with mode: "no-cors"
     // But the browser will (缓存) cache the image anyway
-    referrerPolicy: "no-referrer",
-    mode: "no-cors",
-  });
-  coverUrl.value = _url;
+    referrerPolicy: 'no-referrer',
+    mode: 'no-cors',
+  })
+  coverUrl.value = _url
   window.$Logger.logPageView({
     pageLink: `/User/${route.params.id}/`,
     timeStamp: Date.now(),
-  });
+  })
 }
 
 onMounted(() => {
-  fetchProfile();
-});
+  fetchProfile()
+})
 
 function handleMsgClick(item: CommentResult) {
-  replyID.value = item.UserID;
-  comment.value = `${t("ui.messages.replyToUser")}@${item.Nickname}: `;
+  replyID.value = item.UserID
+  comment.value = `${t('ui.messages.replyToUser')}@${item.Nickname}: `
 }
 
 async function handleEnter() {
-  await postComment(
-    comment,
-    isLoading,
-    "User",
-    route.params.id as string,
-    replyID,
-    upDate,
-  );
+  await postComment(comment, isLoading, 'User', route.params.id as string, replyID, upDate)
 }
 
 function goBack() {
-  window.history.back();
+  window.history.back()
 }
 
 function goToSettings() {
-  router.push("/s");
+  router.push('/s')
 }
 
 // Sort 2 means soted by popularity; Sort 1 means sorted by latest;Sort 3 means random sorted
 function getLink(name: string) {
   switch (name) {
-    case "Latest-Experiments":
-      return `experiments://UserID/${route.params.id}`;
-    case "Featured-Experiments":
-      return `experiments://UserID/${route.params.id}/Tags/精选`;
-    case "Latest-Discussions":
-      return `discussions://UserID/${route.params.id}`;
-    case "Featured-Discussions":
-      return `discussions://UserID/${route.params.id}/Tags/精选`;
-    case "Popular-Discussions":
-      return `discussions://UserID/${route.params.id}/Sort/2`;
-    case "Popular-Experiments":
-      return `experiments://UserID/${route.params.id}/Sort/2`;
+    case 'Latest-Experiments':
+      return `experiments://UserID/${route.params.id}`
+    case 'Featured-Experiments':
+      return `experiments://UserID/${route.params.id}/Tags/精选`
+    case 'Latest-Discussions':
+      return `discussions://UserID/${route.params.id}`
+    case 'Featured-Discussions':
+      return `discussions://UserID/${route.params.id}/Tags/精选`
+    case 'Popular-Discussions':
+      return `discussions://UserID/${route.params.id}/Sort/2`
+    case 'Popular-Experiments':
+      return `experiments://UserID/${route.params.id}/Sort/2`
     default:
-      return `discussions://user${route.params.id}`;
+      return `discussions://user${route.params.id}`
   }
 }
 
 // Copy text to clipboard
 async function copy(text: string) {
-  const ok = await copyText(text);
+  const ok = await copyText(text)
   if (ok) {
-    showMessage("info", t("ui.messages.copySuccess"), { duration: 1000 });
+    showMessage('info', t('ui.messages.copySuccess'), { duration: 1000 })
   } else {
-    showMessage("error", t("ui.messages.copyFailed"), { duration: 2000 });
+    showMessage('error', t('ui.messages.copyFailed'), { duration: 2000 })
   }
 }
 
 function copyUser() {
   showActionSheet(
     [
-      { label: t("profile.copyID") },
-      { label: t("profile.copyInternalLink") },
-      { label: t("profile.copyExternalLink") },
+      { label: t('profile.copyID') },
+      { label: t('profile.copyInternalLink') },
+      { label: t('profile.copyExternalLink') },
     ],
     (idx) => {
       if (idx === 0) {
-        copy(userData.value.User.ID);
+        copy(userData.value.User.ID)
       } else if (idx === 1) {
-        copy(
-          `<user=${userData.value.User.ID}>${userData.value.User.Nickname}</user>`,
-        );
+        copy(`<user=${userData.value.User.ID}>${userData.value.User.Nickname}</user>`)
       } else if (idx === 2) {
-        copy(
-          `<external=${window.location.href}>${userData.value.User.Nickname}[web]</external>`,
-        );
+        copy(`<external=${window.location.href}>${userData.value.User.Nickname}[web]</external>`)
       }
     },
-  );
+  )
 }
 </script>
 

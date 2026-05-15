@@ -4,24 +4,14 @@
     <!-- @see https://icomoon.io/app/ -->
     <div class="buttons">
       <div class="logout" @click="logout">
-        <svg
-          width="25"
-          height="25"
-          viewBox="0 0 32 32"
-          xmlns="http://www.w3.org/2000/svg"
-        >
+        <svg width="25" height="25" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M24 20v-4h-10v-4h10v-4l6 6zM22 18v8h-10v6l-12-6v-26h22v10h-2v-8h-16l8 4v18h8v-6z"
           ></path>
         </svg>
       </div>
       <div v-show="!isFullScreen" class="fullScreen" @click="toggleFullScreen">
-        <svg
-          width="22"
-          height="22"
-          viewBox="0 0 32 32"
-          xmlns="http://www.w3.org/2000/svg"
-        >
+        <svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
           <path d="M32 0h-13l5 5-6 6 3 3 6-6 5 5z"></path>
           <path d="M32 32v-13l-5 5-6-6-3 3 6 6-5 5z"></path>
           <path d="M0 32h13l-5-5 6-6-3-3-6 6-5-5z"></path>
@@ -29,12 +19,7 @@
         </svg>
       </div>
       <div v-show="isFullScreen" class="fullScreen" @click="toggleFullScreen">
-        <svg
-          width="25"
-          height="25"
-          viewBox="0 0 32 32"
-          xmlns="http://www.w3.org/2000/svg"
-        >
+        <svg width="25" height="25" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
           <path d="M18 14h13l-5-5 6-6-3-3-6 6-5-5z"></path>
           <path d="M18 18v13l5-5 6 6 3-3-6-6 5-5z"></path>
           <path d="M14 18h-13l5 5-6 6 3 3 6-6 5 5z"></path>
@@ -46,18 +31,18 @@
 </template>
 
 <script setup lang="ts">
-import router from "../../router/index";
-import { ref } from "vue";
-let isFullScreen = ref(false);
+import router from '../../router/index'
+import { ref } from 'vue'
+let isFullScreen = ref(false)
 
 function toggleFullScreen() {
   if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen();
-    isFullScreen.value = true;
+    document.documentElement.requestFullscreen()
+    isFullScreen.value = true
   } else {
     if (document.exitFullscreen) {
-      document.exitFullscreen();
-      isFullScreen.value = false;
+      document.exitFullscreen()
+      isFullScreen.value = false
     }
   }
 }
@@ -68,11 +53,11 @@ function toggleFullScreen() {
  *  @deprecated
  */
 function logout() {
-  localStorage.clear();
+  localStorage.clear()
   // This is not merely to clear the storage, mabye an error happened in our storage system so the user try to logout
-  router.push({ name: "Home" }).then(() => {
-    window.location.reload();
-  });
+  router.push({ name: 'Home' }).then(() => {
+    window.location.reload()
+  })
 }
 </script>
 

@@ -4,11 +4,8 @@
       <!-- title的i18n应当是服务器返回自动i处理的 -->
       <!-- The title should be processed automatically by the server for i18n -->
       <div id="title">{{ props.block.Header }}</div>
-      <router-link
-        id="more"
-        :to="`/l/${EncodeAPITargetLink(props.block.TargetLink)}`"
-      >
-        <div>{{ $t("worklist.more") }}</div>
+      <router-link id="more" :to="`/l/${EncodeAPITargetLink(props.block.TargetLink)}`">
+        <div>{{ $t('worklist.more') }}</div>
       </router-link>
     </div>
     <div style="display: flex; flex-direction: column; gap: 10px">
@@ -22,23 +19,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import type {
-  Block as BlockType,
-  TopicBlock,
-} from "@services/../pl-serve-type-main/type/main";
-import { useResponsive } from "../../layout/useResponsive";
-import Detailed from "../projects/detailed.vue";
-import { EncodeAPITargetLink } from "@services/utils.ts";
+import { computed } from 'vue'
+import type { Block as BlockType, TopicBlock } from '@services/../pl-serve-type-main/type/main'
+import { useResponsive } from '../../layout/useResponsive'
+import Detailed from '../projects/detailed.vue'
+import { EncodeAPITargetLink } from '@services/utils.ts'
 type Props = {
-  block: BlockType | TopicBlock;
-  maxProjectsPerBlock?: number;
-};
-const props = withDefaults(defineProps<Props>(), {});
-const { maxProjectsPerBlock: maxDefault } = useResponsive();
-const displayCount = computed(
-  () => props.maxProjectsPerBlock ?? maxDefault.value,
-);
+  block: BlockType | TopicBlock
+  maxProjectsPerBlock?: number
+}
+const props = withDefaults(defineProps<Props>(), {})
+const { maxProjectsPerBlock: maxDefault } = useResponsive()
+const displayCount = computed(() => props.maxProjectsPerBlock ?? maxDefault.value)
 </script>
 
 <style scoped>

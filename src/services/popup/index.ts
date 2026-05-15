@@ -5,16 +5,10 @@
 // 本文件作为弹出框服务的入口，可以通过"@popup"来引用
 // 这里只会存储js逻辑，并且所有的元素脱离根元素APP而独立成为新的Vue实例
 // 一些组件（例如弹出框的具体内容会写在components/popup/下）
-import showLoginModel from "./loginModel";
-import {
-  showDialog,
-  showLoadingBar,
-  showMessage,
-  showModal,
-  showNotification,
-} from "./naiveui";
-import showUserProfileDialog from "./userProfileDialog";
-import { showAPiError } from "./apiError";
+import showLoginModel from './loginModel'
+import { showDialog, showLoadingBar, showMessage, showModal, showNotification } from './naiveui'
+import showUserProfileDialog from './userProfileDialog'
+import { showAPiError } from './apiError'
 
 export {
   showMessage,
@@ -25,4 +19,4 @@ export {
   showUserProfileDialog,
   showLoginModel,
   showAPiError,
-};
+}

@@ -1,21 +1,13 @@
 <template>
   <div id="notification_container" @click="handleReply">
     <div class="img">
-      <img
-        id="avatar"
-        :src="avatarUrl"
-        @click.stop="showUserCard(message.UserID)"
-      />
+      <img id="avatar" :src="avatarUrl" @click.stop="showUserCard(message.UserID)" />
     </div>
     <div id="notification" class="notification">
       <div id="notification_title" class="notification_title">
         <div class="name">{{ message.Nickname }}</div>
         <div class="time">{{ formatDate(message.ID, true) }}</div>
-        <div
-          v-if="currentUserId === message.UserID"
-          class="delete"
-          @click.stop="deleteMsg"
-        >
+        <div v-if="currentUserId === message.UserID" class="delete" @click.stop="deleteMsg">
           delete
         </div>
       </div>
@@ -37,50 +29,47 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
-import parse from "@services/pltxt2htm/advancedParser";
-import showUserCard from "@popup/userProfileDialog.ts";
-import { getAvatarUrl } from "@services/getUserCurentAvatarByID";
-import storageManager from "@storage/index.ts";
-import { formatDate, getPath, getAnonymousAvatarByNickname } from "@services/utils";
-import type { CommentResult } from "@services/../pl-serve-type-main/type/main";
+import { ref, onMounted, watch } from 'vue'
+import parse from '@services/pltxt2htm/advancedParser'
+import showUserCard from '@popup/userProfileDialog.ts'
+import { getAvatarUrl } from '@services/getUserCurentAvatarByID'
+import storageManager from '@storage/index.ts'
+import { formatDate, getPath, getAnonymousAvatarByNickname } from '@services/utils'
+import type { CommentResult } from '@services/../pl-serve-type-main/type/main'
 
 const props = defineProps<{
-  message: CommentResult;
-}>();
+  message: CommentResult
+}>()
 
-const emit = defineEmits(["msgClick", "deleteMsg"]);
-const currentUserId = storageManager.getObj("userInfo")?.value?.ID || "";
-const avatarUrl = ref(getPath("/@base/assets/user/default-avatar.png"));
+const emit = defineEmits(['msgClick', 'deleteMsg'])
+const currentUserId = storageManager.getObj('userInfo')?.value?.ID || ''
+const avatarUrl = ref(getPath('/@base/assets/user/default-avatar.png'))
 
 const setCurrentAvatar = async () => {
-  const isAnonymous = props.message.Flags?.includes("Anonymous");
+  const isAnonymous = props.message.Flags?.includes('Anonymous')
 
-  if (!isAnonymous && props.message.UserID !== "") {
+  if (!isAnonymous && props.message.UserID !== '') {
     // 有些地方是匿名的，所以userID为空，不设置心得头像就会沿用默认头像
     // Some places are anonymous, so if userID is empty, the default avatar will be used.
-    avatarUrl.value = await getAvatarUrl(props.message.UserID);
+    avatarUrl.value = await getAvatarUrl(props.message.UserID)
   } else if (/^\d{4}$/.test(props.message.Nickname)) {
-    avatarUrl.value = getAnonymousAvatarByNickname(props.message.Nickname);
+    avatarUrl.value = getAnonymousAvatarByNickname(props.message.Nickname)
   } else {
-    avatarUrl.value = getPath("/@base/assets/user/default-avatar.png");
+    avatarUrl.value = getPath('/@base/assets/user/default-avatar.png')
   }
-};
+}
 
-onMounted(setCurrentAvatar);
-watch(
-  () => [props.message.UserID, props.message.Nickname, props.message.Flags],
-  setCurrentAvatar,
-);
+onMounted(setCurrentAvatar)
+watch(() => [props.message.UserID, props.message.Nickname, props.message.Flags], setCurrentAvatar)
 
 function handleReply() {
-  emit("msgClick", props.message);
+  emit('msgClick', props.message)
 }
 
 // 删除消息需要将n事件上报到父组件，因为其具有数据所有权
 //The delete message needs to report the  event to the parent component, because it has ownership of the data.
 function deleteMsg() {
-  emit("deleteMsg", props.message);
+  emit('deleteMsg', props.message)
 }
 </script>
 
@@ -94,7 +83,7 @@ function deleteMsg() {
   flex-direction: row;
   gap: 10px;
   background: white;
-    /* white-space: nowrap; */
+  /* white-space: nowrap; */
   overflow: hidden;
   word-break: break-all;
 }
@@ -110,7 +99,7 @@ function deleteMsg() {
 }
 
 #avatar::after {
-  content: "";
+  content: '';
   mix-blend-mode: luminosity;
 }
 
