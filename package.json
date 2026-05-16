@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "eslint": "npx eslint src/**/*.{ts,vue,js,css} --fix",
     "format": "npx prettier --write ./**/*.{ts,vue,js,css} ",
+    "format:check": "npx prettier --check ./**/*.{ts,vue,js,css}",
     "lint:i18n": "node scripts/check-i18n.mjs"
   },
   "dependencies": {
