@@ -10,13 +10,13 @@
     >
       <img id="avatar" :src="getPath(avatarUrl)" />
     </div>
-    <div id="notification" class="notification" @click="showComment">
+    <div id="notification" class="notification">
       <div
         id="notification_title"
         v-richText="() => parse(notification.msg_title)"
         class="notification_title"
       ></div>
-      <div id="notification_message" class="notification_message">
+      <div id="notification_message" class="notification_message" @click="showComment">
         <div id="notification_icon" class="notification_icon">
           <img id="notification_icon" :src="getPath(msg_icon_url)" />
         </div>
