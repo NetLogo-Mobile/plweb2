@@ -94,3 +94,20 @@ The WASM binary is at `./vendor/pltxt2htm.wasm` and loaded via the JS glue code 
 
 - `vendor/pltxt2htm.js` — Emscripten-generated JS loader for the WASM module
 - `vendor/pltxt2htm.wasm` — compiled WebAssembly binary (not human-readable)
+
+## Automated XSS Monitoring Workflow / 自动化 XSS 监控工作流
+
+- **English:** CI now includes a scheduled workflow (`.github/workflows/pltxt2htm-xss-monitor.yml`) that runs every 6 hours and on manual dispatch. It dynamically downloads the latest upstream release asset `wasm32-unknown-emscripten-pltxt2htm-wasm-release.zip`, refreshes payload dictionaries from multiple authoritative feeds, and executes browser-based detection with Playwright.
+- **中文：** CI 现已包含定时工作流（`.github/workflows/pltxt2htm-xss-monitor.yml`），每 6 小时执行一次，并支持手动触发。它会动态下载上游最新发行版资产 `wasm32-unknown-emscripten-pltxt2htm-wasm-release.zip`，从多个权威源刷新攻击载荷字典，并通过 Playwright 执行浏览器级自动检测。
+
+### Payload Sources / 载荷来源
+
+- **PayloadsAllTheThings**
+- **PortSwigger XSS Cheat Sheet**
+- **XSSTest Polyglots**
+- **Bypass Filters payload list**
+
+### Detection Logic / 检测逻辑
+
+- **English:** The monitor treats each payload as suspicious if it produces executable HTML patterns (e.g., `<script>`, event handlers, JS URLs) or triggers browser-level execution signals (dialogs/console markers). Any hit fails CI.
+- **中文：** 监控脚本会将每条载荷注入检测流程：若产出可执行 HTML 模式（如 `<script>`、事件处理器、`javascript:` URL）或触发浏览器执行信号（对话框/控制台标记），即判定为可疑并让 CI 失败。
