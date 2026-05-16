@@ -12,7 +12,6 @@ const app = createApp(App)
 app.use(router)
 app.use(i18n)
 
-
 app.directive('richText', {
   mounted(el, binding: DirectiveBinding<() => Promise<string>>) {
     el.innerHTML = 'rendering...'
@@ -31,8 +30,8 @@ app.mount('#app')
 window.$ErrorLogger = new ErrorLogger(app)
 window.$Logger = LogManager
 
-// No-cors responses for cross-origin images: 
-// the browser wraps a 404 from the source site as opaque, 
+// No-cors responses for cross-origin images:
+// the browser wraps a 404 from the source site as opaque,
 // and the service worker cannot see the actual status code.
 // The current code treats opaque as a successful response and caches it,
 // so broken avatars do not enter the default avatar branch.

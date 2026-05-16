@@ -45,7 +45,7 @@ async function renderMermaidDiagrams(container: HTMLElement) {
         wrapper.innerHTML = svg
         pre.replaceWith(wrapper)
       } catch {
-        console.warn("Mermaid render failed")
+        console.warn('Mermaid render failed')
       }
     }),
   )
