@@ -33,6 +33,7 @@
     "eslint": "^9.31.0",
     "eslint-plugin-vue": "^10.2.0",
     "naive-ui": "^2.43.1",
+    "playwright": "^1.60.0",
     "typescript": "~5.9.3",
     "vite": "^7.2.2",
     "vite-plugin-pwa": "^1.2.0",
