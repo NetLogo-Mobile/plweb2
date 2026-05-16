@@ -31,7 +31,7 @@ type ApiResultLike = {
 };
 
 function isApiResultLike(value: unknown): value is ApiResultLike {
-  return typeof value === "object" && value !== null;
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 export function getData<Path extends ApiPath>(
@@ -108,7 +108,7 @@ export function getData(path: string, body?: unknown): Promise<unknown> {
           breadcrumbs: [...window.$ErrorLogger.getBreadcrumbs()],
         });
         showRetryableApiError(`Invalid response from ${npath}`);
-        return data;
+        return {};
       }
 
       if (npath !== "/Users/GetUser") {

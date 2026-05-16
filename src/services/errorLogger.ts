@@ -42,7 +42,7 @@ export interface ErrorLog extends ErrorContext {
 
 class ErrorLogger {
   private logs = ref<ErrorLog[]>([]);
-  private maxLogs = 1000;
+  private maxLogs = 200;
   private breadcrumbs: Breadcrumb[] = [];
   private maxBreadcrumbs = 50;
   private sessionId: string;
@@ -65,6 +65,11 @@ class ErrorLogger {
   }
 
   private initDebugMode() {
+    // Dev 环境默认开启 debug，生产环境 follow 用户配置
+    if (import.meta.env.DEV) {
+      this.debugMode = true;
+      return;
+    }
     const debugConfig = storageManager.getObj("userConfig").value?.debugger;
     this.debugMode = debugConfig === "on" || debugConfig === "export";
   }
