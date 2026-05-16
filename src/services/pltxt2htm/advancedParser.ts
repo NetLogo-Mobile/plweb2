@@ -19,7 +19,7 @@ function ensureMermaidInitialized() {
   if (mermaidInitialized) return
   mermaid.initialize({
     startOnLoad: false,
-    securityLevel: 'loose',
+    securityLevel: 'strict',
     suppressErrorRendering: true,
   })
   mermaidInitialized = true
@@ -45,7 +45,7 @@ async function renderMermaidDiagrams(container: HTMLElement) {
         wrapper.innerHTML = svg
         pre.replaceWith(wrapper)
       } catch {
-        // Keep original code block if Mermaid rendering fails.
+        console.warn("Mermaid render failed")
       }
     }),
   )
