@@ -62,17 +62,49 @@ const routes: RouteRecordRaw[] = [
     component: () => import('../views/Settings.vue'),
     meta: { keepAlive: false },
   },
+
   // To maintain compatibility with old versions, we add some redirects for old paths
   { path: '/black-hole', redirect: '/b' },
   { path: '/notifications', redirect: '/n' },
   { path: '/messages', redirect: '/m' },
-  { path: '/ExperimentSummary/:category/:id', redirect: '/p/:category/:id' },
-  { path: '/Comments/:category/:id/:name', redirect: '/c/:category/:id/:name' },
-  { path: '/profile/:id', redirect: '/u/:id' },
+
+  {
+    path: '/ExperimentSummary/:category/:id',
+    redirect: (to) => ({
+      name: 'ExperimentSummary',
+      params: to.params,
+    }),
+  },
+
+  {
+    path: '/Comments/:category/:id/:name',
+    redirect: (to) => ({
+      name: 'Comments',
+      params: to.params,
+    }),
+  },
+
+  {
+    path: '/profile/:id',
+    redirect: (to) => ({
+      name: 'profile',
+      params: to.params,
+    }),
+  },
+
   { path: '/friends', redirect: '/f' },
-  { path: '/list/:config', redirect: '/l/:config' },
+
+  {
+    path: '/list/:config',
+    redirect: (to) => ({
+      name: 'list',
+      params: to.params,
+    }),
+  },
+
   { path: '/settings', redirect: '/s' },
   { path: '/about', redirect: '/s' },
+
   {
     path: '/:catchAll(.*)',
     component: () => import('../views/NotFound.vue'),
