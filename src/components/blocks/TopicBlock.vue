@@ -34,7 +34,7 @@
 import { useRouter } from 'vue-router'
 import type { TopicBlock as TopicBlockType } from '@services/../pl-serve-type-main/type/main'
 import Works from '../projects/brief.vue'
-import { getCoverUrl, getPath } from '@services/utils.ts'
+import { getCoverUrl, getPath ,EncodeAPITargetLink} from '@services/utils.ts'
 
 const router = useRouter()
 
@@ -48,7 +48,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const handleContainerClick = () => {
-  router.push(`/l/${props.block.TargetLink}`)
+  router.push((`/l/${EncodeAPITargetLink(props.block.TargetLink)}`))
 }
 </script>
 
