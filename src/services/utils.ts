@@ -24,8 +24,8 @@ type PProjects = {
   Image?: number
 }
 
-const apiUrl = import.meta.env.VITE_API_URL
-const staticUrl = import.meta.env.VITE_STATIC_URL
+const defaultApiUrl = import.meta.env.VITE_API_URL
+const defaultStaticUrl = import.meta.env.VITE_STATIC_URL
 const rootUrl = import.meta.env.VITE_ROOT_URL
 const baseUrl = import.meta.env.VITE_BASE_URL
 
@@ -40,6 +40,10 @@ const baseUrl = import.meta.env.VITE_BASE_URL
  */
 
 export function getPath(path: string): string {
+  const userConfig = storageManager.getObj('userConfig')?.value || {}
+  const apiUrl = (userConfig.apiBaseUrl as string) || defaultApiUrl
+  const staticUrl = (userConfig.staticBaseUrl as string) || defaultStaticUrl
+
   const a = path
     .replace(/\/@api/g, apiUrl)
     .replace(/\/@static/g, staticUrl)

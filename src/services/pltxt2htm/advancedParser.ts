@@ -4,6 +4,7 @@ import hljs from 'highlight.js'
 import mermaid from 'mermaid'
 import renderMathInElement from 'katex/contrib/auto-render/auto-render.js'
 import 'katex/dist/katex.min.css'
+import storageManager from '@storage/index'
 
 interface ParseContext {
   host?: string
@@ -115,7 +116,10 @@ async function parse(source: string, context: ParseContext = {}) {
     })
   }
 
-  await renderMermaidDiagrams(tempDiv)
+  const enableMermaid = (storageManager.getObj('userConfig')?.value?.mermaid ?? 'on') === 'on'
+  if (enableMermaid) {
+    await renderMermaidDiagrams(tempDiv)
+  }
 
   tempDiv.querySelectorAll('pre code:not(.language-mermaid)').forEach((block) => {
     hljs.highlightElement(block as HTMLElement)

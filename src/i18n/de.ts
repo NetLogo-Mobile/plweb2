@@ -121,7 +121,11 @@ export default {
     language: 'Sprache',
     settings: 'Einstellungen',
     general: 'Allgemein',
-    debugger: 'Protokolle sammeln',
+    developer: 'Entwickleroptionen',
+    mermaid: 'Mermaid-Rendering',
+    apiBaseUrl: 'Benutzerdefinierte Server-Base-URL',
+    staticBaseUrl: 'Bild-Host-Base-URL',
+    debugger: 'Debug-Protokolle sammeln',
     exportLogs: 'Fehlerprotokolle exportieren',
     languageChangeTitle: 'Sprache geändert',
     languageChangeContent:
