@@ -22,6 +22,22 @@
           </div>
         </div>
       </div>
+      <template #right>
+        <div v-if="!isPortrait && accountList.length > 0" class="quick-switch" @click.stop>
+          <img class="switch-avatar" :src="user.avatarUrl" alt="Switch Account" @click="toggleSwitchPanel" />
+          <div v-show="showSwitchPanel" class="switch-panel">
+            <div
+              v-for="account in accountList"
+              :key="account.id"
+              class="switch-item"
+              @click="switchAccount(account)"
+            >
+              <img class="switch-item-avatar" :src="account.avatarUrl" :alt="account.nickname" />
+              <span class="switch-item-name">{{ account.nickname }}</span>
+            </div>
+          </div>
+        </div>
+      </template>
     </Header>
     <main>
       <div v-show="isLoading" class="loading"></div>
@@ -47,7 +63,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onActivated } from 'vue'
+import { ref, onMounted, onActivated, onBeforeUnmount } from 'vue'
 import { NGi, NGrid } from 'naive-ui'
 import router from '../router'
 import { checkLogin, getPath, getUserUrl } from '@services/utils'
@@ -73,6 +89,13 @@ import type {
 const isLoading = ref(true)
 const blocks = ref<Array<ListBlock | TopicBlockType>>([])
 const { t } = useI18n()
+interface QuickAccount {
+  id: string
+  nickname: string
+  avatarUrl: string
+  token: string
+  authCode: string
+}
 
 function isTopicBlock(block: ListBlock | TopicBlockType): block is TopicBlockType {
   return block.$type === 'Quantum.Models.Contents.TopicBlock, Quantum Models'
@@ -102,9 +125,53 @@ const user =
         ID: '',
       })
 
-const { blockItemsPerRow, maxProjectsPerBlock } = useResponsive()
+const { blockItemsPerRow, maxProjectsPerBlock, isPortrait } = useResponsive()
+const showSwitchPanel = ref(false)
+const accountList = ref<Array<QuickAccount>>(sm.getObj('quickSwitchAccounts').value ?? [])
+
+function persistQuickAccounts() {
+  sm.setObj('quickSwitchAccounts', accountList.value.slice(0, 3), 30 * 24 * 60 * 60 * 1000)
+}
+
+function saveCurrentAccount(authInfo?: { token?: string; authCode?: string } | null) {
+  if (!authInfo?.token || !authInfo.authCode || !user.value.ID) return
+  const record: QuickAccount = {
+    id: user.value.ID,
+    nickname: user.value.username,
+    avatarUrl: user.value.avatarUrl,
+    token: authInfo.token,
+    authCode: authInfo.authCode,
+  }
+  accountList.value = [record, ...accountList.value.filter((item) => item.id !== record.id)].slice(0, 3)
+  persistQuickAccounts()
+}
+
+async function switchAccount(account: QuickAccount) {
+  showSwitchPanel.value = false
+  sm.setObj('userAuthInfo', { token: account.token, authCode: account.authCode }, 30 * 24 * 60 * 60 * 1000)
+  const res = await login(account.token, account.authCode, true)
+  if (!res.Data?.User) return
+  user.value = {
+    coins: res.Data.User.Gold,
+    gems: res.Data.User.Diamond,
+    level: res.Data.User.Level,
+    username: res.Data.User.Nickname,
+    avatarUrl: getUserUrl(res.Data.User),
+    ID: res.Data.User.ID,
+  }
+  saveCurrentAccount(sm.getObj('userAuthInfo').value)
+}
+
+function toggleSwitchPanel() {
+  showSwitchPanel.value = !showSwitchPanel.value
+}
+
+function handlePageClick() {
+  showSwitchPanel.value = false
+}
 
 onMounted(async () => {
+  window.addEventListener('click', handlePageClick)
   // First render from cache, then update it
   async function processAuthInfo() {
     const ua = sm.getObj('userAuthInfo')
@@ -119,6 +186,7 @@ onMounted(async () => {
         avatarUrl: getUserUrl(res.Data.User),
         ID: res.Data.User.ID,
       }
+      saveCurrentAccount(ua.value)
     }
   }
   async function processHomepageProjects() {
@@ -126,6 +194,9 @@ onMounted(async () => {
     loadPageData(res)
   }
   await Promise.allSettled([processAuthInfo(), processHomepageProjects()])
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('click', handlePageClick)
 })
 
 onActivated(() => {
@@ -145,6 +216,7 @@ Emitter.on('userLogin', (res) => {
     avatarUrl: getUserUrl(res.Data.User),
     ID: res.Data.User.ID,
   }
+  saveCurrentAccount(sm.getObj('userAuthInfo').value)
 })
 // It is astonishing that server respond with projects data when login with (null,null)
 // And responed with user data when login with token/password
@@ -239,6 +311,53 @@ function showModalFn() {
 .gems {
   height: 28px;
   width: 28px;
+}
+
+.quick-switch {
+  position: relative;
+}
+
+.switch-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.switch-panel {
+  position: absolute;
+  right: 0;
+  top: 40px;
+  width: 180px;
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgb(0 0 0 / 12%);
+  z-index: 20;
+}
+
+.switch-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.switch-item:hover {
+  background: #f7f7f7;
+}
+
+.switch-item-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+
+.switch-item-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 /* Header end */
 

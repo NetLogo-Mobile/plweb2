@@ -3,6 +3,7 @@
     <slot></slot>
     <!-- @see https://icomoon.io/app/ -->
     <div class="buttons">
+      <slot name="right"></slot>
       <div class="logout" @click="logout">
         <svg width="25" height="25" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
           <path
