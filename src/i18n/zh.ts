@@ -76,6 +76,7 @@ export default {
     editors: '编辑和管理员',
     retired: '荣休编辑',
     baned: '小黑屋',
+    searchPlaceholder: '搜索好友昵称',
   },
   messagesI18n: {
     errorOnDelete: '删除消息失败，请稍后再试',

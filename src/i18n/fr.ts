@@ -78,6 +78,7 @@ export default {
     editors: 'Éditeurs et administrateurs',
     retired: 'Éditeurs retraités',
     baned: 'Bloqué',
+    searchPlaceholder: 'Rechercher des amis par pseudo',
   },
   messagesI18n: {
     errorOnDelete: 'Échec de la suppression du message, veuillez réessayer plus tard',

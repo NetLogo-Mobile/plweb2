@@ -78,6 +78,7 @@ export default {
     editors: 'Redakteure und Administratoren',
     retired: 'Emeritierte Redakteure',
     baned: 'Gesperrt',
+    searchPlaceholder: 'Freunde nach Spitznamen suchen',
   },
   messagesI18n: {
     errorOnDelete: 'Fehler beim Löschen der Nachricht, bitte versuchen Sie es später',

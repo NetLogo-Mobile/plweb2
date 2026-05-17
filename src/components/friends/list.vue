@@ -13,7 +13,7 @@
 <script setup lang="ts">
 import UserItem from './item.vue'
 import { NGrid, NGi } from 'naive-ui'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import type { RelationList } from '@services/../pl-serve-type-main/type/main'
 import { getData } from '@services/api/getData.ts'
 import { showAPiError } from '@popup/index.ts'
@@ -24,10 +24,11 @@ import { showMessage } from '@popup/naiveui'
 
 // cols需要在父组件传参，这可能会在好友界面和Profile界面（未实现）展现
 //  Props `cols` needs to be passed from the parent component, which may be displayed in the Friends page and Profile page (not implemented yet).
-const { userid, type } = defineProps<{
+const { userid, type, query } = defineProps<{
   userid?: string
   type?: string
   cols?: number
+  query?: string
 }>()
 
 let loading = ref(false)
@@ -53,7 +54,7 @@ async function handleLoad() {
     DisplayType: type ? Number(type) : 0,
     Skip: skip.value,
     Take: 24,
-    Query: '',
+    Query: query || '',
   })
   if (getRelationsRes.Status !== 200) {
     showAPiError(t('errors.apiErrorTitle'), t('errors.apiErrorMessage'), handleLoad)
@@ -62,7 +63,7 @@ async function handleLoad() {
       DisplayType: type,
       Skip: skip.value,
       Take: 24,
-      Query: '',
+      Query: query || '',
     })
     const _res = removeToken(getRelationsRes)
     window.$ErrorLogger.captureApiError(
@@ -92,6 +93,17 @@ window.$Logger.logPageView({
 })
 
 handleLoad()
+
+watch(
+  () => query,
+  () => {
+    items.value = []
+    skip.value = 0
+    noMore.value = false
+    hasInformed.value = false
+    void handleLoad()
+  },
+)
 </script>
 
 <style scoped></style>

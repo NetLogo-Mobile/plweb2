@@ -78,6 +78,7 @@ export default {
     editors: '編集者と管理者',
     retired: '退職した編集者',
     baned: 'ブロック済み',
+    searchPlaceholder: 'ニックネームで友達を検索',
   },
   messagesI18n: {
     errorOnDelete: 'メッセージの削除に失敗しました。後でもう一度お試しください',

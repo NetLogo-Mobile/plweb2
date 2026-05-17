@@ -78,6 +78,7 @@ export default {
     editors: 'Editors and Admins',
     retired: 'Retired Editors',
     baned: 'Banned',
+    searchPlaceholder: 'Search friends by nickname',
   },
   messagesI18n: {
     errorOnDelete: 'Failed to delete message, please try again later',
