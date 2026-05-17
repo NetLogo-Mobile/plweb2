@@ -12,10 +12,50 @@ type localStorages =
   | 'userIDAndAvatarIDMap'
   | 'userAuthInfo'
   | 'cookieConsent'
+  | 'notificationsCache'
 
 interface StorageResult<T> {
   status: StorageStatus
   value: T | null
+}
+
+const IDB_DB_NAME = 'plweb2-storage-db'
+const IDB_STORE_NAME = 'kv'
+
+function openIDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(IDB_DB_NAME, 1)
+    req.onupgradeneeded = () => {
+      const db = req.result
+      if (!db.objectStoreNames.contains(IDB_STORE_NAME)) {
+        db.createObjectStore(IDB_STORE_NAME)
+      }
+    }
+    req.onsuccess = () => resolve(req.result)
+    req.onerror = () => reject(req.error)
+  })
+}
+
+async function idbGet<T>(key: string): Promise<T | undefined> {
+  const db = await openIDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IDB_STORE_NAME, 'readonly')
+    const store = tx.objectStore(IDB_STORE_NAME)
+    const req = store.get(key)
+    req.onsuccess = () => resolve(req.result as T | undefined)
+    req.onerror = () => reject(req.error)
+  })
+}
+
+async function idbSet<T>(key: string, value: T): Promise<void> {
+  const db = await openIDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IDB_STORE_NAME, 'readwrite')
+    const store = tx.objectStore(IDB_STORE_NAME)
+    store.put(value, key)
+    tx.oncomplete = () => resolve()
+    tx.onerror = () => reject(tx.error)
+  })
 }
 
 function now() {
@@ -71,6 +111,24 @@ const storageManager = {
   },
   clear() {
     localStorage.clear()
+  },
+  async getObjFromIDB<T>(key: string, maxAgeMs?: number): Promise<StorageResult<T>> {
+    try {
+      const data = await idbGet<{ value: T; time: number; maxAgeMs?: number }>(key)
+      if (!data) return { status: 'empty', value: null }
+      const ageLimit = maxAgeMs ?? data.maxAgeMs
+      if (ageLimit && data.time && now() - data.time > ageLimit) {
+        return { status: 'expired', value: null }
+      }
+      return { status: 'success', value: data.value }
+    } catch (e) {
+      console.error(e)
+      return { status: 'empty', value: null }
+    }
+  },
+  async setObjToIDB<T>(key: string, value: T, maxAgeMs?: number): Promise<void> {
+    const data = { value, time: now(), maxAgeMs }
+    await idbSet(key, data)
   },
 }
 

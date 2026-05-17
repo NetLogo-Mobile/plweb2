@@ -87,6 +87,8 @@ const { CategoryID } = defineProps<{
   CategoryID: number
 }>()
 
+const notificationCacheKey = `notifications:${CategoryID}:${locale.value}`
+
 function fillInTemplate(data: string | null, message: Message) {
   const re = (data ?? '')
     .replace(
@@ -209,7 +211,10 @@ const handleLoad = async (noTemplates = true) => {
       }
     })
 
-    items.value = [...items.value, ...defaultItems]
+    const merged = [...items.value, ...defaultItems]
+    const deduplicated = Array.from(new Map(merged.map((item) => [item.ID, item])).values())
+    items.value = deduplicated
+    await storageManager.setObjToIDB(notificationCacheKey, items.value)
     loading.value = false
     skip.value += 20
   } catch (error) {
@@ -217,7 +222,16 @@ const handleLoad = async (noTemplates = true) => {
   }
 }
 
-handleLoad(false)
+async function restoreNotificationsFromCache() {
+  const cached = await storageManager.getObjFromIDB<NotificationMessage[]>(notificationCacheKey)
+  if (cached.status !== 'success' || cached.value == null || cached.value.length === 0) return
+  items.value = cached.value
+  skip.value = cached.value.length
+}
+
+restoreNotificationsFromCache().finally(() => {
+  handleLoad(false)
+})
 </script>
 
 <style scoped>
