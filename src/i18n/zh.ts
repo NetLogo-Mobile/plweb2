@@ -139,6 +139,16 @@ export default {
     blackHole: '黑洞',
     friends: '好友',
     notifications: '通知',
+    my: '我的',
+  },
+
+  myPage: {
+    publishedExperiment: '已发布实验',
+    publishedDiscussion: '已发布讨论',
+    favoriteExperiment: '收藏实验',
+    favoriteDiscussion: '收藏讨论',
+    supportedExperiment: '支持的实验',
+    supportedDiscussion: '支持的讨论',
   },
   ui: {
     messages: {

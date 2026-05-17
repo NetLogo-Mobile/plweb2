@@ -143,6 +143,16 @@ export default {
     blackHole: 'ブラックホール',
     friends: '友人',
     notifications: '通知',
+    my: 'マイ',
+  },
+
+  myPage: {
+    publishedExperiment: '公開済み実験',
+    publishedDiscussion: '公開済み議論',
+    favoriteExperiment: 'お気に入り実験',
+    favoriteDiscussion: 'お気に入り議論',
+    supportedExperiment: '支持した実験',
+    supportedDiscussion: '支持した議論',
   },
   ui: {
     messages: {

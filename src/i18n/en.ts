@@ -142,6 +142,16 @@ export default {
     blackHole: 'Black Hole',
     friends: 'Friends',
     notifications: 'Notifications',
+    my: 'My',
+  },
+
+  myPage: {
+    publishedExperiment: 'Published Experiments',
+    publishedDiscussion: 'Published Discussions',
+    favoriteExperiment: 'Favorite Experiments',
+    favoriteDiscussion: 'Favorite Discussions',
+    supportedExperiment: 'Supported Experiments',
+    supportedDiscussion: 'Supported Discussions',
   },
   ui: {
     messages: {

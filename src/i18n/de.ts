@@ -143,6 +143,16 @@ export default {
     blackHole: 'Schwarzes Loch',
     friends: 'Freunde',
     notifications: 'Benachrichtigungen',
+    my: 'Mein',
+  },
+
+  myPage: {
+    publishedExperiment: 'Veröffentlichte Experimente',
+    publishedDiscussion: 'Veröffentlichte Diskussionen',
+    favoriteExperiment: 'Favorisierte Experimente',
+    favoriteDiscussion: 'Favorisierte Diskussionen',
+    supportedExperiment: 'Unterstützte Experimente',
+    supportedDiscussion: 'Unterstützte Diskussionen',
   },
   ui: {
     messages: {
