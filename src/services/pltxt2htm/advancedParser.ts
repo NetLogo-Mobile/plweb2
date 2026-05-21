@@ -4,6 +4,7 @@ import hljs from 'highlight.js'
 import mermaid from 'mermaid'
 import renderMathInElement from 'katex/contrib/auto-render/auto-render.js'
 import 'katex/dist/katex.min.css'
+import { getPath } from '@services/utils'
 
 interface ParseContext {
   host?: string
@@ -14,6 +15,8 @@ interface ParseContext {
 }
 
 let mermaidInitialized = false
+
+
 
 function ensureMermaidInitialized() {
   if (mermaidInitialized) return
@@ -92,7 +95,7 @@ async function parse(source: string, context: ParseContext = {}) {
   if (!source) return ''
   const rawHtml = await advancedParser(
     source,
-    context.host ?? import.meta.env.VITE_ROOT_URL ?? '',
+    context.host ?? getPath('/@root'),
     context.project ?? '',
     context.visitorId ?? '',
     context.authorId ?? '',
