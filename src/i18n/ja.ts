@@ -122,6 +122,7 @@ export default {
     settings: '設定',
     general: '一般',
     debugger: 'ログを収集',
+    autoOpenCopiedLink: 'コピーした作品/ユーザーリンクを自動で開く',
     exportLogs: 'エラーログをエクスポート',
     languageChangeTitle: '言語が変更されました',
     languageChangeContent:

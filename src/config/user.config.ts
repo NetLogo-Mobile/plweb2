@@ -109,6 +109,12 @@ export const settingsConfig = [
         },
       },
       {
+        key: 'autoOpenCopiedLink',
+        label: i18n.global.t('settings.autoOpenCopiedLink'),
+        type: 'toggle',
+        value: 'off',
+      },
+      {
         key: 'exportLogs',
         label: i18n.global.t('settings.exportLogs'),
         type: 'button',

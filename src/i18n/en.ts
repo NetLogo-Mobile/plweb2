@@ -122,6 +122,7 @@ export default {
     settings: 'settings',
     general: 'General',
     debugger: 'collect logs',
+    autoOpenCopiedLink: 'Auto-open copied work/user links',
     exportLogs: 'Export Error Logs',
     languageChangeTitle: 'Language Changed',
     languageChangeContent: 'Some features need to re-login to apply the new language completely',
