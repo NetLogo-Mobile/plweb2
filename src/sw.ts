@@ -1,6 +1,7 @@
 /// <reference lib="webworker" />
 
 import { cleanupOutdatedCaches, matchPrecache, precacheAndRoute } from 'workbox-precaching'
+import { clientsClaim } from 'workbox-core'
 import { registerRoute } from 'workbox-routing'
 import { CacheFirst } from 'workbox-strategies'
 import { ExpirationPlugin } from 'workbox-expiration'
@@ -13,6 +14,8 @@ const STATIC_IMAGE_CACHE = 'static-images-v1'
 
 precacheAndRoute(self.__WB_MANIFEST)
 cleanupOutdatedCaches()
+self.skipWaiting()
+clientsClaim()
 
 function isAvatarRequest(url: URL): boolean {
   return (
