@@ -99,6 +99,7 @@ export default {
     copyInternalLink: "Internen Link kopieren",
     copyExternalLink: "Externen Link kopieren",
     changeCover: "Cover ändern",
+    editWork: "Werk bearbeiten",
   },
   date: {
     justNow: "Gerade eben",
@@ -157,6 +158,10 @@ export default {
     fetchWorksFailed: "Werke konnten nicht geladen werden: {status}",
     readWorkspaceFailed: "Arbeitsbereich konnte nicht gelesen werden: {status}",
     saveWorkFailed: "Werk konnte nicht gespeichert werden: {status}",
+    changeCover: "Cover ändern",
+    uploadImgHint: "Bild-Upload wird noch nicht unterstützt",
+    editTags: "Tags bearbeiten",
+    tagPlaceholder: "Tag eingeben und Enter drücken",
   },
   footer: {
     home: "Startseite",

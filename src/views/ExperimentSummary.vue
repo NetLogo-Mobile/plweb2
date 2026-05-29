@@ -44,6 +44,16 @@
             >
               {{ t("expeSummary.enterExp") }}
             </n-button>
+            <n-button
+              v-if="canEdit"
+              type="warning"
+              strong
+              round
+              class="edit-btn"
+              @click="goToEditor"
+            >
+              {{ t("expeSummary.editWork") }}
+            </n-button>
           </div>
         </div>
       </div>
@@ -173,8 +183,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onActivated } from "vue";
-import { useRoute } from "vue-router";
+import { ref, computed, watch, onMounted, onActivated } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { canEditSummary } from "@services/editor/cloudWorks";
 import { getData } from "@services/api/getData.ts";
 import { showAPiError } from "@popup/index.ts";
 import { removeToken } from "@services/utils.ts";
@@ -205,6 +216,7 @@ const upDate = ref(1);
 const replyID = ref("");
 const selectedTab = ref("Intro");
 const route = useRoute();
+const router = useRouter();
 const { t } = useI18n();
 const returnImagePath = ref(
   getPath("/@base/assets/library/Navigation-Return.png"),
@@ -251,6 +263,12 @@ const data = ref<Summary>({
 
 let coverUrl = ref(getPath("/@base/assets/messages/Experiment-Default.png"));
 let avatarUrl = ref(getUserUrl(data.value.User));
+const canEdit = computed(() => canEditSummary(data.value));
+
+function goToEditor() {
+  router.push(`/e/${route.params.category}/${route.params.id}`);
+}
+
 async function fetchSummary() {
   const res = await getData("/Contents/GetSummary", {
     ContentID: route.params.id as string,
@@ -294,6 +312,10 @@ async function fetchSummary() {
 }
 
 onMounted(() => {
+  fetchSummary();
+});
+
+watch(() => route.params.id, () => {
   fetchSummary();
 });
 
@@ -711,6 +733,10 @@ onActivated(() => {
     padding: 10px 10%;
     width: 80%;
     bottom: calc(50px + env(safe-area-inset-bottom));
+  }
+
+  .edit-btn {
+    display: inline-flex;
   }
 }
 

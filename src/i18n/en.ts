@@ -97,6 +97,7 @@ export default {
     copyInternalLink: "Copy Internal Link",
     copyExternalLink: "Copy External Link",
     changeCover: "Change Cover",
+    editWork: "Edit Work",
   },
   date: {
     justNow: "Just now",
@@ -155,6 +156,10 @@ export default {
     fetchWorksFailed: "Failed to fetch works: {status}",
     readWorkspaceFailed: "Failed to read workspace: {status}",
     saveWorkFailed: "Failed to save work: {status}",
+    changeCover: "Change Cover",
+    uploadImgHint: "Image upload is not supported yet",
+    editTags: "Edit Tags",
+    tagPlaceholder: "Type tag and press Enter",
   },
   footer: {
     home: "Home",

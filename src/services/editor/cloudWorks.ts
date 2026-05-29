@@ -6,6 +6,7 @@ import type {
   ExperimentQuery,
   Result,
   Summary,
+  SummaryTag,
   UserInfo,
   Workspace,
 } from "@services/../pl-serve-type-main/type/main";
@@ -17,12 +18,25 @@ export type EditorWork = {
   subject: string;
   markdown: string;
   language: string;
-  rawSummary: Summary;
+  tags: SummaryTag[];
+  rawSummary?: Summary;
 };
 
 export type SaveEditorWorkResult = {
   requestBody: Record<string, unknown>;
-  response: Result<Summary> | Result<unknown>;
+  response: Result<unknown>;
+  updatedWork: EditorWork;
+};
+
+export type CategoryCursor = {
+  category: Category;
+  from?: string;
+};
+
+export type FetchWorksResult = {
+  works: EditorWork[];
+  hasMore: boolean;
+  cursors: CategoryCursor[];
 };
 
 const EDITABLE_VERIFICATIONS = new Set(["Editor", "Administrator"]);
@@ -60,6 +74,7 @@ function toEditorWork(summary: Summary): EditorWork {
     subject: summary.Subject || t("royterEditor.untitled"),
     markdown: normalizeDescription(summary.Description),
     language: summary.Language || "Chinese",
+    tags: summary.Tags || [],
     rawSummary: summary,
   };
 }
@@ -77,12 +92,14 @@ async function fetchSummary(category: Category, id: string): Promise<Summary> {
   return res.Data;
 }
 
-export async function fetchEditableWorks(take = 50): Promise<EditorWork[]> {
-  const userId = getCurrentUserId();
-  if (!userId) return [];
-
+async function queryCategory(
+  userId: string,
+  category: Category,
+  from: string | undefined,
+  take: number,
+): Promise<{ summaries: Summary[]; lastId: string }> {
   const query: ExperimentQuery = {
-    Category: "Discussion",
+    Category: category,
     Languages: [],
     ExcludeLanguages: [],
     Tags: [],
@@ -92,7 +109,7 @@ export async function fetchEditableWorks(take = 50): Promise<EditorWork[]> {
     ParentID: undefined,
     UserID: userId,
     Special: null,
-    From: undefined,
+    From: from || null,
     Skip: 0,
     Take: take,
     Days: 0,
@@ -107,11 +124,50 @@ export async function fetchEditableWorks(take = 50): Promise<EditorWork[]> {
     );
   }
 
-  const summaries = res.Data?.$values || [];
-  const detailed = await Promise.all(
-    summaries.map((item) => fetchSummary((item.Category || "Discussion") as Category, item.ID)),
+  const summaries: Summary[] = res.Data?.$values || [];
+  const lastId = summaries.length > 0 ? summaries[summaries.length - 1].ID : (from || "");
+  return { summaries, lastId };
+}
+
+export async function fetchEditableWorks(
+  cursors: CategoryCursor[],
+  take = 20,
+): Promise<FetchWorksResult> {
+  const userId = getCurrentUserId();
+  if (!userId) return { works: [], hasMore: false, cursors: [] };
+
+  const cats = cursors.length ? cursors : [{ category: "Discussion" as Category }];
+
+  const results = await Promise.all(
+    cats.map((c) => queryCategory(userId, c.category, c.from, take)),
   );
-  return detailed.filter(canEditSummary).map(toEditorWork);
+
+  const allSummaries = results.flatMap((r) => r.summaries);
+  const works = allSummaries.filter(canEditSummary).map(toEditorWork);
+  const hasMore = results.some((r) => r.summaries.length >= take);
+
+  const nextCursors: CategoryCursor[] = cats.map((c, i) => ({
+    category: c.category,
+    from: results[i].lastId,
+  }));
+
+  return { works, hasMore, cursors: nextCursors };
+}
+
+export async function fetchEditableWork(category: Category, id: string): Promise<EditorWork> {
+  const summary = await fetchSummary(category, id);
+  if (!canEditSummary(summary)) {
+    throw new Error(t("royterEditor.noPermission"));
+  }
+  return toEditorWork(summary);
+}
+
+export async function loadWorkDetail(work: EditorWork): Promise<EditorWork> {
+  const summary = await fetchSummary(work.category, work.id);
+  return {
+    ...toEditorWork(summary),
+    contentId: summary.ContentID || summary.ID,
+  };
 }
 
 export async function fetchWorkspace(work: EditorWork): Promise<Workspace | null> {
@@ -132,6 +188,9 @@ export async function saveEditorWork(
   markdown: string,
   subject: string,
 ): Promise<SaveEditorWorkResult> {
+  if (!work.rawSummary) {
+    throw new Error(t("royterEditor.noPermission"));
+  }
   if (!canEditSummary(work.rawSummary)) {
     throw new Error(t("royterEditor.noPermission"));
   }
@@ -149,10 +208,10 @@ export async function saveEditorWork(
     Workspace: workspace ? { ...workspace, Summary: null } : null,
   };
 
-  const response = (await getData(
-    "/Contents/SubmitExperiment" as any,
-    requestBody,
-  )) as Result<Summary>;
+  const response = await getData(
+    "/Contents/SubmitExperiment",
+    requestBody as any,
+  ) as unknown as Result<Summary>;
   if (response.Status !== 200) {
     throw new Error(
       response.Message ||
@@ -160,9 +219,13 @@ export async function saveEditorWork(
     );
   }
 
-  work.subject = summary.Subject || work.subject;
-  work.markdown = markdown;
-  work.rawSummary = summary;
+  const updatedWork: EditorWork = {
+    ...work,
+    subject: summary.Subject || work.subject,
+    markdown,
+    tags: summary.Tags || [],
+    rawSummary: summary,
+  };
 
-  return { requestBody, response };
+  return { requestBody, response, updatedWork };
 }

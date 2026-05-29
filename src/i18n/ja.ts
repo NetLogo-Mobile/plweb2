@@ -97,6 +97,7 @@ export default {
     copyInternalLink: "内部リンクをコピー",
     copyExternalLink: "外部リンクをコピー",
     changeCover: "カバーを変更",
+    editWork: "作品を編集",
   },
   date: {
     justNow: "たった今",
@@ -155,6 +156,10 @@ export default {
     fetchWorksFailed: "作品一覧の取得に失敗しました: {status}",
     readWorkspaceFailed: "ワークスペースの読み込みに失敗しました: {status}",
     saveWorkFailed: "作品の保存に失敗しました: {status}",
+    changeCover: "カバーを変更",
+    uploadImgHint: "画像アップロードは未対応",
+    editTags: "タグを編集",
+    tagPlaceholder: "タグを入力してEnter",
   },
   footer: {
     home: "ホーム",

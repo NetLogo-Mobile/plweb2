@@ -95,6 +95,7 @@ export default {
     copyInternalLink: "复制内部链接",
     copyExternalLink: "复制外部链接",
     changeCover: "更换封面",
+    editWork: "编辑作品",
   },
   date: {
     justNow: "刚刚",
@@ -131,7 +132,7 @@ export default {
     },
   },
   royterEditor: {
-    title: "Royter Markdown 编辑器",
+    title: "Markdown 编辑器",
     refreshWorks: "刷新作品",
     workListAria: "作品列表",
     searchPlaceholder: "搜索作品",
@@ -152,6 +153,10 @@ export default {
     fetchWorksFailed: "获取作品列表失败：{status}",
     readWorkspaceFailed: "读取工作区失败：{status}",
     saveWorkFailed: "保存作品失败：{status}",
+    changeCover: "更换封面",
+    uploadImgHint: "暂不支持图片上传",
+    editTags: "编辑标签",
+    tagPlaceholder: "输入标签后回车",
   },
   footer: {
     home: "首页",

@@ -34,3 +34,18 @@ dev-dist
 
 # debugs
 *.http
+temp
+phyEngine/
+*Circuit*/
+*circuit*/
+src/views/CircuitLab2D.vue
+src/views/CircuitLab2D_Simple.vue
+src/services/circuitSav.ts
+src/config/components.ts
+src/composables/useSimulation.ts
+src/composables/useCircuitEngine.ts
+src/assets/styles/circuit-lab.css
+src/composables/useCamera.ts
+.gitignore
+src/types/circuit.ts
+src/composables/useDragAndDrop.ts

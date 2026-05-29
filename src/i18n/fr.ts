@@ -98,6 +98,7 @@ export default {
     copyInternalLink: "Copier le lien interne",
     copyExternalLink: "Copier le lien de partage",
     changeCover: "Changer la couverture",
+    editWork: "Modifier l'œuvre",
   },
   date: {
     justNow: "À l'instant",
@@ -155,7 +156,11 @@ export default {
     readSummaryFailed: "Impossible de lire le résumé de l’œuvre : {status}",
     fetchWorksFailed: "Impossible de charger les œuvres : {status}",
     readWorkspaceFailed: "Impossible de lire l’espace de travail : {status}",
-    saveWorkFailed: "Impossible d’enregistrer l’œuvre : {status}",
+    saveWorkFailed: "Impossible d'enregistrer l'œuvre : {status}",
+    changeCover: "Changer la couverture",
+    uploadImgHint: "Le téléchargement d'image n'est pas encore pris en charge",
+    editTags: "Modifier les étiquettes",
+    tagPlaceholder: "Saisir une étiquette et appuyer sur Entrée",
   },
   footer: {
     home: "Accueil",
