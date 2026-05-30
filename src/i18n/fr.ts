@@ -122,6 +122,7 @@ export default {
     settings: 'Paramètres',
     general: 'Général',
     debugger: 'Collecter les journaux',
+    autoOpenCopiedLink: 'Ouvrir automatiquement les liens œuvre/utilisateur copiés',
     exportLogs: "Exporter les journaux d'erreurs",
     languageChangeTitle: 'Langue modifiée',
     languageChangeContent:

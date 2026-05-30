@@ -120,8 +120,8 @@
                   "
                   class="intro"
                 ></div>
-                <div>
-                  {{ t('expeSummary.wordCount') }}
+                <div class="word-count">
+                  {{ t('expeSummary.wordCount') }}：{{ descriptionWordCount }}
                 </div>
               </div>
             </div>
@@ -158,7 +158,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onActivated } from 'vue'
+import { computed, ref, onMounted, onActivated } from 'vue'
 import { useRoute } from 'vue-router'
 import { getData } from '@services/api/getData.ts'
 import { showAPiError } from '@popup/index.ts'
@@ -232,6 +232,28 @@ const data = ref<Summary>({
 let coverUrl = ref(defaultCoverUrl)
 let avatarUrl = ref(getUserUrl(data.value.User))
 let avatarLoaded = ref(false)
+
+const descriptionSource = computed(() => {
+  const description = data.value.Description
+  return Array.isArray(description) ? description.join('\n') : description || ''
+})
+
+const descriptionWordCount = computed(() => countReadableWords(descriptionSource.value))
+
+function countReadableWords(source: string) {
+  const plainText = source
+    .replace(/```[\s\S]*?```/gu, ' ')
+    .replace(/!\[[^\]]*\]\([^)]*\)/gu, ' ')
+    .replace(/\[([^\]]*)\]\([^)]*\)/gu, ' $1 ')
+    .replace(/<[^>]+>/gu, ' ')
+    .replace(/`([^`]*)`/gu, ' $1 ')
+    .replace(/[#>*_~|=\-]+/gu, ' ')
+  const readableUnits = plainText.match(
+    /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]|[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*/gu,
+  )
+  return readableUnits?.reduce((count) => count + 1, 0) ?? 0
+}
+
 async function fetchSummary() {
   const res = await getData('/Contents/GetSummary', {
     ContentID: route.params.id as string,
@@ -641,6 +663,13 @@ onActivated(() => {
 .intro :deep(.mermaid-diagram svg) {
   display: block;
   max-width: none;
+ }
+ 
+.word-count {
+  color: #666;
+  font-size: 14px;
+  margin-top: 12px;
+  text-align: right;
 }
 
 .context .n-tabs {

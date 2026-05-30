@@ -122,6 +122,7 @@ export default {
     settings: 'Einstellungen',
     general: 'Allgemein',
     debugger: 'Protokolle sammeln',
+    autoOpenCopiedLink: 'Kopierte Werk-/Benutzerlinks automatisch öffnen',
     exportLogs: 'Fehlerprotokolle exportieren',
     languageChangeTitle: 'Sprache geändert',
     languageChangeContent:
