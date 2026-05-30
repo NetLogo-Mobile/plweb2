@@ -640,8 +640,7 @@ onActivated(() => {
 
 .intro :deep(.mermaid-diagram svg) {
   display: block;
-  width: auto !important;
-  max-width: none !important;
+  max-width: none;
 }
 
 .context .n-tabs {

@@ -16,8 +16,6 @@ interface ParseContext {
 
 let mermaidInitialized = false
 
-
-
 function ensureMermaidInitialized() {
   if (mermaidInitialized) return
   mermaid.initialize({
@@ -26,6 +24,28 @@ function ensureMermaidInitialized() {
     suppressErrorRendering: true,
   })
   mermaidInitialized = true
+}
+
+function getMermaidSvgWidth(svg: SVGSVGElement) {
+  const maxWidth = svg.style.maxWidth.match(/^([0-9.]+)px$/)?.[1]
+  if (maxWidth) return Number(maxWidth)
+
+  const width = svg.getAttribute('width')?.match(/^([0-9.]+)(?:px)?$/)?.[1]
+  if (width) return Number(width)
+
+  const viewBox = svg.getAttribute('viewBox')?.trim().split(/\s+/)
+  return viewBox?.[2] ? Number(viewBox[2]) : undefined
+}
+
+function keepMermaidSvgIntrinsicWidth(wrapper: HTMLElement) {
+  const svg = wrapper.querySelector('svg')
+  if (!(svg instanceof SVGSVGElement)) return
+
+  const width = getMermaidSvgWidth(svg)
+  if (width && Number.isFinite(width)) {
+    svg.style.setProperty('width', `${width}px`)
+  }
+  svg.style.setProperty('max-width', 'none')
 }
 
 async function renderMermaidDiagrams(container: HTMLElement) {
@@ -46,9 +66,10 @@ async function renderMermaidDiagrams(container: HTMLElement) {
         const wrapper = document.createElement('div')
         wrapper.className = 'mermaid-diagram'
         wrapper.innerHTML = svg
+        keepMermaidSvgIntrinsicWidth(wrapper)
         pre.replaceWith(wrapper)
       } catch {
-        console.warn("Mermaid render failed")
+        console.warn('Mermaid render failed')
       }
     }),
   )
