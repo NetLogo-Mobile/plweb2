@@ -62,8 +62,11 @@ document.addEventListener(
 function parseCopiedRouteTarget(input: string): { path: string; needLogin: boolean } | null {
   const text = input.trim()
 
-  const experimentTag = text.match(/<experiment=([a-f0-9]{24})>/i)
-  if (experimentTag?.[1]) return { path: `/p/Experiment/${experimentTag[1]}`, needLogin: false }
+  const workTag = text.match(/<(experiment|discussion)=([a-f0-9]{24})>/i)
+  if (workTag?.[1] && workTag[2]) {
+    const category = workTag[1].toLowerCase() === 'discussion' ? 'Discussion' : 'Experiment'
+    return { path: `/p/${category}/${workTag[2]}`, needLogin: false }
+  }
 
   const discussionHash = text.match(/#\/p\/Discussion\/([a-f0-9]{24})/i)
   if (discussionHash?.[1]) return { path: `/p/Discussion/${discussionHash[1]}`, needLogin: false }
