@@ -141,7 +141,7 @@ export default {
     searchPlaceholder: "作品を検索",
     emptyWorks: "編集できる作品がありません。",
     subjectPlaceholder: "タイトル",
-    save: "保存",
+    publish: "公開",
     previewTitle: "プレビュー",
     rendering: "レンダリング中...",
     selectWork: "左側から作品を選択してください。",

@@ -138,7 +138,7 @@ export default {
     searchPlaceholder: "搜索作品",
     emptyWorks: "没有可编辑的作品。",
     subjectPlaceholder: "标题",
-    save: "保存",
+    publish: "发布",
     previewTitle: "预览",
     rendering: "渲染中...",
     selectWork: "请从左侧选择作品。",

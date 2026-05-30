@@ -142,7 +142,7 @@ export default {
     searchPlaceholder: "Rechercher des œuvres",
     emptyWorks: "Aucune œuvre modifiable.",
     subjectPlaceholder: "Titre",
-    save: "Enregistrer",
+    publish: "Publier",
     previewTitle: "Aperçu",
     rendering: "Rendu...",
     selectWork: "Sélectionnez une œuvre à gauche.",

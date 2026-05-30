@@ -83,7 +83,7 @@
             class="subject-input"
           />
           <n-button type="primary" :loading="saving" :disabled="!dirty" @click="saveCurrentWork">
-            {{ t("royterEditor.save") }}
+{{ t("royterEditor.publish") }}
           </n-button>
         </div>
 

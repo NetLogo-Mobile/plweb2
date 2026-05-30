@@ -141,7 +141,7 @@ export default {
     searchPlaceholder: "Search works",
     emptyWorks: "No editable works.",
     subjectPlaceholder: "Title",
-    save: "Save",
+    publish: "Publish",
     previewTitle: "Preview",
     rendering: "Rendering...",
     selectWork: "Select a work on the left.",

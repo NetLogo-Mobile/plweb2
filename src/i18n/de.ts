@@ -143,7 +143,7 @@ export default {
     searchPlaceholder: "Werke suchen",
     emptyWorks: "Keine bearbeitbaren Werke.",
     subjectPlaceholder: "Titel",
-    save: "Speichern",
+    publish: "Veröffentlichen",
     previewTitle: "Vorschau",
     rendering: "Wird gerendert...",
     selectWork: "Wählen Sie links ein Werk aus.",

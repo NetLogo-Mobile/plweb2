@@ -44,16 +44,6 @@
             >
               {{ t("expeSummary.enterExp") }}
             </n-button>
-            <n-button
-              v-if="canEdit"
-              type="warning"
-              strong
-              round
-              class="edit-btn"
-              @click="goToEditor"
-            >
-              {{ t("expeSummary.editWork") }}
-            </n-button>
           </div>
         </div>
       </div>
@@ -356,7 +346,7 @@ async function copy(text: string) {
 }
 // eslint-disable-next-line max-lines-per-function
 function copySubject() {
-  let list = [
+  const list: { label: string }[] = [
     { label: t("expeSummary.copyID") },
     { label: t("expeSummary.copyInternalLink") },
     { label: t("expeSummary.copyExternalLink") },
@@ -364,19 +354,23 @@ function copySubject() {
   if (data.value.User.ID === storageManager.getObj("userInfo")?.value?.ID) {
     list.push({ label: t("expeSummary.changeCover") });
   }
+  if (canEdit.value) {
+    list.push({ label: t("expeSummary.editWork") });
+  }
   // eslint-disable-next-line max-lines-per-function
   showActionSheet(list, (idx) => {
-    if (idx === 0) {
+    const action = list[idx]?.label;
+    if (action === t("expeSummary.copyID")) {
       copy(data.value.ID);
-    } else if (idx === 1) {
+    } else if (action === t("expeSummary.copyInternalLink")) {
       copy(
         `<${(route.params.category as string).toLowerCase()}=${route.params.id}>${data.value.Subject}</${(route.params.category as string).toLowerCase()}>`,
       );
-    } else if (idx === 2) {
+    } else if (action === t("expeSummary.copyExternalLink")) {
       copy(
         `<external=${window.location.href}>${data.value.Subject}[web]</external>`,
       );
-    } else if (idx === 3) {
+    } else if (action === t("expeSummary.changeCover")) {
       try {
         // ask user to select an image
         const input = document.createElement("input");
@@ -633,6 +627,8 @@ function copySubject() {
           duration: 2000,
         });
       }
+    } else if (action === t("expeSummary.editWork")) {
+      goToEditor();
     }
   });
 }
@@ -735,9 +731,6 @@ onActivated(() => {
     bottom: calc(50px + env(safe-area-inset-bottom));
   }
 
-  .edit-btn {
-    display: inline-flex;
-  }
 }
 
 @media (max-aspect-ratio: 1/1) {
