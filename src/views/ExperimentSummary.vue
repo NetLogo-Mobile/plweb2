@@ -640,11 +640,31 @@ onActivated(() => {
   min-height: 0;
 }
 
-.intro :deep(img) {
+.intro {
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.intro :deep(img),
+.intro :deep(svg) {
   max-width: 100%;
   height: auto;
 }
 
+.intro :deep(.mermaid-diagram) {
+  display: block;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.intro :deep(.mermaid-diagram svg) {
+  display: block;
+  max-width: none;
+ }
+ 
 .word-count {
   color: #666;
   font-size: 14px;
