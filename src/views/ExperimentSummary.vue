@@ -55,15 +55,31 @@
                 "
                 @click="showUserCard(data.User.ID)"
               >
-                <div style="margin: auto 10px; height: 90%; aspect-ratio: 1; border-radius: 50%; overflow: hidden; background: #e8e8e8; flex-shrink: 0;">
-    <img
-      :src="avatarUrl"
-      style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; transition: opacity 0.25s;"
-      :style="{ opacity: avatarLoaded ? 1 : 0 }"
-      @load="avatarLoaded = true"
-      @error="avatarLoaded = true"
-    />
-  </div>
+                <div
+                  style="
+                    margin: auto 10px;
+                    height: 90%;
+                    aspect-ratio: 1;
+                    border-radius: 50%;
+                    overflow: hidden;
+                    background: #e8e8e8;
+                    flex-shrink: 0;
+                  "
+                >
+                  <img
+                    :src="avatarUrl"
+                    style="
+                      width: 100%;
+                      height: 100%;
+                      border-radius: 50%;
+                      object-fit: cover;
+                      transition: opacity 0.25s;
+                    "
+                    :style="{ opacity: avatarLoaded ? 1 : 0 }"
+                    @load="avatarLoaded = true"
+                    @error="avatarLoaded = true"
+                  />
+                </div>
                 <div style="text-align: left">
                   <p style="color: #007bff; margin: 2% 0 2% 0; width: 100%; font-size: 16px">
                     {{ data.User.Nickname }}
@@ -602,9 +618,30 @@ onActivated(() => {
   min-height: 0;
 }
 
-.intro :deep(img) {
+.intro {
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.intro :deep(img),
+.intro :deep(svg) {
   max-width: 100%;
   height: auto;
+}
+
+.intro :deep(.mermaid-diagram) {
+  display: block;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.intro :deep(.mermaid-diagram svg) {
+  display: block;
+  width: auto !important;
+  max-width: 100% !important;
 }
 
 .context .n-tabs {
