@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.turtlesim.plweb.twa",
+        "sha256_cert_fingerprints": ["72:7A:D1:1C:9F:C6:A0:F3:F5:D6:05:8F:D6:E5:7F:05:EB:9B:3E:33:A9:7F:B7:E0:4D:C5:47:01:67:3D:A6:6F"]
+      }
+    }]

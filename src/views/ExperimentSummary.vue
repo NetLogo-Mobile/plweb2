@@ -55,15 +55,31 @@
                 "
                 @click="showUserCard(data.User.ID)"
               >
-                <div style="margin: auto 10px; height: 90%; aspect-ratio: 1; border-radius: 50%; overflow: hidden; background: #e8e8e8; flex-shrink: 0;">
-    <img
-      :src="avatarUrl"
-      style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; transition: opacity 0.25s;"
-      :style="{ opacity: avatarLoaded ? 1 : 0 }"
-      @load="avatarLoaded = true"
-      @error="avatarLoaded = true"
-    />
-  </div>
+                <div
+                  style="
+                    margin: auto 10px;
+                    height: 90%;
+                    aspect-ratio: 1;
+                    border-radius: 50%;
+                    overflow: hidden;
+                    background: #e8e8e8;
+                    flex-shrink: 0;
+                  "
+                >
+                  <img
+                    :src="avatarUrl"
+                    style="
+                      width: 100%;
+                      height: 100%;
+                      border-radius: 50%;
+                      object-fit: cover;
+                      transition: opacity 0.25s;
+                    "
+                    :style="{ opacity: avatarLoaded ? 1 : 0 }"
+                    @load="avatarLoaded = true"
+                    @error="avatarLoaded = true"
+                  />
+                </div>
                 <div style="text-align: left">
                   <p style="color: #007bff; margin: 2% 0 2% 0; width: 100%; font-size: 16px">
                     {{ data.User.Nickname }}
@@ -104,8 +120,8 @@
                   "
                   class="intro"
                 ></div>
-                <div>
-                  {{ t('expeSummary.wordCount') }}
+                <div class="word-count">
+                  {{ t('expeSummary.wordCount') }}：{{ descriptionWordCount }}
                 </div>
               </div>
             </div>
@@ -142,7 +158,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onActivated } from 'vue'
+import { computed, ref, onMounted, onActivated } from 'vue'
 import { useRoute } from 'vue-router'
 import { getData } from '@services/api/getData.ts'
 import { showAPiError } from '@popup/index.ts'
@@ -216,6 +232,28 @@ const data = ref<Summary>({
 let coverUrl = ref(defaultCoverUrl)
 let avatarUrl = ref(getUserUrl(data.value.User))
 let avatarLoaded = ref(false)
+
+const descriptionSource = computed(() => {
+  const description = data.value.Description
+  return Array.isArray(description) ? description.join('\n') : description || ''
+})
+
+const descriptionWordCount = computed(() => countReadableWords(descriptionSource.value))
+
+function countReadableWords(source: string) {
+  const plainText = source
+    .replace(/```[\s\S]*?```/gu, ' ')
+    .replace(/!\[[^\]]*\]\([^)]*\)/gu, ' ')
+    .replace(/\[([^\]]*)\]\([^)]*\)/gu, ' $1 ')
+    .replace(/<[^>]+>/gu, ' ')
+    .replace(/`([^`]*)`/gu, ' $1 ')
+    .replace(/[#>*_~|=\-]+/gu, ' ')
+  const readableUnits = plainText.match(
+    /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]|[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*/gu,
+  )
+  return readableUnits?.reduce((count) => count + 1, 0) ?? 0
+}
+
 async function fetchSummary() {
   const res = await getData('/Contents/GetSummary', {
     ContentID: route.params.id as string,
@@ -602,9 +640,36 @@ onActivated(() => {
   min-height: 0;
 }
 
-.intro :deep(img) {
+.intro {
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.intro :deep(img),
+.intro :deep(svg) {
   max-width: 100%;
   height: auto;
+}
+
+.intro :deep(.mermaid-diagram) {
+  display: block;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.intro :deep(.mermaid-diagram svg) {
+  display: block;
+  max-width: none;
+ }
+ 
+.word-count {
+  color: #666;
+  font-size: 14px;
+  margin-top: 12px;
+  text-align: right;
 }
 
 .context .n-tabs {

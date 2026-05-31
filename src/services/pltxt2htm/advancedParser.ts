@@ -5,6 +5,7 @@ import mermaid from 'mermaid'
 import renderMathInElement from 'katex/contrib/auto-render/auto-render.js'
 import 'katex/dist/katex.min.css'
 import storageManager from '@storage/index'
+import { getPath } from '@services/utils'
 
 interface ParseContext {
   host?: string
@@ -26,6 +27,28 @@ function ensureMermaidInitialized() {
   mermaidInitialized = true
 }
 
+function getMermaidSvgWidth(svg: SVGSVGElement) {
+  const maxWidth = svg.style.maxWidth.match(/^([0-9.]+)px$/)?.[1]
+  if (maxWidth) return Number(maxWidth)
+
+  const width = svg.getAttribute('width')?.match(/^([0-9.]+)(?:px)?$/)?.[1]
+  if (width) return Number(width)
+
+  const viewBox = svg.getAttribute('viewBox')?.trim().split(/\s+/)
+  return viewBox?.[2] ? Number(viewBox[2]) : undefined
+}
+
+function keepMermaidSvgIntrinsicWidth(wrapper: HTMLElement) {
+  const svg = wrapper.querySelector('svg')
+  if (!(svg instanceof SVGSVGElement)) return
+
+  const width = getMermaidSvgWidth(svg)
+  if (width && Number.isFinite(width)) {
+    svg.style.setProperty('width', `${width}px`)
+  }
+  svg.style.setProperty('max-width', 'none')
+}
+
 async function renderMermaidDiagrams(container: HTMLElement) {
   ensureMermaidInitialized()
   const mermaidBlocks = Array.from(container.querySelectorAll('pre code.language-mermaid'))
@@ -44,9 +67,10 @@ async function renderMermaidDiagrams(container: HTMLElement) {
         const wrapper = document.createElement('div')
         wrapper.className = 'mermaid-diagram'
         wrapper.innerHTML = svg
+        keepMermaidSvgIntrinsicWidth(wrapper)
         pre.replaceWith(wrapper)
       } catch {
-        console.warn("Mermaid render failed")
+        console.warn('Mermaid render failed')
       }
     }),
   )
@@ -93,7 +117,7 @@ async function parse(source: string, context: ParseContext = {}) {
   if (!source) return ''
   const rawHtml = await advancedParser(
     source,
-    context.host ?? import.meta.env.VITE_ROOT_URL ?? '',
+    context.host ?? getPath('/@root'),
     context.project ?? '',
     context.visitorId ?? '',
     context.authorId ?? '',

@@ -126,6 +126,7 @@ export default {
     apiBaseUrl: 'URL de base serveur personnalisée',
     staticBaseUrl: "URL de base de l'hébergeur d'images",
     debugger: 'Collecter les journaux de débogage',
+    autoOpenCopiedLink: 'Ouvrir automatiquement les liens œuvre/utilisateur copiés',
     exportLogs: "Exporter les journaux d'erreurs",
     languageChangeTitle: 'Langue modifiée',
     languageChangeContent:

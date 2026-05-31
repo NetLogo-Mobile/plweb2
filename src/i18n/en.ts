@@ -126,6 +126,7 @@ export default {
     apiBaseUrl: 'Custom Server Base URL',
     staticBaseUrl: 'Image Host Base URL',
     debugger: 'Collect Debug Logs',
+    autoOpenCopiedLink: 'Auto-open copied work/user links',
     exportLogs: 'Export Error Logs',
     languageChangeTitle: 'Language Changed',
     languageChangeContent: 'Some features need to re-login to apply the new language completely',

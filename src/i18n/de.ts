@@ -126,6 +126,7 @@ export default {
     apiBaseUrl: 'Benutzerdefinierte Server-Base-URL',
     staticBaseUrl: 'Bild-Host-Base-URL',
     debugger: 'Debug-Protokolle sammeln',
+    autoOpenCopiedLink: 'Kopierte Werk-/Benutzerlinks automatisch öffnen',
     exportLogs: 'Fehlerprotokolle exportieren',
     languageChangeTitle: 'Sprache geändert',
     languageChangeContent:

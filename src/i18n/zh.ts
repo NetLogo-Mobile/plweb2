@@ -123,6 +123,7 @@ export default {
     apiBaseUrl: '自定义服务器 Base URL',
     staticBaseUrl: '图床 Base URL',
     debugger: '收集调试信息',
+    autoOpenCopiedLink: '粘贴后自动打开作品/用户链接',
     exportLogs: '导出错误日志',
     languageChangeTitle: '语言已切换',
     languageChangeContent: '部分功能需要重新登录才能完全应用新语言',

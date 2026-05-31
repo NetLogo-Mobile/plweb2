@@ -126,6 +126,7 @@ export default {
     apiBaseUrl: 'カスタムサーバー Base URL',
     staticBaseUrl: '画像ホスト Base URL',
     debugger: 'デバッグログを収集',
+    autoOpenCopiedLink: 'コピーした作品/ユーザーリンクを自動で開く',
     exportLogs: 'エラーログをエクスポート',
     languageChangeTitle: '言語が変更されました',
     languageChangeContent:
