@@ -40,15 +40,9 @@ Run `npm run lint` to format the code and check ESLint.Run `npm run build` to pe
 - It is highly recommended to make this configurable variables set in `services/congig`
 - We use pl-server main from @maizi20 for ts checks, But it May not always be accurate see more informations at api interface docks
 
-## TO do list
+## Aknowledgement
 
-If you want to start a contribution, here is some directions:
-- [x] Complete the settings page(including i18n switch, export error log etc), the components in ./views/settings user.config.ts system.config.ts already have a prototype
-- [ ] Redesign the error log, the format now is terrible
-- [x] Fix the style when the window is too large
-- [x] Improve the responsive design, there are problems with font size and others now
-- [ ] Make the work item and work block, as well as tags responsive
-- [x] Finish the error handling when API fails(We seldom check it, Im to blame)
-- [ ] Better storage management(**Using indexDB**).Some requests can be cached, and when we need to fetch them again, we can use the cached version first, and fetch the real source in the same time, then update it(Vue has an incredible stratege to make accurate dom element update). 
-- [ ] Transpile the code to support older browsers, using plugins(assigned to @wsxiaolin)
-- [ ] Shorten the route names in router, e.g. change #experiment-summary/:id to #p/:id , userProfile to u etc.
+- pl-server-main: https://github.com/maizi20/pl-serve-type
+- pltxt2htm: https://github.com/SekaiArendelle/pltxt2htm
+- fingerprintjs, highlight.js, katex, mermaid, prettier, vue3, vue-i18n, vue-router
+- @types/katex, @types/node, @typescript-eslint/eslint-plugin, @typescript-eslint/parser, @vitejs/plugin-vue, @vue/tsconfig, autoprefixer, eslint, eslint-plugin-vue, naive-ui, playwright, typescript, vite, vite-plugin-pwa, vue-tsc
