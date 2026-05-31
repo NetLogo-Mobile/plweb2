@@ -89,7 +89,6 @@ registerRoute(
       if (response.status === 404) {
         return await getFallbackResponse(url)
       }
-
     } catch {
       console.warn(`Failed to fetch ${request.url} in both CORS and default modes.`)
     }

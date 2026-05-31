@@ -299,7 +299,7 @@ async function fetchProfile() {
   const _url = userData.value.Statistic.Cover
     ? getCoverUrl(userData.value.Statistic.Cover)
     : getUserUrl(userRes.Data.User)
-    
+
   coverUrl.value = _url
   window.$Logger.logPageView({
     pageLink: `/User/${route.params.id}/`,

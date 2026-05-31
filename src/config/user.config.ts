@@ -41,12 +41,21 @@ export const settingsConfig = [
           userConfig.language = newValue
           userConfig.languageManuallySelected = true
           storageManager.setObj('userConfig', userConfig)
-          window.$Logger.logEvent({ category: 'Account', action: 'Switch-Language', label: newValue, timestamp: Date.now() })
+          window.$Logger.logEvent({
+            category: 'Account',
+            action: 'Switch-Language',
+            label: newValue,
+            timestamp: Date.now(),
+          })
           showDialog('info', {
             title: i18n.global.t('settings.languageChangeTitle'),
             content: i18n.global.t('settings.languageChangeContent'),
             positiveText: i18n.global.t('login.confirm'),
-            onPositiveClick: () => showNotification({ type: 'success', title: i18n.global.t('settings.languageChangeTitle') }),
+            onPositiveClick: () =>
+              showNotification({
+                type: 'success',
+                title: i18n.global.t('settings.languageChangeTitle'),
+              }),
           })
         },
       },
@@ -89,7 +98,12 @@ export const settingsConfig = [
             onPositiveClick: async () => {
               storageManager.remove('userInfo')
               storageManager.remove('userAuthInfo')
-              window.$Logger.logEvent({ category: 'Account', action: 'Toggle-Error-Logger', label: newValue, timestamp: Date.now() })
+              window.$Logger.logEvent({
+                category: 'Account',
+                action: 'Toggle-Error-Logger',
+                label: newValue,
+                timestamp: Date.now(),
+              })
             },
           })
         },
@@ -106,7 +120,11 @@ export const settingsConfig = [
         type: 'button',
         callBack: () => {
           window.$ErrorLogger.exportToTxt()
-          window.$Logger.logEvent({ category: 'Account', action: 'Export-Error-Logs', timestamp: Date.now() })
+          window.$Logger.logEvent({
+            category: 'Account',
+            action: 'Export-Error-Logs',
+            timestamp: Date.now(),
+          })
         },
       },
     ],

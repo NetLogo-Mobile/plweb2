@@ -41,7 +41,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import parse from '@services/pltxt2htm/advancedParser'
 import { NEllipsis } from 'naive-ui'
 import showUserCard from '@popup/userProfileDialog.ts'
-import { getAvatarUrl } from '@services/getUserCurentAvatarByID'
+import { getUserUrl } from '@services/utils.ts'
 import { getPath } from '@services/utils'
 import type { Message } from '@services/../pl-serve-type-main/type/main'
 
@@ -60,7 +60,10 @@ const fetchAvatar = async () => {
   avatarUrl.value =
     props.notification.msg_type === 1
       ? '/@base/assets/messages/Message-Unread.png'
-      : await getAvatarUrl(props.notification.Users[0] ?? '')
+      : await getUserUrl({
+          ID: props.notification.Users[0] ?? '',
+          Avatar: props.notification.UserAvatar,
+        })
 }
 onMounted(fetchAvatar)
 watch(() => props.notification.Users[0], fetchAvatar)

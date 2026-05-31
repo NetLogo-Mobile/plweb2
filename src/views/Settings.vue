@@ -29,8 +29,6 @@
                 />
               </div>
 
-
-
               <!-- Input Type -->
               <div v-else-if="item.type === 'input'" class="item-control">
                 <n-input

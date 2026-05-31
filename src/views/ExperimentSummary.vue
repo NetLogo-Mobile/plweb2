@@ -663,8 +663,8 @@ onActivated(() => {
 .intro :deep(.mermaid-diagram svg) {
   display: block;
   max-width: none;
- }
- 
+}
+
 .word-count {
   color: #666;
   font-size: 14px;
