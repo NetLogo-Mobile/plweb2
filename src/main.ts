@@ -11,8 +11,32 @@ import type { DirectiveBinding } from 'vue'
 import 'highlight.js/styles/github.css'
 import { registerSW } from 'virtual:pwa-register'
 
+const PWA_UPDATE_CHECK_INTERVAL = 60 * 60 * 1000
+
 registerSW({
   immediate: true,
+  onRegisteredSW(_swScriptUrl, registration) {
+    if (!registration) return
+
+    const checkForUpdate = () => {
+      if (!navigator.onLine) return
+      registration.update().catch((error) => {
+        window.$ErrorLogger?.captureError({
+          type: 'custom',
+          message: 'Failed to check for PWA update',
+          context: { error },
+        })
+      })
+    }
+
+    checkForUpdate()
+    window.setInterval(checkForUpdate, PWA_UPDATE_CHECK_INTERVAL)
+    window.addEventListener('online', checkForUpdate)
+    window.addEventListener('focus', checkForUpdate)
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') checkForUpdate()
+    })
+  },
 })
 
 const app = createApp(App)
