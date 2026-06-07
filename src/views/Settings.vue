@@ -169,9 +169,13 @@ onActivated(() => {
 <style scoped>
 .settings-wrapper {
   width: 100%;
-  min-height: 100vh;
+  height: 100dvh;
+  box-sizing: border-box;
+  overflow-y: auto;
   background-color: #f5f5f5;
   padding: 20px 0;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
 }
 
 .settings-container {
