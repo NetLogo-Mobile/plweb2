@@ -80,6 +80,7 @@ export default {
     baned: 'ブロック済み',
   },
   messagesI18n: {
+    delete: '削除',
     errorOnDelete: 'メッセージの削除に失敗しました。後でもう一度お試しください',
   },
   errors: {

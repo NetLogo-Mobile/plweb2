@@ -115,7 +115,7 @@ import { ref, onMounted } from 'vue'
 import sysConfig from '../config/system.config'
 import storageManager from '@storage/index'
 
-const userId = storageManager.getObj("userInfo").value?.ID
+const userId = storageManager.getObj('userInfo').value?.ID
 
 const charContainerRef = ref(null)
 const searchBarRef = ref(null)

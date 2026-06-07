@@ -119,7 +119,7 @@
         <n-tabs v-model:value="selectedTab" justify-content="space-evenly" type="line">
           <n-tab-pane name="Intro" :tab="t('profile.works')" animated>
             <div id="project-list" class="projects">
-              <div v-for="[t, d] in Object.entries(expData)" :key="t">
+              <div v-for="[t, d] in expEntries" :key="t">
                 <Block
                   v-if="d.length > 0"
                   :block="{
@@ -146,6 +146,7 @@
             <div class="right-bottom-container">
               <div class="message-wrapper">
                 <MessageList
+                  v-if="route.params.id"
                   :ID="route.params.id as string"
                   :Category="'User'"
                   :upDate="upDate"
@@ -174,7 +175,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getData } from '@services/api/getData.ts'
 import { showAPiError } from '@popup/index.ts'
@@ -258,6 +259,9 @@ let userData = ref<ProfileUserData>({
 })
 
 let expData = ref<Record<string, Summary[]>>({})
+
+// Typed entries for template iteration to avoid `unknown` element types
+const expEntries = computed<[string, Summary[]][]>(() => Object.entries(expData.value))
 
 async function fetchProfile() {
   const userId = Array.isArray(route.params.id) ? route.params.id[0] || '' : route.params.id

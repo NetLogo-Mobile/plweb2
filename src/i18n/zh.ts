@@ -78,6 +78,7 @@ export default {
     baned: '小黑屋',
   },
   messagesI18n: {
+    delete: '删除',
     errorOnDelete: '删除消息失败，请稍后再试',
   },
   errors: {

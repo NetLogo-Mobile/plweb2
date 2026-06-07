@@ -130,6 +130,7 @@
             <div class="right-bottom-container">
               <div class="message-wrapper">
                 <MessageList
+                  v-if="route.params.id"
                   :ID="route.params.id as string"
                   :Category="route.params.category as 'Experiment' | 'User' | 'Discussion'"
                   :upDate="upDate"

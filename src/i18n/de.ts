@@ -80,6 +80,7 @@ export default {
     baned: 'Gesperrt',
   },
   messagesI18n: {
+    delete: 'Löschen',
     errorOnDelete: 'Fehler beim Löschen der Nachricht, bitte versuchen Sie es später',
   },
   errors: {

@@ -80,6 +80,7 @@ export default {
     baned: 'Banned',
   },
   messagesI18n: {
+    delete: 'Delete',
     errorOnDelete: 'Failed to delete message, please try again later',
   },
   errors: {

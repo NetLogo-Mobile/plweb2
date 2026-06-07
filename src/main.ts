@@ -176,7 +176,6 @@ async function checkClipboardForAutoOpen() {
 
 document.addEventListener('paste', handlePasteAutoOpen)
 document.addEventListener('visibilitychange', () => {
-
   if (document.visibilityState === 'visible') {
     checkClipboardForAutoOpen()
   }

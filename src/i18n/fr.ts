@@ -80,6 +80,7 @@ export default {
     baned: 'Bloqué',
   },
   messagesI18n: {
+    delete: 'Supprimer',
     errorOnDelete: 'Échec de la suppression du message, veuillez réessayer plus tard',
   },
   errors: {
