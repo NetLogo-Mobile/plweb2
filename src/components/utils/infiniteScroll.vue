@@ -6,7 +6,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" vapor>
 // 通过观察哨兵元素触发加载事件 To trigger load events by observing sentinel elements
 // <template>
 //   <InfiniteScroll

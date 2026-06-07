@@ -24,6 +24,7 @@ dev-dist
 *.sln
 *.sw?
 .qoder/*
+.agents/*
 
 # Archives
 **/*.zip

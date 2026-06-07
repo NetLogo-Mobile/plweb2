@@ -14,7 +14,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" vapor>
 interface ActionSheetOption {
   label: string
   color?: string

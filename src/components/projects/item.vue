@@ -24,7 +24,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" vapor>
 import router from '../../router'
 import type { Summary } from '@services/../pl-serve-type-main/type/main'
 import { getCoverUrl, getUserUrl, formatDate } from '@services/utils'

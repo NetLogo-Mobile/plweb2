@@ -91,7 +91,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" vapor>
 import { ref } from 'vue'
 import { login } from '@api/getData.ts'
 import sm from '@storage/index'

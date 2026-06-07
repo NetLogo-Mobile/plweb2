@@ -32,7 +32,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" vapor>
 import { useResponsive } from '../layout/useResponsive'
 import { ref, onMounted, onActivated } from 'vue'
 import Header from '../components/utils/Header.vue'

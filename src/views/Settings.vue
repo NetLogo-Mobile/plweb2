@@ -68,7 +68,7 @@
     </div>
   </div>
 </template>
-<script setup lang="ts">
+<script setup lang="ts" vapor>
 import { reactive, onActivated } from 'vue'
 import { settingsConfig as s } from '../config/user.config'
 import { NInput, NSelect } from 'naive-ui'

@@ -30,7 +30,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" vapor>
 import { ref, onMounted } from 'vue'
 import MessagesList from '../components/messages/MessageList.vue'
 import { useRoute } from 'vue-router'

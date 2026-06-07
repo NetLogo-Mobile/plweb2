@@ -30,7 +30,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" vapor>
 import router from '../../router/index'
 import { ref } from 'vue'
 let isFullScreen = ref(false)

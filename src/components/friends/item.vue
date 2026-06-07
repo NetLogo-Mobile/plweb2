@@ -15,7 +15,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" vapor>
 import { ref, onMounted } from 'vue'
 import type { User } from '@services/../pl-serve-type-main/type/main'
 import showUserCard from '@popup/userProfileDialog.ts'

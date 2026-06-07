@@ -173,7 +173,7 @@
   </BiLayout>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" vapor>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getData } from '@services/api/getData.ts'

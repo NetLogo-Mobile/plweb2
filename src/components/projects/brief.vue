@@ -17,7 +17,7 @@
   </router-link>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" vapor>
 import { computed } from 'vue'
 import type { Summary } from '@services/../pl-serve-type-main/type/main'
 import parse from '@services/pltxt2htm/commonParser'

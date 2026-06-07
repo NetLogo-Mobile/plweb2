@@ -43,7 +43,7 @@
   <Footer></Footer>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" vapor>
 import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 import NotificationList from '../components/messages/NotificationList.vue'

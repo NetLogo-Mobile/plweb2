@@ -80,7 +80,7 @@
   </footer>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" vapor>
 import { onMounted, onUnmounted, ref } from 'vue'
 import Emitter from '@services/eventEmitter'
 import { hasUnreadNotifications } from '@services/notificationUnread'

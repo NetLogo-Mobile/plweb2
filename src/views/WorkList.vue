@@ -15,7 +15,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" vapor>
 import Header from '../components/utils/Header.vue'
 import WorksList from '../components/projects/wortList.vue'
 import { useRoute } from 'vue-router'

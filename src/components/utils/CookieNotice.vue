@@ -12,7 +12,7 @@
   </aside>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" vapor>
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import storageManager from '@storage/index'

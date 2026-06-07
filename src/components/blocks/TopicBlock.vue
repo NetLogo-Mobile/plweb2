@@ -32,7 +32,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" vapor>
 import { useRouter } from 'vue-router'
 import type { TopicBlock as TopicBlockType } from '@services/../pl-serve-type-main/type/main'
 import Works from '../projects/brief.vue'

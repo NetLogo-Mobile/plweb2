@@ -15,7 +15,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" vapor>
 import { ref, computed } from 'vue'
 import type { Ref } from 'vue'
 

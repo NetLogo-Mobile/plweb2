@@ -1,4 +1,4 @@
-import { createApp } from 'vue'
+import { createApp, vaporInteropPlugin, type DirectiveBinding } from 'vue'
 import App from './App.vue'
 import router from './router/index'
 import i18n from '@i18n/index'
@@ -7,7 +7,6 @@ import { LogManager } from '@api/logWriter.ts'
 import { getPath } from '@services/utils'
 import storageManager from '@storage/index'
 import { showMessage } from '@popup/naiveui'
-import type { DirectiveBinding } from 'vue'
 import 'highlight.js/styles/github.css'
 import { registerSW } from 'virtual:pwa-register'
 
@@ -44,8 +43,9 @@ navigator.serviceWorker?.addEventListener('controllerchange', () => {
 })
 
 const app = createApp(App)
-app.use(router)
+app.use(vaporInteropPlugin)
 app.use(i18n)
+app.use(router)
 
 app.directive('richText', {
   mounted(el, binding: DirectiveBinding<() => Promise<string>>) {

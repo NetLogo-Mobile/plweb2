@@ -9,7 +9,7 @@
   </InfiniteScroll>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" vapor>
 import { ref, watch, nextTick } from 'vue'
 import MessageItem from './MessageItem.vue'
 import { getData } from '@services/api/getData.ts'

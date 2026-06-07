@@ -39,7 +39,7 @@
   <Footer />
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" vapor>
 import { useI18n } from 'vue-i18n'
 import UserList from '../components/friends/list.vue'
 import Header from '../components/utils/Header.vue'

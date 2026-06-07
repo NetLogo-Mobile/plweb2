@@ -34,7 +34,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" vapor>
 import { computed, nextTick, ref } from 'vue'
 import { NButton, NInput } from 'naive-ui'
 import { useResponsive } from '../../layout/useResponsive'

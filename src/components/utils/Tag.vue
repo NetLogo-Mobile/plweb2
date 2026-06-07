@@ -8,7 +8,7 @@
   <!-- 外层包裹了router-link，必须阻止冒泡和默认行为 The outer wrapper is a router-link, which must prevent bubbling and default behavior -->
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" vapor>
 import router from '../../router'
 import { EncodeAPITargetLink } from '@services/utils'
 import getTagName from '@i18n/getTagName'

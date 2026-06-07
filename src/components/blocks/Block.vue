@@ -18,7 +18,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" vapor>
 import { computed } from 'vue'
 import type { Block as BlockType, TopicBlock } from '@services/../pl-serve-type-main/type/main'
 import { useResponsive } from '../../layout/useResponsive'

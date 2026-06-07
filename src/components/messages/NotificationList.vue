@@ -9,7 +9,7 @@
   </infiniteScroll>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" vapor>
 import { ref, onActivated } from 'vue'
 import Notification from './NotificationItem.vue'
 import { getData } from '@services/api/getData.ts'

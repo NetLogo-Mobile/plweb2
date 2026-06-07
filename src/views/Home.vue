@@ -46,7 +46,7 @@
   <Footer></Footer>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" vapor>
 import { ref, onMounted, onActivated } from 'vue'
 import { NGi, NGrid } from 'naive-ui'
 import router from '../router'

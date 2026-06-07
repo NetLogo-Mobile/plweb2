@@ -28,7 +28,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" vapor>
 import { ref, onMounted, watch } from 'vue'
 import parse from '@services/pltxt2htm/advancedParser'
 import showUserCard from '@popup/userProfileDialog.ts'

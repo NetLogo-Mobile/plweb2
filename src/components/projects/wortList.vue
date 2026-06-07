@@ -9,7 +9,7 @@
   </infiniteScroll>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" vapor>
 import { NGrid, NGi } from 'naive-ui'
 import Works from './item.vue'
 import { ref } from 'vue'

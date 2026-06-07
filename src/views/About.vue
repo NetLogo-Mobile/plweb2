@@ -110,7 +110,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts" vapor>
 import { ref, onMounted } from 'vue'
 import sysConfig from '../config/system.config'
 import storageManager from '@storage/index'

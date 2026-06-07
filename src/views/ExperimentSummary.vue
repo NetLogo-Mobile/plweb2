@@ -76,8 +76,8 @@
                       transition: opacity 0.25s;
                     "
                     :style="{ opacity: avatarLoaded ? 1 : 0 }"
-                    @load="avatarLoaded = true"
-                    @error="avatarLoaded = true"
+                    @load="onAvatarLoaded()"
+                    @error="onAvatarLoaded()"
                   />
                 </div>
                 <div style="text-align: left">
@@ -157,7 +157,7 @@
   </BiLayout>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" vapor>
 import { computed, ref, onMounted, onActivated } from 'vue'
 import { useRoute } from 'vue-router'
 import { getData } from '@services/api/getData.ts'
@@ -309,6 +309,10 @@ async function handleEnter() {
     replyID,
     upDate,
   )
+}
+
+function onAvatarLoaded() {
+  avatarLoaded.value = true
 }
 
 function goBack() {

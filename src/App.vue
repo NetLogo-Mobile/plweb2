@@ -1,18 +1,16 @@
 <template>
   <div id="app" @click="handleClick">
     <CookieNotice />
-    <router-view v-slot="{ Component }">
-      <!-- keep alive源自于vue-router的缓存 -->
-      <!-- keep alive comes from cach function from vue-router -->
-      <keep-alive>
-        <component :is="Component" v-if="$route.meta.keepAlive" :key="$route.fullPath" />
-      </keep-alive>
-      <component :is="Component" v-if="!$route.meta.keepAlive" :key="$route.fullPath" />
+    <router-view v-slot="{ Component, route }">
+      <KeepAlive>
+        <component :is="Component" v-if="route?.meta?.keepAlive" :key="route.fullPath" />
+      </KeepAlive>
+      <component :is="Component" v-if="!route?.meta?.keepAlive" :key="route.fullPath" />
     </router-view>
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" vapor>
 import showUserCard from '@popup/userProfileDialog.ts'
 import CookieNotice from './components/utils/CookieNotice.vue'
 function handleClick(event: MouseEvent) {

@@ -36,7 +36,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" vapor>
 import { ref, computed, onMounted, watch } from 'vue'
 import parse from '@services/pltxt2htm/advancedParser'
 import { NEllipsis } from 'naive-ui'

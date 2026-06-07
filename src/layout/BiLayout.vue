@@ -14,7 +14,7 @@
   </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts" vapor></script>
 <style scoped>
 .basic-layout {
   position: relative;
