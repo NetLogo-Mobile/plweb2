@@ -28,6 +28,48 @@ const defaultApiUrl = import.meta.env.VITE_API_URL
 const defaultStaticUrl = import.meta.env.VITE_STATIC_URL
 const rootUrl = import.meta.env.VITE_ROOT_URL
 const baseUrl = import.meta.env.VITE_BASE_URL
+let coverImgSuffix = getCoverImgSuffix()
+let avatarImgSuffix = getAvatarImgSuffix()
+
+function getCoverImgSuffix () {
+  const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection
+  if (connection) {
+    if(connection.saveData){
+      return '!block'
+    }
+    if(['2g','3g'].includes(connection.effectiveType)){
+      return '!block'
+    }
+  }
+  return ''
+
+}
+
+function getAvatarImgSuffix () {
+  const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection
+  if (connection) {
+    if(connection.saveData){
+      return '!tiny.round'
+    }
+    if(connection.effectiveType === '2g'){
+      return '!tiny.round'
+    }
+    if(connection.effectiveType === '3g'){
+      return '!small.round'
+    }
+  }
+  return ''
+}
+
+export function registerNetworkListener() {
+  const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection
+  if(connection){
+    connection.addEventListener('change', () => {
+      coverImgSuffix = getCoverImgSuffix()
+      avatarImgSuffix = getAvatarImgSuffix()
+    })
+  }
+}
 
 /**
  * 替换路径中的预设标记为配置的URL地址,静态资源走@/base，路由走@/root
@@ -62,7 +104,7 @@ export function getUserUrl(user: PUser): string {
       : `/@static/users/avatars/${user.ID.slice(0, 4)}/${user.ID.slice(4, 6)}/${user.ID.slice(
           6,
           8,
-        )}/${user.ID.slice(8, 24)}/${user.Avatar}.jpg`
+        )}/${user.ID.slice(8, 24)}/${user.Avatar}.jpg${avatarImgSuffix}`
 
   return getPath(url)
 }
@@ -94,7 +136,7 @@ export function getCoverUrl(data: PProjects): string {
   const url = `/@static/experiments/images/${data.ID.slice(0, 4)}/${data.ID.slice(
     4,
     6,
-  )}/${data.ID.slice(6, 8)}/${data.ID.slice(8, 24)}/${data.Image || 0}.jpg`
+  )}/${data.ID.slice(6, 8)}/${data.ID.slice(8, 24)}/${data.Image || 0}.jpg${coverImgSuffix}`
   return getPath(url)
 }
 
