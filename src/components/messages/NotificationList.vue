@@ -1,10 +1,7 @@
 <template>
   <infiniteScroll :hasMore="!noMore" :initialItems="items" @load="handleLoad">
     <template #default="slotProps: { items: any[] }">
-      <div
-        v-for="item in slotProps.items"
-        :key="item.ID || item.id || Math.random()"
-      >
+      <div v-for="item in slotProps.items" :key="item.ID || item.id || Math.random()">
         <Notification :notification="item" />
         <n-divider style="margin: 0" />
       </div>
@@ -84,21 +81,20 @@ let templates: MessageTemplate[] = [
     AvailableUntil: 1893477600000,
     Push: 0,
   },
-];
+]
 
 const { CategoryID } = defineProps<{
-  CategoryID: number;
-}>();
+  CategoryID: number
+}>()
 
 function fillInTemplate(data: string | null, message: Message) {
   const re = (data ?? '')
     .replace(
       /{Users}/g,
       message.Users.map(
-        (user: string, index: number) =>
-          `<user=${user}>${message.UserNames[index]}</user>`,
+        (user: string, index: number) => `<user=${user}>${message.UserNames[index]}</user>`,
         // `<span class='RUser' data-user='${user}'>${message.UserNames[index]}</span>`,
-      ).join(" "),
+      ).join(' '),
     )
     .replace(
       /{Experiment}/g,
@@ -113,9 +109,9 @@ function fillInTemplate(data: string | null, message: Message) {
     )
     .replace(/{\$Until}/g, message.Fields.Until)
     .replace(/{\$Editor}/g, message.Fields.Editor)
-    .replace(/{\$Gold}/g, message.Numbers?.Gold?.toString() || "{error}")
-    .replace(/undefined/g, "");
-  return re;
+    .replace(/{\$Gold}/g, message.Numbers?.Gold?.toString() || '{error}')
+    .replace(/undefined/g, '')
+  return re
 }
 
 // 处理加载事件

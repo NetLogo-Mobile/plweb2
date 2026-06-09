@@ -649,10 +649,10 @@ export interface Message {
     Discussion: string
     DiscussionID: ID
     // plweb2 - edited
-    Experiment: string;
-    ExperimentID: ID;
-    TargetName: string;
-    Until: string;
+    Experiment: string
+    ExperimentID: ID
+    TargetName: string
+    Until: string
     // plweb2 - edited
     User: string
     // plweb2 - edited
@@ -721,9 +721,7 @@ export interface Contents {
   ): Promise<Result<Derivatives>>
   GetProfile(
     q: Param<{ ID: ID }>,
-  ): Promise<
-    Result<{ Experiments: Record<string, Summary[]>; Survey: unknown }>
-  >;
+  ): Promise<Result<{ Experiments: Record<string, Summary[]>; Survey: unknown }>>
   ConfirmExperiment(
     q: Param<{
       Category: string

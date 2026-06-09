@@ -11,9 +11,7 @@
   <div class="content">
     <div class="list">
       <MessagesList
-        :Category="
-          route.params.category as 'Discussion' | 'Experiment' | 'User'
-        "
+        :Category="route.params.category as 'Discussion' | 'Experiment' | 'User'"
         :ID="route.params.id as string"
         :upDate="upDate"
         @msgClick="handleMsgClick"

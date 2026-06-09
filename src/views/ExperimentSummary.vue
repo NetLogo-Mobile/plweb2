@@ -159,44 +159,38 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onActivated } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { canEditSummary } from "@services/editor/cloudWorks";
-import { getData } from "@services/api/getData.ts";
-import { showAPiError } from "@popup/index.ts";
-import { removeToken } from "@services/utils.ts";
-import { NTabs, NTabPane, NInput, NButton } from "naive-ui";
-import Tag from "../components/utils/TagLarger.vue";
-import MessageList from "../components/messages/MessageList.vue";
-import parse from "@services/pltxt2htm/advancedParser";
-import parseInline from "@services/pltxt2htm/commonParser";
-import showUserCard from "@popup/userProfileDialog.ts";
-import postComment from "@services/postComment.ts";
-import { copyText, getCoverUrl, getUserUrl, getPath } from "@services/utils.ts";
-import BiLayout from "../layout/BiLayout.vue";
-import "../layout/BiLayout.css";
-import { useI18n } from "vue-i18n";
-import showActionSheet from "@popup/actionSheet.ts";
-import { showMessage } from "@popup/naiveui";
-import storageManager from "@storage/index.ts";
-import type {
-  Category,
-  CommentResult,
-  Summary,
-} from "@services/../pl-serve-type-main/type/main";
+import { ref, computed, watch, onMounted, onActivated } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { canEditSummary } from '@services/editor/cloudWorks'
+import { getData } from '@services/api/getData.ts'
+import { showAPiError } from '@popup/index.ts'
+import { removeToken } from '@services/utils.ts'
+import { NTabs, NTabPane, NInput, NButton } from 'naive-ui'
+import Tag from '../components/utils/TagLarger.vue'
+import MessageList from '../components/messages/MessageList.vue'
+import parse from '@services/pltxt2htm/advancedParser'
+import parseInline from '@services/pltxt2htm/commonParser'
+import showUserCard from '@popup/userProfileDialog.ts'
+import postComment from '@services/postComment.ts'
+import { copyText, getCoverUrl, getUserUrl, getPath } from '@services/utils.ts'
+import BiLayout from '../layout/BiLayout.vue'
+import '../layout/BiLayout.css'
+import { useI18n } from 'vue-i18n'
+import showActionSheet from '@popup/actionSheet.ts'
+import { showMessage } from '@popup/naiveui'
+import storageManager from '@storage/index.ts'
+import type { Category, CommentResult, Summary } from '@services/../pl-serve-type-main/type/main'
 
 const comment = ref('')
 const isLoading = ref(false)
 const upDate = ref(1)
 // 用于使用watch触发刷新 To trigger a refresh using watch
-const replyID = ref("");
-const selectedTab = ref("Intro");
-const route = useRoute();
-const router = useRouter();
-const { t } = useI18n();
-const returnImagePath = ref(
-  getPath("/@base/assets/library/Navigation-Return.png"),
-);
+const replyID = ref('')
+const selectedTab = ref('Intro')
+const route = useRoute()
+const router = useRouter()
+const { t } = useI18n()
+const returnImagePath = ref(getPath('/@base/assets/library/Navigation-Return.png'))
 
 const data = ref<Summary>({
   $type: 'Quantum.Models.Contents.Summary, Quantum Models',
@@ -263,10 +257,10 @@ function countReadableWords(source: string) {
   return readableUnits?.reduce((count) => count + 1, 0) ?? 0
 }
 
-const canEdit = computed(() => canEditSummary(data.value));
+const canEdit = computed(() => canEditSummary(data.value))
 
 function goToEditor() {
-  router.push(`/e/${route.params.category}/${route.params.id}?sidebar=0`);
+  router.push(`/e/${route.params.category}/${route.params.id}?sidebar=0`)
 }
 
 async function fetchSummary() {
@@ -313,9 +307,9 @@ onMounted(() => {
 watch(
   () => route.params.id,
   () => {
-    fetchSummary();
+    fetchSummary()
   },
-);
+)
 
 function handleMsgClick(item: CommentResult) {
   replyID.value = item.UserID
@@ -355,30 +349,28 @@ async function copy(text: string) {
 // eslint-disable-next-line max-lines-per-function
 function copySubject() {
   const list: { label: string }[] = [
-    { label: t("expeSummary.copyID") },
-    { label: t("expeSummary.copyInternalLink") },
-    { label: t("expeSummary.copyExternalLink") },
-  ];
-  if (data.value.User.ID === storageManager.getObj("userInfo")?.value?.ID) {
-    list.push({ label: t("expeSummary.changeCover") });
+    { label: t('expeSummary.copyID') },
+    { label: t('expeSummary.copyInternalLink') },
+    { label: t('expeSummary.copyExternalLink') },
+  ]
+  if (data.value.User.ID === storageManager.getObj('userInfo')?.value?.ID) {
+    list.push({ label: t('expeSummary.changeCover') })
   }
   if (canEdit.value) {
-    list.push({ label: t("expeSummary.editWork") });
+    list.push({ label: t('expeSummary.editWork') })
   }
   // eslint-disable-next-line max-lines-per-function
   showActionSheet(list, (idx) => {
-    const action = list[idx]?.label;
-    if (action === t("expeSummary.copyID")) {
-      copy(data.value.ID);
-    } else if (action === t("expeSummary.copyInternalLink")) {
+    const action = list[idx]?.label
+    if (action === t('expeSummary.copyID')) {
+      copy(data.value.ID)
+    } else if (action === t('expeSummary.copyInternalLink')) {
       copy(
         `<${(route.params.category as string).toLowerCase()}=${route.params.id}>${data.value.Subject}</${(route.params.category as string).toLowerCase()}>`,
-      );
-    } else if (action === t("expeSummary.copyExternalLink")) {
-      copy(
-        `<external=${window.location.href}>${data.value.Subject}[web]</external>`,
-      );
-    } else if (action === t("expeSummary.changeCover")) {
+      )
+    } else if (action === t('expeSummary.copyExternalLink')) {
+      copy(`<external=${window.location.href}>${data.value.Subject}[web]</external>`)
+    } else if (action === t('expeSummary.changeCover')) {
       try {
         // ask user to select an image
         const input = document.createElement('input')
@@ -617,8 +609,8 @@ function copySubject() {
           duration: 2000,
         })
       }
-    } else if (action === t("expeSummary.editWork")) {
-      goToEditor();
+    } else if (action === t('expeSummary.editWork')) {
+      goToEditor()
     }
   })
 }

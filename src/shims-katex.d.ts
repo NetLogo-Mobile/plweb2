@@ -1,3 +1,3 @@
-declare module "katex/contrib/auto-render/auto-render" {
-  const renderMathInElement: any;
+declare module 'katex/contrib/auto-render/auto-render' {
+  const renderMathInElement: any
 }

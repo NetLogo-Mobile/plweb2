@@ -83,16 +83,16 @@ const fragmentCount = ref(0)
 const isFollowing = ref(false)
 let ID = ''
 
-const LONG_PRESS_MS = 450;
-let namePressTimer: number | null = null;
-let didLongPress = false;
+const LONG_PRESS_MS = 450
+let namePressTimer: number | null = null
+let didLongPress = false
 
-async function copyTextWithMessage(text: string, type: "id" | "internalLink") {
-  const ok = await copyText(text);
-  if (ok && type === "id") {
-    showMessage("info", t("ui.messages.copyIDSuccess"));
-  } else if (ok && type === "internalLink") {
-    showMessage("info", t("ui.messages.copyInternalLinkSuccess"));
+async function copyTextWithMessage(text: string, type: 'id' | 'internalLink') {
+  const ok = await copyText(text)
+  if (ok && type === 'id') {
+    showMessage('info', t('ui.messages.copyIDSuccess'))
+  } else if (ok && type === 'internalLink') {
+    showMessage('info', t('ui.messages.copyInternalLinkSuccess'))
   } else {
     showMessage('error', t('ui.messages.copyFailed'))
   }
@@ -103,11 +103,11 @@ function copyUserID() {
     didLongPress = false
     return
   }
-  copyTextWithMessage(ID, "id");
+  copyTextWithMessage(ID, 'id')
 }
 
 function copyUserInternalLink() {
-  copyTextWithMessage(`<user=${ID}>${name.value}</user>`, "internalLink");
+  copyTextWithMessage(`<user=${ID}>${name.value}</user>`, 'internalLink')
 }
 
 function onNamePressStart() {

@@ -67,8 +67,6 @@ class ErrorLogger {
     this.setupGlobalHandlers(app)
   }
 
-
-
   private appendToLogBuffer(log: ErrorLog) {
     this.logTextBuffer += `[${new Date(log.timestamp).toISOString()}] ${log.type.toUpperCase()}\n`
     this.logTextBuffer += `Message: ${log.message}\n`

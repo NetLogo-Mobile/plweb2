@@ -1,20 +1,15 @@
-import { afterRequest, beforeRequest } from "./Interceptor.ts";
-import sm from "@storage/index.ts";
-import i18n, { detectBrowserLanguage, toApiLanguage } from "@i18n/index.ts";
-import { getDeviceInfo, getVisitorId } from "./getDevice.ts";
-import { showMessage } from "@popup/naiveui.ts";
-import { getPath } from "../utils.ts";
-import { normalizePath } from "./types.ts";
-import { readApiCache, writeApiCache } from "./cache.ts";
-import { updateNotificationUnread } from "@services/notificationUnread.ts";
+import { afterRequest, beforeRequest } from './Interceptor.ts'
+import sm from '@storage/index.ts'
+import i18n, { detectBrowserLanguage, toApiLanguage } from '@i18n/index.ts'
+import { getDeviceInfo, getVisitorId } from './getDevice.ts'
+import { showMessage } from '@popup/naiveui.ts'
+import { getPath } from '../utils.ts'
+import { normalizePath } from './types.ts'
+import { readApiCache, writeApiCache } from './cache.ts'
+import { updateNotificationUnread } from '@services/notificationUnread.ts'
 
-import type { ApiPath, APIParam, APIResult } from "./types.ts";
-import type {
-  Device,
-  Result,
-  ResultOf,
-  Users,
-} from "../../pl-serve-type-main/type/main";
+import type { ApiPath, APIParam, APIResult } from './types.ts'
+import type { Device, Result, ResultOf, Users } from '../../pl-serve-type-main/type/main'
 
 const CACHEABLE_PATHS = new Set([
   '/Contents/GetProfile',
@@ -44,12 +39,11 @@ async function getDataImpl(path: string, body?: unknown): Promise<any> {
     return (beforeRes.data ?? {}) as Result
   }
 
-  const userInfo = sm.getObj("userAuthInfo");
-  const token = userInfo.value?.token?.trim();
-  const authCode = userInfo.value?.authCode;
-  const isAuthcatePath = npath === "/Users/Authenticate";
-  const apiToken =
-    !isAuthcatePath && !token ? "7pEWTsF4gR9qauzJCDQkxPLOZlnbMtAG" : token;
+  const userInfo = sm.getObj('userAuthInfo')
+  const token = userInfo.value?.token?.trim()
+  const authCode = userInfo.value?.authCode
+  const isAuthcatePath = npath === '/Users/Authenticate'
+  const apiToken = !isAuthcatePath && !token ? '7pEWTsF4gR9qauzJCDQkxPLOZlnbMtAG' : token
 
   try {
     const response = await fetch(getPath(`/@api${npath}`), {
@@ -78,12 +72,12 @@ async function getDataImpl(path: string, body?: unknown): Promise<any> {
       }
       showMessage('error', i18n.global.t('errors.networkError'), {
         duration: 5000,
-      });
+      })
       return {
         Status: response.status,
-        Message: "Network Error",
+        Message: 'Network Error',
         Data: null,
-      } as unknown as Result;
+      } as unknown as Result
     }
 
     const data = (await response.json()) as Result
@@ -96,13 +90,7 @@ async function getDataImpl(path: string, body?: unknown): Promise<any> {
     }
 
     if (data.Status !== 200) {
-      window.$ErrorLogger.captureApiError(
-        "POST",
-        path,
-        data.Status,
-        data,
-        body,
-      );
+      window.$ErrorLogger.captureApiError('POST', path, data.Status, data, body)
     } else if (canCache(npath)) {
       writeApiCache(npath, body, data)
     }

@@ -7,12 +7,10 @@
         type="button"
         @click="toggleSidebar"
       >
-        <span>{{ showSidebar ? "✕" : "☰" }}</span>
+        <span>{{ showSidebar ? '✕' : '☰' }}</span>
       </button>
-      <button class="toolbar-icon back-button" type="button" @click="goBack">
-        ‹
-      </button>
-      <h1>{{ t("mdEditor.title") }}</h1>
+      <button class="toolbar-icon back-button" type="button" @click="goBack">‹</button>
+      <h1>{{ t('mdEditor.title') }}</h1>
       <button
         v-if="!hideWorkSidebar"
         class="primary-button"
@@ -20,16 +18,12 @@
         :disabled="!isLoggedIn"
         @click="loadWorks"
       >
-        {{ t("mdEditor.refreshWorks") }}
+        {{ t('mdEditor.refreshWorks') }}
       </button>
     </header>
 
     <main v-if="isLoggedIn" class="editor-shell">
-      <aside
-        v-if="!hideWorkSidebar"
-        class="work-sidebar"
-        :class="{ open: showSidebar }"
-      >
+      <aside v-if="!hideWorkSidebar" class="work-sidebar" :class="{ open: showSidebar }">
         <div class="sidebar-header">
           <n-input
             v-model:value="searchKeyword"
@@ -55,11 +49,7 @@
           </button>
         </div>
 
-        <div
-          v-show="activeTab === 'Discussion'"
-          ref="discListRef"
-          class="tab-work-list"
-        >
+        <div v-show="activeTab === 'Discussion'" ref="discListRef" class="tab-work-list">
           <button
             v-for="work in currentTabWorks"
             :key="work.id"
@@ -74,18 +64,14 @@
           </button>
           <div ref="discSentinelRef" class="sentinel" />
           <p v-if="!loading && currentTabWorks.length === 0" class="empty-tip">
-            {{ t("mdEditor.emptyWorks") }}
+            {{ t('mdEditor.emptyWorks') }}
           </p>
           <p v-if="loadingMoreByCategory[activeTab]" class="loading-more">
-            {{ t("mdEditor.rendering") }}
+            {{ t('mdEditor.rendering') }}
           </p>
         </div>
 
-        <div
-          v-show="activeTab === 'Experiment'"
-          ref="expListRef"
-          class="tab-work-list"
-        >
+        <div v-show="activeTab === 'Experiment'" ref="expListRef" class="tab-work-list">
           <button
             v-for="work in currentTabWorks"
             :key="work.id"
@@ -100,10 +86,10 @@
           </button>
           <div ref="expSentinelRef" class="sentinel" />
           <p v-if="!loading && currentTabWorks.length === 0" class="empty-tip">
-            {{ t("mdEditor.emptyWorks") }}
+            {{ t('mdEditor.emptyWorks') }}
           </p>
           <p v-if="loadingMoreByCategory[activeTab]" class="loading-more">
-            {{ t("mdEditor.rendering") }}
+            {{ t('mdEditor.rendering') }}
           </p>
         </div>
       </aside>
@@ -115,13 +101,8 @@
             :placeholder="t('mdEditor.subjectPlaceholder')"
             class="subject-input"
           />
-          <n-button
-            type="primary"
-            :loading="saving"
-            :disabled="!dirty"
-            @click="saveCurrentWork"
-          >
-            {{ t("mdEditor.publish") }}
+          <n-button type="primary" :loading="saving" :disabled="!dirty" @click="saveCurrentWork">
+            {{ t('mdEditor.publish') }}
           </n-button>
         </div>
 
@@ -147,16 +128,16 @@
 
         <div v-else class="placeholder-card">
           <n-spin v-if="loading" size="large" />
-          <p v-else>{{ t("mdEditor.selectWork") }}</p>
+          <p v-else>{{ t('mdEditor.selectWork') }}</p>
         </div>
       </section>
     </main>
 
     <section v-else class="login-required">
-      <h2>{{ t("mdEditor.loginRequiredTitle") }}</h2>
-      <p>{{ t("mdEditor.loginRequiredContent") }}</p>
+      <h2>{{ t('mdEditor.loginRequiredTitle') }}</h2>
+      <p>{{ t('mdEditor.loginRequiredContent') }}</p>
       <router-link to="/">
-        <n-button type="primary">{{ t("mdEditor.login") }}</n-button>
+        <n-button type="primary">{{ t('mdEditor.login') }}</n-button>
       </router-link>
     </section>
 
@@ -174,13 +155,9 @@
     >
       <div class="tag-edit">
         <div class="tag-list">
-          <n-tag
-            v-for="(tag, i) in editTags"
-            :key="i"
-            closable
-            @close="editTags.splice(i, 1)"
-            >{{ tag }}</n-tag
-          >
+          <n-tag v-for="(tag, i) in editTags" :key="i" closable @close="editTags.splice(i, 1)">{{
+            tag
+          }}</n-tag>
         </div>
         <div class="tag-input-row">
           <n-input
@@ -191,7 +168,7 @@
           <n-button size="small" @click="addTag">+</n-button>
         </div>
         <n-button type="primary" size="small" @click="updateTags">{{
-          t("mdEditor.save")
+          t('mdEditor.save')
         }}</n-button>
       </div>
     </n-modal>
@@ -209,19 +186,19 @@ import {
   reactive,
   ref,
   watch,
-} from "vue";
-import { useI18n } from "vue-i18n";
-import { useRoute } from "vue-router";
-import { MdEditor } from "md-editor-v3";
-import "md-editor-v3/lib/style.css";
-import { NButton, NInput, NModal, NSpin, NTag } from "naive-ui";
-import type { ToolbarNames } from "md-editor-v3";
-import { showMessage } from "@popup/naiveui";
-import showActionSheet from "@popup/actionSheet";
-import type { Category } from "@services/../pl-serve-type-main/type/main";
-import { checkLogin, getCoverUrl, getPath } from "@services/utils";
-import parse from "@services/pltxt2htm/advancedParser";
-import storageManager from "@storage/index";
+} from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
+import { MdEditor } from 'md-editor-v3'
+import 'md-editor-v3/lib/style.css'
+import { NButton, NInput, NModal, NSpin, NTag } from 'naive-ui'
+import type { ToolbarNames } from 'md-editor-v3'
+import { showMessage } from '@popup/naiveui'
+import showActionSheet from '@popup/actionSheet'
+import type { Category } from '@services/../pl-serve-type-main/type/main'
+import { checkLogin, getCoverUrl, getPath } from '@services/utils'
+import parse from '@services/pltxt2htm/advancedParser'
+import storageManager from '@storage/index'
 import {
   fetchEditableWork,
   fetchEditableWorks,
@@ -230,445 +207,416 @@ import {
   publishEditorWork,
   type EditorWork,
   type CategoryCursor,
-} from "@services/editor/cloudWorks";
-import getTagName from "@i18n/getTagName";
+} from '@services/editor/cloudWorks'
+import getTagName from '@i18n/getTagName'
 
-const hideWorkSidebar = computed(() => route.query.sidebar === "0");
-const activeTab = ref<Category>("Discussion");
+const hideWorkSidebar = computed(() => route.query.sidebar === '0')
+const activeTab = ref<Category>('Discussion')
 
 const worksByCategory = reactive<Record<string, EditorWork[]>>({
   Discussion: [],
   Experiment: [],
-});
+})
 const cursorsByCategory = reactive<Record<string, CategoryCursor[]>>({
-  Discussion: [{ category: "Discussion" as Category }],
-  Experiment: [{ category: "Experiment" as Category }],
-});
+  Discussion: [{ category: 'Discussion' as Category }],
+  Experiment: [{ category: 'Experiment' as Category }],
+})
 const hasMoreByCategory = reactive<Record<string, boolean>>({
   Discussion: true,
   Experiment: true,
-});
+})
 const loadingMoreByCategory = reactive<Record<string, boolean>>({
   Discussion: false,
   Experiment: false,
-});
+})
 
-const selectedId = ref("");
-const loading = ref(true);
-const saving = ref(false);
-const detailLoading = ref(false);
-const editSubject = ref("");
-const editMarkdown = ref("");
-const searchKeyword = ref("");
-const isLoggedIn = ref(checkLogin(false));
-const showSidebar = ref(false);
-const coverUrl = ref("");
-const defaultCover = getPath("/@base/assets/messages/Experiment-Default.png");
-const route = useRoute();
-const { t, locale } = useI18n();
+const selectedId = ref('')
+const loading = ref(true)
+const saving = ref(false)
+const detailLoading = ref(false)
+const editSubject = ref('')
+const editMarkdown = ref('')
+const searchKeyword = ref('')
+const isLoggedIn = ref(checkLogin(false))
+const showSidebar = ref(false)
+const coverUrl = ref('')
+const defaultCover = getPath('/@base/assets/messages/Experiment-Default.png')
+const route = useRoute()
+const { t, locale } = useI18n()
 
-const tagModalVisible = ref(false);
-const editTags = ref<string[]>([]);
-const newTag = ref("");
+const tagModalVisible = ref(false)
+const editTags = ref<string[]>([])
+const newTag = ref('')
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 20
 
-const isMobile = ref(window.innerWidth < 768);
+const isMobile = ref(window.innerWidth < 768)
 const isLandscape = ref(
-  window.innerWidth >= 768 ||
-    (window.matchMedia?.("(orientation: landscape)").matches ?? true),
-);
+  window.innerWidth >= 768 || (window.matchMedia?.('(orientation: landscape)').matches ?? true),
+)
 
 function updateViewState() {
-  isMobile.value = window.innerWidth < 768;
+  isMobile.value = window.innerWidth < 768
   isLandscape.value = isMobile.value
-    ? (window.matchMedia?.("(orientation: landscape)").matches ?? true)
-    : true;
+    ? (window.matchMedia?.('(orientation: landscape)').matches ?? true)
+    : true
 }
 
-const showPreview = computed(() => !isMobile.value);
+const showPreview = computed(() => !isMobile.value)
 
 const toolbarPortrait: ToolbarNames[] = [
-  "bold",
-  "italic",
-  "underline",
-  "code",
-  "link",
-  "fullscreen",
-  "previewOnly",
-];
+  'bold',
+  'italic',
+  'underline',
+  'code',
+  'link',
+  'fullscreen',
+  'previewOnly',
+]
 const toolbarLandscape: ToolbarNames[] = [
-  "bold",
-  "italic",
-  "underline",
-  "strikeThrough",
-  "title",
-  "unorderedList",
-  "orderedList",
-  "code",
-  "link",
-  "fullscreen",
-  "preview",
-  "previewOnly",
-];
+  'bold',
+  'italic',
+  'underline',
+  'strikeThrough',
+  'title',
+  'unorderedList',
+  'orderedList',
+  'code',
+  'link',
+  'fullscreen',
+  'preview',
+  'previewOnly',
+]
 
-const toolbars = computed(() =>
-  isLandscape.value ? toolbarLandscape : toolbarPortrait,
-);
+const toolbars = computed(() => (isLandscape.value ? toolbarLandscape : toolbarPortrait))
 
 const editorLocale = computed(() => {
   const map: Record<string, string> = {
-    Chinese: "zh-CN",
-    English: "en-US",
-    German: "de-DE",
-    Japanese: "ja-JP",
-    French: "fr-FR",
-  };
-  return map[locale.value] || "zh-CN";
-});
+    Chinese: 'zh-CN',
+    English: 'en-US',
+    German: 'de-DE',
+    Japanese: 'ja-JP',
+    French: 'fr-FR',
+  }
+  return map[locale.value] || 'zh-CN'
+})
 
-const allWorks = computed(() => [
-  ...worksByCategory.Discussion,
-  ...worksByCategory.Experiment,
-]);
+const allWorks = computed(() => [...worksByCategory.Discussion, ...worksByCategory.Experiment])
 
 const selectedWork = computed(
   () => allWorks.value.find((work) => work.id === selectedId.value) || null,
-);
+)
 
 const dirty = computed(() => {
-  const work = selectedWork.value;
-  return (
-    !!work &&
-    (work.subject !== editSubject.value || work.markdown !== editMarkdown.value)
-  );
-});
+  const work = selectedWork.value
+  return !!work && (work.subject !== editSubject.value || work.markdown !== editMarkdown.value)
+})
 
 const currentTabWorks = computed(() => {
-  const kw = searchKeyword.value.trim().toLowerCase();
-  const items = worksByCategory[activeTab.value] || [];
-  if (!kw) return items;
-  return items.filter((work) => work.subject.toLowerCase().includes(kw));
-});
+  const kw = searchKeyword.value.trim().toLowerCase()
+  const items = worksByCategory[activeTab.value] || []
+  if (!kw) return items
+  return items.filter((work) => work.subject.toLowerCase().includes(kw))
+})
 
 function toggleSidebar() {
-  showSidebar.value = !showSidebar.value;
+  showSidebar.value = !showSidebar.value
 }
 
 function goBack() {
-  window.history.back();
+  window.history.back()
 }
 
 function applyWork(work: EditorWork) {
-  editSubject.value = work.subject;
-  editMarkdown.value = work.markdown;
-  coverUrl.value = work.rawSummary
-    ? getCoverUrl(work.rawSummary)
-    : defaultCover;
+  editSubject.value = work.subject
+  editMarkdown.value = work.markdown
+  coverUrl.value = work.rawSummary ? getCoverUrl(work.rawSummary) : defaultCover
 }
 
 function getWorkMeta(work: EditorWork) {
-  return work.tags
-    .map((tag) => (tag.startsWith("Type-") ? "" : getTagName(tag)))
-    .join(" ");
+  return work.tags.map((tag) => (tag.startsWith('Type-') ? '' : getTagName(tag))).join(' ')
 }
 
-let selectTicket = 0;
+let selectTicket = 0
 
 async function selectWork(id: string) {
-  if (id === selectedId.value) return;
-  selectedId.value = id;
+  if (id === selectedId.value) return
+  selectedId.value = id
 
-  const work = allWorks.value.find((w) => w.id === id);
-  if (!work) return;
+  const work = allWorks.value.find((w) => w.id === id)
+  if (!work) return
 
-  const ticket = ++selectTicket;
-  history.replaceState(null, "", `#/e/${work.category}/${work.id}`);
+  const ticket = ++selectTicket
+  history.replaceState(null, '', `#/e/${work.category}/${work.id}`)
 
-  showSidebar.value = false;
-  detailLoading.value = true;
+  showSidebar.value = false
+  detailLoading.value = true
 
   try {
-    const updated = await loadWorkDetail(work);
-    if (ticket !== selectTicket) return;
-    const cat = updated.category;
-    const idx = worksByCategory[cat].findIndex((w) => w.id === updated.id);
+    const updated = await loadWorkDetail(work)
+    if (ticket !== selectTicket) return
+    const cat = updated.category
+    const idx = worksByCategory[cat].findIndex((w) => w.id === updated.id)
     if (idx >= 0) {
-      worksByCategory[cat][idx] = updated;
+      worksByCategory[cat][idx] = updated
     }
   } catch (error) {
     if (ticket === selectTicket) {
-      showMessage("error", (error as Error).message, { duration: 4000 });
+      showMessage('error', (error as Error).message, { duration: 4000 })
     }
-    detailLoading.value = false;
-    return;
+    detailLoading.value = false
+    return
   }
-  applyWork(selectedWork.value!);
-  detailLoading.value = false;
+  applyWork(selectedWork.value!)
+  detailLoading.value = false
 }
 
 async function loadCategory(category: Category) {
-  const result = await fetchEditableWorks(
-    cursorsByCategory[category],
-    PAGE_SIZE,
-  );
-  cursorsByCategory[category] = result.cursors;
-  worksByCategory[category] = result.works;
-  hasMoreByCategory[category] = result.hasMore;
+  const result = await fetchEditableWorks(cursorsByCategory[category], PAGE_SIZE)
+  cursorsByCategory[category] = result.cursors
+  worksByCategory[category] = result.works
+  hasMoreByCategory[category] = result.hasMore
 }
 
 async function loadWorks() {
   if (!checkLogin(true)) {
-    isLoggedIn.value = false;
-    return;
+    isLoggedIn.value = false
+    return
   }
-  isLoggedIn.value = true;
-  loading.value = true;
+  isLoggedIn.value = true
+  loading.value = true
   try {
-    await Promise.all([loadCategory("Discussion"), loadCategory("Experiment")]);
+    await Promise.all([loadCategory('Discussion'), loadCategory('Experiment')])
     if (allWorks.value.length > 0) {
-      selectWork(allWorks.value[0].id);
+      selectWork(allWorks.value[0].id)
     } else {
-      selectedId.value = "";
+      selectedId.value = ''
     }
   } catch (error) {
-    showMessage("error", (error as Error).message, { duration: 4000 });
+    showMessage('error', (error as Error).message, { duration: 4000 })
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 
 async function loadMoreWorks(category: Category) {
-  const key = category;
-  if (loadingMoreByCategory[key] || !hasMoreByCategory[key]) return;
-  loadingMoreByCategory[key] = true;
+  const key = category
+  if (loadingMoreByCategory[key] || !hasMoreByCategory[key]) return
+  loadingMoreByCategory[key] = true
   try {
-    const result = await fetchEditableWorks(cursorsByCategory[key], PAGE_SIZE);
-    cursorsByCategory[key] = result.cursors;
-    worksByCategory[key].push(...result.works);
-    hasMoreByCategory[key] = result.hasMore;
+    const result = await fetchEditableWorks(cursorsByCategory[key], PAGE_SIZE)
+    cursorsByCategory[key] = result.cursors
+    worksByCategory[key].push(...result.works)
+    hasMoreByCategory[key] = result.hasMore
   } catch (error) {
-    showMessage("error", (error as Error).message, { duration: 4000 });
+    showMessage('error', (error as Error).message, { duration: 4000 })
   } finally {
-    loadingMoreByCategory[key] = false;
+    loadingMoreByCategory[key] = false
   }
 }
 
 function buildPreviewContext(work: EditorWork | null) {
   return {
     project: editSubject.value,
-    visitorId:
-      storageManager.getObj("userInfo").value?.ID || getCurrentUserId(),
-    authorId: work?.rawSummary?.User?.ID || "",
+    visitorId: storageManager.getObj('userInfo').value?.ID || getCurrentUserId(),
+    authorId: work?.rawSummary?.User?.ID || '',
     coauthorIds: work?.rawSummary?.Coauthors?.map((user) => user.ID) || [],
-  };
+  }
 }
 
 const PreviewRenderer = defineComponent({
-  name: "CustomPreview",
+  name: 'CustomPreview',
   props: {
     id: String,
     class: String,
   },
   setup(props) {
-    const html = ref("");
-    let ticket = 0;
+    const html = ref('')
+    let ticket = 0
 
     watch(
       [editMarkdown, editSubject, selectedId],
       async () => {
-        const cur = ++ticket;
+        const cur = ++ticket
         try {
-          const result = await parse(
-            editMarkdown.value,
-            buildPreviewContext(selectedWork.value),
-          );
-          if (cur !== ticket) return;
-          html.value =
-            result ||
-            `<p class="empty-preview">${t("mdEditor.emptyPreview")}</p>`;
+          const result = await parse(editMarkdown.value, buildPreviewContext(selectedWork.value))
+          if (cur !== ticket) return
+          html.value = result || `<p class="empty-preview">${t('mdEditor.emptyPreview')}</p>`
         } catch (error) {
-          if (cur !== ticket) return;
-          html.value = `<p class="preview-error">${(error as Error).message}</p>`;
+          if (cur !== ticket) return
+          html.value = `<p class="preview-error">${(error as Error).message}</p>`
         }
       },
       { immediate: true },
-    );
+    )
 
-    return () =>
-      h("div", { id: props.id, class: props.class, innerHTML: html.value });
+    return () => h('div', { id: props.id, class: props.class, innerHTML: html.value })
   },
-});
+})
 
 async function saveCurrentWork() {
-  const work = selectedWork.value;
-  if (!work) return;
-  saving.value = true;
+  const work = selectedWork.value
+  if (!work) return
+  saving.value = true
   try {
-    const result = await publishEditorWork(
-      work,
-      editMarkdown.value,
-      editSubject.value,
-    );
-    const cat = result.updatedWork.category;
-    const idx = worksByCategory[cat].findIndex(
-      (w) => w.id === result.updatedWork.id,
-    );
+    const result = await publishEditorWork(work, editMarkdown.value, editSubject.value)
+    const cat = result.updatedWork.category
+    const idx = worksByCategory[cat].findIndex((w) => w.id === result.updatedWork.id)
     if (idx >= 0) {
-      worksByCategory[cat][idx] = result.updatedWork;
+      worksByCategory[cat][idx] = result.updatedWork
     }
-    showMessage("success", t("mdEditor.saveSuccess"), { duration: 2500 });
+    showMessage('success', t('mdEditor.saveSuccess'), { duration: 2500 })
   } catch (error) {
-    showMessage("error", (error as Error).message, { duration: 5000 });
+    showMessage('error', (error as Error).message, { duration: 5000 })
   } finally {
-    saving.value = false;
+    saving.value = false
   }
 }
 
 function handleUploadImg(_files: File[], _callback: (urls: string[]) => void) {
-  showMessage("info", t("mdEditor.uploadImgHint"), { duration: 3000 });
+  showMessage('info', t('mdEditor.uploadImgHint'), { duration: 3000 })
 }
 
 function onWorkContextMenu(_event: MouseEvent, work: EditorWork) {
-  showActionSheet([{ label: t("mdEditor.editTags") }], (idx) => {
+  showActionSheet([{ label: t('mdEditor.editTags') }], (idx) => {
     if (idx === 0) {
-      openTagEditor(work);
+      openTagEditor(work)
     }
-  });
+  })
 }
 
 function openTagEditor(work: EditorWork) {
-  editTags.value = [...work.tags];
-  newTag.value = "";
-  tagModalVisible.value = true;
+  editTags.value = [...work.tags]
+  newTag.value = ''
+  tagModalVisible.value = true
 }
 
 function addTag() {
-  const tag = newTag.value.trim();
+  const tag = newTag.value.trim()
   if (tag && !editTags.value.includes(tag)) {
-    editTags.value.push(tag);
+    editTags.value.push(tag)
   }
-  newTag.value = "";
+  newTag.value = ''
 }
 
 async function updateTags() {
-  const work = selectedWork.value;
-  if (!work) return;
-  const cat = work.category;
-  const idx = worksByCategory[cat].findIndex((w) => w.id === work.id);
-  if (idx < 0) return;
+  const work = selectedWork.value
+  if (!work) return
+  const cat = work.category
+  const idx = worksByCategory[cat].findIndex((w) => w.id === work.id)
+  if (idx < 0) return
 
-  const updatedRaw = { ...work.rawSummary!, Tags: [...editTags.value] };
+  const updatedRaw = { ...work.rawSummary!, Tags: [...editTags.value] }
   worksByCategory[cat][idx] = {
     ...worksByCategory[cat][idx],
     tags: [...editTags.value],
     rawSummary: updatedRaw,
-  };
+  }
 
   try {
     await publishEditorWork(
       { ...work, rawSummary: updatedRaw },
       editMarkdown.value,
       editSubject.value,
-    );
-    showMessage("success", t("mdEditor.saveSuccess"), { duration: 2000 });
+    )
+    showMessage('success', t('mdEditor.saveSuccess'), { duration: 2000 })
   } catch (error) {
-    showMessage("error", (error as Error).message, { duration: 5000 });
+    showMessage('error', (error as Error).message, { duration: 5000 })
   }
-  tagModalVisible.value = false;
+  tagModalVisible.value = false
 }
 
 async function loadWorkById(category: string, id: string) {
-  loading.value = true;
+  loading.value = true
   try {
     const [work, discResult, expResult] = await Promise.all([
       fetchEditableWork(category as any, id),
       fetchEditableWorks(cursorsByCategory.Discussion, PAGE_SIZE),
       fetchEditableWorks(cursorsByCategory.Experiment, PAGE_SIZE),
-    ]);
+    ])
 
-    cursorsByCategory.Discussion = discResult.cursors;
-    cursorsByCategory.Experiment = expResult.cursors;
-    worksByCategory.Discussion = discResult.works;
-    worksByCategory.Experiment = expResult.works;
-    hasMoreByCategory.Discussion = discResult.hasMore;
-    hasMoreByCategory.Experiment = expResult.hasMore;
+    cursorsByCategory.Discussion = discResult.cursors
+    cursorsByCategory.Experiment = expResult.cursors
+    worksByCategory.Discussion = discResult.works
+    worksByCategory.Experiment = expResult.works
+    hasMoreByCategory.Discussion = discResult.hasMore
+    hasMoreByCategory.Experiment = expResult.hasMore
 
-    const seen = new Set(allWorks.value.map((w) => w.id));
+    const seen = new Set(allWorks.value.map((w) => w.id))
     if (!seen.has(work.id)) {
-      worksByCategory[work.category].unshift(work);
+      worksByCategory[work.category].unshift(work)
     }
 
-    selectedId.value = work.id;
-    applyWork(work);
-    detailLoading.value = false;
+    selectedId.value = work.id
+    applyWork(work)
+    detailLoading.value = false
   } catch (error) {
-    showMessage("error", (error as Error).message, { duration: 5000 });
-    loadWorks();
+    showMessage('error', (error as Error).message, { duration: 5000 })
+    loadWorks()
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 
 onMounted(() => {
-  updateViewState();
-  window.addEventListener("resize", updateViewState);
+  updateViewState()
+  window.addEventListener('resize', updateViewState)
 
   if (isLoggedIn.value) {
-    const category = route.params.category as string;
-    const id = route.params.id as string;
+    const category = route.params.category as string
+    const id = route.params.id as string
     if (id) {
-      loadWorkById(category || "Discussion", id);
+      loadWorkById(category || 'Discussion', id)
     } else {
-      loadWorks();
+      loadWorks()
     }
   } else {
-    loading.value = false;
+    loading.value = false
   }
-});
+})
 
 onUnmounted(() => {
-  window.removeEventListener("resize", updateViewState);
-});
+  window.removeEventListener('resize', updateViewState)
+})
 
 onActivated(() => {
-  isLoggedIn.value = checkLogin(false);
+  isLoggedIn.value = checkLogin(false)
   window.$Logger?.logPageView({
-    pageLink: "/markdown-editor",
+    pageLink: '/markdown-editor',
     timeStamp: Date.now(),
-  });
-});
+  })
+})
 
-const discSentinelRef = ref<HTMLElement | null>(null);
-const discListRef = ref<HTMLElement | null>(null);
-const expSentinelRef = ref<HTMLElement | null>(null);
-const expListRef = ref<HTMLElement | null>(null);
+const discSentinelRef = ref<HTMLElement | null>(null)
+const discListRef = ref<HTMLElement | null>(null)
+const expSentinelRef = ref<HTMLElement | null>(null)
+const expListRef = ref<HTMLElement | null>(null)
 
 function setupTabObserver(
   sentinelRef: ReturnType<typeof ref<HTMLElement | null>>,
   listRef: ReturnType<typeof ref<HTMLElement | null>>,
   category: Category,
 ) {
-  let initialized = false;
+  let initialized = false
   watch(sentinelRef, (el) => {
-    if (!el || initialized) return;
-    initialized = true;
-    const root = listRef.value || el.parentElement;
-    if (!root) return;
+    if (!el || initialized) return
+    initialized = true
+    const root = listRef.value || el.parentElement
+    if (!root) return
     const obs = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          loadMoreWorks(category);
+          loadMoreWorks(category)
         }
       },
-      { root, rootMargin: "200px" },
-    );
-    obs.observe(el);
-  });
+      { root, rootMargin: '200px' },
+    )
+    obs.observe(el)
+  })
 }
 
-setupTabObserver(discSentinelRef, discListRef, "Discussion");
-setupTabObserver(expSentinelRef, expListRef, "Experiment");
+setupTabObserver(discSentinelRef, discListRef, 'Discussion')
+setupTabObserver(expSentinelRef, expListRef, 'Experiment')
 </script>
 
 <style scoped>

@@ -56,10 +56,8 @@ import '../layout/startPage.css'
 const loading = ref(true)
 const blocks = ref<Array<ListBlock | TopicBlockType>>([])
 
-function isTopicBlock(
-  block: ListBlock | TopicBlockType,
-): block is TopicBlockType {
-  return block.$type === "Quantum.Models.Contents.TopicBlock, Quantum Models";
+function isTopicBlock(block: ListBlock | TopicBlockType): block is TopicBlockType {
+  return block.$type === 'Quantum.Models.Contents.TopicBlock, Quantum Models'
 }
 
 function getBlockKey(block: ListBlock | TopicBlockType) {

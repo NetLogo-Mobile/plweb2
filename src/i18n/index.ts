@@ -11,21 +11,20 @@ export type AppLanguage = 'Chinese' | 'English' | 'German' | 'Japanese' | 'Frenc
 export type BrowserLanguage = 'zh-CN' | 'en-US' | 'de-DE' | 'ja-JP' | 'fr-FR'
 
 const LANGUAGE_BY_CODE: Record<string, AppLanguage> = {
-  zh: "Chinese",
-  en: "English",
-  de: "German",
-  ja: "Japanese",
-  fr: "French",
-};
+  zh: 'Chinese',
+  en: 'English',
+  de: 'German',
+  ja: 'Japanese',
+  fr: 'French',
+}
 
 const API_LANGUAGE_BY_APP_LANGUAGE: Record<BrowserLanguage, string> = {
-  "zh-CN": "Chinese",
-  "en-US": "English",
-  "de-DE": "German",
-  "ja-JP": "Japanese",
-  "fr-FR": "French",
-};
-
+  'zh-CN': 'Chinese',
+  'en-US': 'English',
+  'de-DE': 'German',
+  'ja-JP': 'Japanese',
+  'fr-FR': 'French',
+}
 
 function normalizeLanguageTag(rawLanguage: string): string {
   return rawLanguage.trim().replace(/_/g, '-').toLowerCase()

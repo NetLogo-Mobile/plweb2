@@ -4,7 +4,7 @@
       class="img"
       @click.stop="
         () => {
-          if (notification.Users[0]) showUserCard(notification.Users[0]);
+          if (notification.Users[0]) showUserCard(notification.Users[0])
         }
       "
     >
@@ -90,12 +90,12 @@ const msg_icon_url = computed(() => {
 function showComment() {
   if (props.notification.msg_type === 3) {
     window.open(
-      `${getPath("/@root")}/c/${
+      `${getPath('/@root')}/c/${
         props.notification.Fields?.Discussion
-          ? "Discussion"
+          ? 'Discussion'
           : props.notification.Fields?.Experiment
-            ? "Experiment"
-            : "User"
+            ? 'Experiment'
+            : 'User'
       }/${
         props.notification.Fields?.ExperimentID ||
         props.notification.Fields?.DiscussionID ||

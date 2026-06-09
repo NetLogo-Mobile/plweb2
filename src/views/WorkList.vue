@@ -42,7 +42,8 @@ const detailedTitle = computed(() => {
 
   const sort = query.Sort
   if (sort === 0 || sort === '0' || sort === 'Default') parts.push(t('worklist.sortDefault'))
-  else if (sort === 1 || sort === '1' || sort === 'Popularity') parts.push(t('worklist.sortPopularity'))
+  else if (sort === 1 || sort === '1' || sort === 'Popularity')
+    parts.push(t('worklist.sortPopularity'))
   else if (sort === 2 || sort === '2' || sort === 'Random') parts.push(t('worklist.sortRandom'))
 
   if (query.Special === 'Favorite') parts.push(t('worklist.specialFavorite'))

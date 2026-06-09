@@ -69,9 +69,9 @@ const routes: RouteRecordRaw[] = [
   { path: '/messages', redirect: '/m' },
 
   {
-    path: "/e/:category?/:id?",
-    name: "Editor",
-    component: () => import("../views/Editor.vue"),
+    path: '/e/:category?/:id?',
+    name: 'Editor',
+    component: () => import('../views/Editor.vue'),
     meta: { keepAlive: false },
   },
   {
