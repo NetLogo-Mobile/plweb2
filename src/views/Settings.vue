@@ -8,22 +8,14 @@
           class="back-icon"
           @click="goBack"
         />
-        <h1 class="page-title">{{ $t("settings.settings") }}</h1>
+        <h1 class="page-title">{{ $t('settings.settings') }}</h1>
       </div>
 
       <div class="settings-content">
-        <div
-          v-for="section in settingsConfig"
-          :key="section.title"
-          class="settings-section"
-        >
+        <div v-for="section in settingsConfig" :key="section.title" class="settings-section">
           <h2 class="section-title">{{ $t(`settings.${section.title}`) }}</h2>
           <div class="section-items">
-            <div
-              v-for="item in section.items"
-              :key="item.key"
-              class="setting-item"
-            >
+            <div v-for="item in section.items" :key="item.key" class="setting-item">
               <span class="item-label">{{ $t(`settings.${item.key}`) }}</span>
 
               <!-- Select/Link Type -->
@@ -37,6 +29,16 @@
                 />
               </div>
 
+              <!-- Input Type -->
+              <div v-else-if="item.type === 'input'" class="item-control">
+                <n-input
+                  :value="(item.value as string) || ''"
+                  size="small"
+                  clearable
+                  style="width: 250px"
+                  @update:value="handleInputChange(item, $event)"
+                />
+              </div>
               <!-- Toggle Type -->
               <label v-else-if="item.type === 'toggle'" class="toggle-wrapper">
                 <input
@@ -61,43 +63,43 @@
       </div>
 
       <div class="settings-footer">
-        <span class="version-info">v{{ sysConfig.version }}</span>
+        <span class="version-info">v{{ sysConfig.version }} ({{ sysConfig.buildHash }})</span>
       </div>
     </div>
   </div>
 </template>
 <script setup lang="ts">
-import { reactive, onActivated } from "vue";
-import { settingsConfig as s } from "../config/user.config";
-import { NSelect } from "naive-ui";
-import storageManager from "../services/storage";
-import sysConfig from "../config/system.config";
-import i18n from "@i18n/index";
+import { reactive, onActivated } from 'vue'
+import { settingsConfig as s } from '../config/user.config'
+import { NInput, NSelect } from 'naive-ui'
+import storageManager from '../services/storage'
+import sysConfig from '../config/system.config'
+import i18n from '@i18n/index'
 
 type SettingsItem = {
-  key: string;
-  type: "link" | "toggle" | "button";
-  value?: string;
-  options?: Array<{ label: string; value: string }>;
-  callBack?: (value?: string) => void;
-};
+  key: string
+  type: 'link' | 'toggle' | 'button' | 'input'
+  value?: string
+  options?: Array<{ label: string; value: string }>
+  callBack?: (value?: string) => void
+}
 
 type SettingsSection = {
-  title: string;
-  items: SettingsItem[];
-};
+  title: string
+  items: SettingsItem[]
+}
 
-const settingsConfig = reactive(s as SettingsSection[]);
+const settingsConfig = reactive(s as SettingsSection[])
 
 // Initialize settings from storage
-const savedValues = storageManager.getObj("userConfig")?.value || {};
+const savedValues = storageManager.getObj('userConfig')?.value || {}
 settingsConfig.forEach((section) => {
   section.items.forEach((item) => {
-    if (item.type !== "button" && savedValues[item.key] !== undefined) {
-      item.value = savedValues[item.key];
+    if (item.type !== 'button' && savedValues[item.key] !== undefined) {
+      item.value = savedValues[item.key]
     }
-  });
-});
+  })
+})
 
 // Restore language setting on component mount
 if (savedValues.language) {
@@ -112,57 +114,69 @@ function saveSettings() {
   };
   settingsConfig.forEach((section) => {
     section.items.forEach((item) => {
-      if (item.type !== "button") {
-        saveData[item.key] = item.value;
+      if (item.type !== 'button') {
+        saveData[item.key] = item.value
       }
-    });
-  });
-  storageManager.setObj("userConfig", saveData);
+    })
+  })
+  storageManager.setObj('userConfig', saveData)
 }
 
 function handleSelectChange(item: SettingsItem, newValue: string) {
-  item.value = newValue;
-  saveSettings();
+  item.value = newValue
+  saveSettings()
   if (item.callBack) {
-    item.callBack(newValue);
+    item.callBack(newValue)
   }
 }
 
 function handleToggleChange(item: SettingsItem, event: Event) {
-  const target = event.target as HTMLInputElement;
-  item.value = target.checked ? "on" : "off";
-  saveSettings();
+  const target = event.target as HTMLInputElement
+  item.value = target.checked ? 'on' : 'off'
+  saveSettings()
   if (item.callBack) {
-    item.callBack(target.checked ? "on" : "off");
+    item.callBack(target.checked ? 'on' : 'off')
+  }
+}
+
+function handleInputChange(item: SettingsItem, newValue: string) {
+  item.value = newValue
+  saveSettings()
+  if (item.callBack) {
+    item.callBack(newValue)
   }
 }
 
 function handleButtonClick(item: SettingsItem) {
   if (item.callBack) {
-    item.callBack();
+    item.callBack()
   }
 }
 
 function goBack() {
-  window.history.back();
+  window.history.back()
 }
 
 onActivated(() => {
   if (window.$Logger) {
     window.$Logger.logPageView({
-      pageLink: "/s",
+      pageLink: '/s',
       timeStamp: Date.now(),
-    });
+    })
   }
-});
+})
 </script>
 
 <style scoped>
 .settings-wrapper {
   width: 100%;
-  min-height: 100vh;
+  height: 100dvh;
+  box-sizing: border-box;
+  overflow-y: auto;
   background-color: #f5f5f5;
   padding: 20px 0;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
 }
 
 .settings-container {
@@ -291,7 +305,7 @@ onActivated(() => {
 
 .toggle-slider:before {
   position: absolute;
-  content: "";
+  content: '';
   height: 24px;
   width: 24px;
   left: 2px;

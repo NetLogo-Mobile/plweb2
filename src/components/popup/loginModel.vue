@@ -23,10 +23,7 @@
                   clearable
                 >
                   <template #suffix>
-                    <img
-                      :src="getPath('/@base/assets/login/icon-login.png')"
-                      width="15px"
-                    />
+                    <img :src="getPath('/@base/assets/login/icon-login.png')" width="15px" />
                   </template>
                 </n-input>
               </n-form-item-row>
@@ -44,16 +41,12 @@
               </n-form-item-row>
             </n-form>
             <p style="margin-bottom: 20px" v-html="$t('login.terms')"></p>
-            <n-button
-              type="primary"
-              class="loginButton"
-              @click="handlePasswordLogin"
-            >
-              {{ $t("login.confirm") }}
+            <n-button type="primary" class="loginButton" @click="handlePasswordLogin">
+              {{ $t('login.confirm') }}
             </n-button>
           </n-tab-pane>
           <n-tab-pane name="signup" :tab="$t('login.signup')">
-            <h3 style="align-self: center">{{ $t("login.signupClosed") }}</h3>
+            <h3 style="align-self: center">{{ $t('login.signupClosed') }}</h3>
             <n-form :showLabel="false">
               <n-form-item-row>
                 <n-input
@@ -89,7 +82,7 @@
               </n-form-item-row>
             </n-form>
             <n-button type="primary" disabled class="loginButton">
-              {{ $t("login.signup") }}
+              {{ $t('login.signup') }}
             </n-button>
           </n-tab-pane>
         </n-tabs>
@@ -99,38 +92,30 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { login } from "@api/getData.ts";
-import sm from "@storage/index";
-import { getPath } from "@services/utils";
-import {
-  NInput,
-  NTabPane,
-  NButton,
-  NForm,
-  NTabs,
-  NFormItemRow,
-  NCard,
-} from "naive-ui";
-import Emitter from "@services/eventEmitter";
-import { showMessage } from "@popup/naiveui";
+import { ref } from 'vue'
+import { login } from '@api/getData.ts'
+import sm from '@storage/index'
+import { getPath } from '@services/utils'
+import { NInput, NTabPane, NButton, NForm, NTabs, NFormItemRow, NCard } from 'naive-ui'
+import Emitter from '@services/eventEmitter'
+import { showMessage } from '@popup/naiveui'
 
-const emailOrPhone = ref("");
-const loginPassword = ref("");
+const emailOrPhone = ref('')
+const loginPassword = ref('')
 interface LoginModelProps {
-  close: () => void;
+  close: () => void
 }
 
-const { close } = defineProps<LoginModelProps>();
+const { close } = defineProps<LoginModelProps>()
 
 async function handlePasswordLogin() {
-  let res = await login(emailOrPhone.value, loginPassword.value, false);
+  let res = await login(emailOrPhone.value, loginPassword.value, false)
   if (res.Status === 200) {
-    sm.setObj("userInfo", res.Data.User);
-    Emitter.emit("userLogin", res);
-    close();
+    sm.setObj('userInfo', res.Data.User)
+    Emitter.emit('userLogin', res)
+    close()
   } else {
-    showMessage("error", res.Message);
+    showMessage('error', res.Message)
   }
 }
 </script>

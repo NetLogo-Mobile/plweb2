@@ -1,7 +1,7 @@
 {
   "name": "plweb2",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.2.4",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
@@ -17,7 +17,7 @@
     "highlight.js": "^11.11.1",
     "katex": "^0.16.45",
     "md-editor-v3": "^6.5.0",
-    "mermaid": "^11.14.0",
+    "mermaid": "^11.15.0",
     "prettier": "^3.6.2",
     "vue": "^3.5.24",
     "vue-i18n": "^11.1.12",
@@ -34,8 +34,9 @@
     "eslint": "^9.31.0",
     "eslint-plugin-vue": "^10.2.0",
     "naive-ui": "^2.43.1",
+    "playwright": "^1.60.0",
     "typescript": "~5.9.3",
-    "vite": "^7.2.2",
+    "vite": "^7.3.3",
     "vite-plugin-pwa": "^1.2.0",
     "vue-tsc": "2.2.0"
   },

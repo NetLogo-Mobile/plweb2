@@ -1,43 +1,65 @@
-import { getWasmInstance } from "./wasmLoader";
-import { getDeallocator } from "./deallocator";
-import hljs from "highlight.js";
-import mermaid from "mermaid";
-import renderMathInElement from "katex/contrib/auto-render/auto-render.js";
-import "katex/dist/katex.min.css";
+import { getWasmInstance } from './wasmLoader'
+import { getDeallocator } from './deallocator'
+import hljs from 'highlight.js'
+import mermaid from 'mermaid'
+import renderMathInElement from 'katex/contrib/auto-render/auto-render.js'
+import 'katex/dist/katex.min.css'
+import storageManager from '@storage/index'
+import { getPath } from '@services/utils'
 
 interface ParseContext {
-  host?: string;
-  project?: string;
-  visitorId?: string;
-  authorId?: string;
-  coauthorIds?: string[];
+  host?: string
+  project?: string
+  visitorId?: string
+  authorId?: string
+  coauthorIds?: string[]
 }
 
-let mermaidInitialized = false;
+let mermaidInitialized = false
 
 function ensureMermaidInitialized() {
-  if (mermaidInitialized) return;
+  if (mermaidInitialized) return
   mermaid.initialize({
     startOnLoad: false,
-    securityLevel: "loose",
+    securityLevel: 'strict',
     suppressErrorRendering: true,
-  });
-  mermaidInitialized = true;
+  })
+  mermaidInitialized = true
+}
+
+function getMermaidSvgWidth(svg: SVGSVGElement) {
+  const maxWidth = svg.style.maxWidth.match(/^([0-9.]+)px$/)?.[1]
+  if (maxWidth) return Number(maxWidth)
+
+  const width = svg.getAttribute('width')?.match(/^([0-9.]+)(?:px)?$/)?.[1]
+  if (width) return Number(width)
+
+  const viewBox = svg.getAttribute('viewBox')?.trim().split(/\s+/)
+  return viewBox?.[2] ? Number(viewBox[2]) : undefined
+}
+
+function keepMermaidSvgIntrinsicWidth(wrapper: HTMLElement) {
+  const svg = wrapper.querySelector('svg')
+  if (!(svg instanceof SVGSVGElement)) return
+
+  const width = getMermaidSvgWidth(svg)
+  if (width && Number.isFinite(width)) {
+    svg.style.setProperty('width', `${width}px`)
+  }
+  svg.style.setProperty('max-width', 'none')
 }
 
 async function renderMermaidDiagrams(container: HTMLElement) {
-  ensureMermaidInitialized();
-  const mermaidBlocks = Array.from(
-    container.querySelectorAll("pre code.language-mermaid"),
-  );
+  ensureMermaidInitialized()
+  const mermaidBlocks = Array.from(container.querySelectorAll('pre code.language-mermaid'))
 
   await Promise.all(
     mermaidBlocks.map(async (block, index) => {
       const source = block.textContent?.trim().replace(/\u00a0/g, " ");
       if (!source) return;
 
-      const pre = block.closest("pre");
-      if (!pre) return;
+      const pre = block.closest('pre')
+      if (!pre) return
 
       try {
         const renderId = `mermaid-${Date.now()}-${index}`;
@@ -50,7 +72,7 @@ async function renderMermaidDiagrams(container: HTMLElement) {
         console.warn("mermaid render failed:", e);
       }
     }),
-  );
+  )
 }
 
 async function advancedParser(
@@ -61,8 +83,8 @@ async function advancedParser(
   author: string,
   coauthors: string,
 ): Promise<string> {
-  const wasmInstance = await getWasmInstance();
-  const instanceAny: any = wasmInstance;
+  const wasmInstance = await getWasmInstance()
+  const instanceAny: any = wasmInstance
   if (!instanceAny.__advanced_parser_fn) {
     instanceAny.__advanced_parser_fn = wasmInstance.cwrap(
       "fixedadv_parser",
@@ -71,7 +93,7 @@ async function advancedParser(
     );
   }
 
-  const deallocate = await getDeallocator();
+  const deallocate = await getDeallocator()
   const char8_t_const_ptr = (
     instanceAny.__advanced_parser_fn as (
       _1: string,
@@ -81,40 +103,43 @@ async function advancedParser(
       _5: string,
       _6: string,
     ) => number
-  )(text, host, project, visitor, author, coauthors);
-  const result = wasmInstance.UTF8ToString(char8_t_const_ptr);
-  deallocate(char8_t_const_ptr);
-  return result;
+  )(text, host, project, visitor, author, coauthors)
+  const result = wasmInstance.UTF8ToString(char8_t_const_ptr)
+  deallocate(char8_t_const_ptr)
+  return result
 }
 
 async function parse(source: string, context: ParseContext = {}) {
-  if (!source) return "";
+  if (!source) return ''
   const rawHtml = await advancedParser(
     source,
-    context.host ?? import.meta.env.VITE_ROOT_URL ?? "",
-    context.project ?? "",
-    context.visitorId ?? "",
-    context.authorId ?? "",
-    context.coauthorIds?.filter(Boolean).join(",") || "None",
-  );
+    context.host ?? getPath('/@root'),
+    context.project ?? '',
+    context.visitorId ?? '',
+    context.authorId ?? '',
+    context.coauthorIds?.filter(Boolean).join(',') || 'None',
+  )
 
-  if (!rawHtml) return "";
-  const tempDiv = document.createElement("div");
-  tempDiv.innerHTML = rawHtml;
+  if (!rawHtml) return ''
+  const tempDiv = document.createElement('div')
+  tempDiv.innerHTML = rawHtml
 
-  if (typeof renderMathInElement === "function") {
+  if (typeof renderMathInElement === 'function') {
     renderMathInElement(tempDiv, {
       delimiters: [
-        { left: "$$", right: "$$", display: true },
-        { left: "$", right: "$", display: false },
-        { left: "\\(", right: "\\)", display: false },
-        { left: "\\[", right: "\\]", display: true },
+        { left: '$$', right: '$$', display: true },
+        { left: '$', right: '$', display: false },
+        { left: '\\(', right: '\\)', display: false },
+        { left: '\\[', right: '\\]', display: true },
       ],
-      ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code"],
-    });
+      ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+    })
   }
 
-  await renderMermaidDiagrams(tempDiv);
+  const enableMermaid = (storageManager.getObj('userConfig')?.value?.mermaid ?? 'on') === 'on'
+  if (enableMermaid) {
+    await renderMermaidDiagrams(tempDiv)
+  }
 
   tempDiv
     .querySelectorAll("pre code:not(.language-mermaid)")
@@ -122,7 +147,7 @@ async function parse(source: string, context: ParseContext = {}) {
       hljs.highlightElement(block as HTMLElement);
     });
 
-  return tempDiv.innerHTML;
+  return tempDiv.innerHTML
 }
 
-export default parse;
+export default parse

@@ -10,7 +10,7 @@
       <div class="text">
         <p v-richText="() => parse(data.Subject || '')" class="title"></p>
         <p class="subtitle">
-          {{ data.User.Nickname + "&nbsp;&nbsp;-" + formattedDate }}
+          {{ data.User.Nickname + '&nbsp;&nbsp;-' + formattedDate }}
         </p>
       </div>
     </div>
@@ -18,29 +18,29 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import type { Summary } from "@services/../pl-serve-type-main/type/main";
-import parse from "@services/pltxt2htm/commonParser";
-import { getCoverUrl, formatDate } from "@services/utils.ts";
+import { computed } from 'vue'
+import type { Summary } from '@services/../pl-serve-type-main/type/main'
+import parse from '@services/pltxt2htm/commonParser'
+import { getCoverUrl, formatDate } from '@services/utils.ts'
 
 declare global {
   interface Window {
-    formtDate: typeof formatDate;
+    formtDate: typeof formatDate
   }
 }
 
-window.formtDate = formatDate;
+window.formtDate = formatDate
 
 const { data } = defineProps<{
-  data: Summary;
-}>();
+  data: Summary
+}>()
 
-const type = "Experiment";
+const type = 'Experiment'
 
-const imgUrl = getCoverUrl(data);
+const imgUrl = getCoverUrl(data)
 const formattedDate = computed(() => {
-  return formatDate(data.ID);
-});
+  return formatDate(data.ID)
+})
 </script>
 
 <style scoped>

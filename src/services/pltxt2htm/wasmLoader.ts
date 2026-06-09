@@ -1,5 +1,5 @@
-let wasmInstance: any = null;
-let wasmInstancePromise: Promise<any> | null = null;
+let wasmInstance: any = null
+let wasmInstancePromise: Promise<any> | null = null
 
 /**
  * To load the WebAssembly instance only once and reuse it.
@@ -7,13 +7,13 @@ let wasmInstancePromise: Promise<any> | null = null;
  * @returns WebAssembly instance.
  */
 export async function getWasmInstance() {
-  if (wasmInstance) return wasmInstance;
-  if (wasmInstancePromise) return wasmInstancePromise;
+  if (wasmInstance) return wasmInstance
+  if (wasmInstancePromise) return wasmInstancePromise
   wasmInstancePromise = (async () => {
-    const pltxt2htm = (await import("./vendor/pltxt2htm.js")).default;
-    wasmInstance = await pltxt2htm();
-    wasmInstancePromise = null;
-    return wasmInstance;
-  })();
-  return wasmInstancePromise;
+    const pltxt2htm = (await import('./vendor/pltxt2htm.js')).default
+    wasmInstance = await pltxt2htm()
+    wasmInstancePromise = null
+    return wasmInstance
+  })()
+  return wasmInstancePromise
 }

@@ -8,11 +8,7 @@
         <p v-richText="() => parse(data.Subject || '')" class="title"></p>
         <p class="subtitle">{{ data.User.Nickname }}</p>
         <div class="subtitle">
-          <Tag
-            v-for="i in data.Tags"
-            :category="data.Category || 'Experiment'"
-            :tag="i"
-          />
+          <Tag v-for="i in data.Tags" :category="data.Category || 'Experiment'" :tag="i" />
         </div>
       </div>
     </div>
@@ -20,30 +16,28 @@
 </template>
 
 <script setup lang="ts">
-import Tag from "../utils/Tag.vue";
-import type { Summary } from "@services/../pl-serve-type-main/type/main";
-import parse from "@services/pltxt2htm/commonParser";
-import { getCoverUrl, getPath } from "@services/utils";
-import { useRouter } from "vue-router";
+import Tag from '../utils/Tag.vue'
+import type { Summary } from '@services/../pl-serve-type-main/type/main'
+import parse from '@services/pltxt2htm/commonParser'
+import { getCoverUrl, getPath } from '@services/utils'
+import { useRouter } from 'vue-router'
 
 const { data } = defineProps<{
-  data: Summary;
-}>();
+  data: Summary
+}>()
 
-const router = useRouter();
+const router = useRouter()
 const imgUrl =
-  data.Image != -1
-    ? getCoverUrl(data)
-    : getPath("/@base/assets/messages/Experiment-Default.png");
+  data.Image != -1 ? getCoverUrl(data) : getPath('/@base/assets/messages/Experiment-Default.png')
 
 function goToExperimentSummary() {
   router.push({
-    name: "ExperimentSummary",
+    name: 'ExperimentSummary',
     params: {
-      category: data.Category || "Experiment",
+      category: data.Category || 'Experiment',
       id: data.ID,
     },
-  });
+  })
 }
 </script>
 

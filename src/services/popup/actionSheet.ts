@@ -1,5 +1,5 @@
-import { createApp } from "vue";
-import ActionSheet from "../../components/popup/actionSheet.vue";
+import { createApp } from 'vue'
+import ActionSheet from '../../components/popup/actionSheet.vue'
 
 /**
  * To show an action sheet. Click outside to close.Click option to callback.
@@ -11,15 +11,15 @@ export default function showActionSheet(
   options: { label: string }[],
   onSelect: (idx: number) => void,
 ) {
-  const div = document.createElement("div");
-  document.body.appendChild(div);
+  const div = document.createElement('div')
+  document.body.appendChild(div)
   const app = createApp(ActionSheet, {
     options,
     close: () => {
-      app.unmount();
-      div.remove();
+      app.unmount()
+      div.remove()
     },
     onSelect,
-  });
-  app.mount(div);
+  })
+  app.mount(div)
 }

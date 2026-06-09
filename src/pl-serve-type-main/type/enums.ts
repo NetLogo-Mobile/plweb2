@@ -8,5 +8,5 @@ export {
   Languages,
   APIMessages,
   APIRouterCategories,
-} from "./main.ts";
-export type { SummaryTag } from "./main.ts";
+} from './main.ts'
+export type { SummaryTag } from './main.ts'

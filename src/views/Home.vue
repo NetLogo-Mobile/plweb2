@@ -4,30 +4,20 @@
       <div class="user" @click="showModalFn">
         <img
           class="avatar"
-          :src="
-            user.avatarUrl || getPath('/@base/assets/user/default-avatar.png')
-          "
+          :src="user.avatarUrl || getPath('/@base/assets/user/default-avatar.png')"
           alt="Avatar"
         />
         <div class="user-info">
           <div class="username">{{ user.username }}</div>
-          <div class="level">{{ $t("user.level") }} {{ user.level }}</div>
+          <div class="level">{{ $t('user.level') }} {{ user.level }}</div>
         </div>
         <div class="resources">
           <div class="resource">
-            <img
-              class="icon"
-              :src="getPath('/@base/assets/icons/coins.png')"
-              alt="Coins"
-            />
+            <img class="icon" :src="getPath('/@base/assets/icons/coins.png')" alt="Coins" />
             <span>{{ user.coins }}</span>
           </div>
           <div class="resource">
-            <img
-              class="icon gems"
-              :src="getPath('/@base/assets/icons/gems.png')"
-              alt="Gems"
-            />
+            <img class="icon gems" :src="getPath('/@base/assets/icons/gems.png')" alt="Gems" />
             <span>{{ user.gems }}</span>
           </div>
         </div>
@@ -61,32 +51,32 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onActivated } from "vue";
-import { NGi, NGrid } from "naive-ui";
-import router from "../router";
-import { checkLogin, getPath, getUserUrl } from "@services/utils";
-import "../layout/loading.css";
-import "../layout/startPage.css";
-import sm from "@storage/index.ts";
-import { useI18n } from "vue-i18n";
-import Emitter from "@services/eventEmitter";
-import { useResponsive } from "../layout/useResponsive.ts";
-import { login } from "@api/getData";
-import Header from "../components/utils/Header.vue";
-import Footer from "../components/utils/Footer.vue";
-import Block from "../components/blocks/Block.vue";
-import TopicBlock from "../components/blocks/TopicBlock.vue";
-import { showLoginModel } from "@popup/index";
+import { ref, onMounted, onActivated } from 'vue'
+import { NGi, NGrid } from 'naive-ui'
+import router from '../router'
+import { checkLogin, getPath, getUserUrl } from '@services/utils'
+import '../layout/loading.css'
+import '../layout/startPage.css'
+import sm from '@storage/index.ts'
+import { useI18n } from 'vue-i18n'
+import Emitter from '@services/eventEmitter'
+import { useResponsive } from '../layout/useResponsive.ts'
+import { login } from '@api/getData'
+import Header from '../components/utils/Header.vue'
+import Footer from '../components/utils/Footer.vue'
+import Block from '../components/blocks/Block.vue'
+import TopicBlock from '../components/blocks/TopicBlock.vue'
+import { showLoginModel } from '@popup/index'
 import type {
   ListBlock,
   ResultOf,
   TopicBlock as TopicBlockType,
   Users,
-} from "@services/../pl-serve-type-main/type/main";
+} from '@services/../pl-serve-type-main/type/main'
 
-const isLoading = ref(true);
-const blocks = ref<Array<ListBlock | TopicBlockType>>([]);
-const { t } = useI18n();
+const isLoading = ref(true)
+const blocks = ref<Array<ListBlock | TopicBlockType>>([])
+const { t } = useI18n()
 
 function isTopicBlock(
   block: ListBlock | TopicBlockType,
@@ -95,10 +85,10 @@ function isTopicBlock(
 }
 
 function getBlockKey(block: ListBlock | TopicBlockType) {
-  return isTopicBlock(block) ? block.Subject : block.Header;
+  return isTopicBlock(block) ? block.Subject : block.Header
 }
 
-const _user = sm.getObj("userInfo")?.value;
+const _user = sm.getObj('userInfo')?.value
 const user =
   _user?.Avatar >= 1
     ? ref({
@@ -113,20 +103,20 @@ const user =
         coins: 0,
         gems: 0,
         level: 0,
-        username: t("user.clickToLogin"),
-        avatarUrl: getPath("/@base/assets/user/default-avatar.png"),
-        ID: "",
-      });
+        username: t('user.clickToLogin'),
+        avatarUrl: getPath('/@base/assets/user/default-avatar.png'),
+        ID: '',
+      })
 
-const { blockItemsPerRow, maxProjectsPerBlock } = useResponsive();
+const { blockItemsPerRow, maxProjectsPerBlock } = useResponsive()
 
 onMounted(async () => {
   // First render from cache, then update it
   async function processAuthInfo() {
-    const ua = sm.getObj("userAuthInfo");
-    if (ua.status === "success" && ua.value?.token != null) {
-      const res = await login(ua.value.token, ua.value.authCode, true);
-      if (!res.Data?.User) return;
+    const ua = sm.getObj('userAuthInfo')
+    if (ua.status === 'success' && ua.value?.token != null) {
+      const res = await login(ua.value.token, ua.value.authCode, true)
+      if (!res.Data?.User) return
       user.value = {
         coins: res.Data.User.Gold,
         gems: res.Data.User.Diamond,
@@ -134,25 +124,25 @@ onMounted(async () => {
         username: res.Data.User.Nickname,
         avatarUrl: getUserUrl(res.Data.User),
         ID: res.Data.User.ID,
-      };
+      }
     }
   }
   async function processHomepageProjects() {
-    const res = await login(null, null);
-    loadPageData(res);
+    const res = await login(null, null)
+    loadPageData(res)
   }
-  await Promise.allSettled([processAuthInfo(), processHomepageProjects()]);
-});
+  await Promise.allSettled([processAuthInfo(), processHomepageProjects()])
+})
 
 onActivated(() => {
   window.$Logger.logPageView({
-    pageLink: "/",
+    pageLink: '/',
     timeStamp: Date.now(),
-  });
-});
+  })
+})
 
-Emitter.on("userLogin", (res) => {
-  if (!res.Data?.User) return;
+Emitter.on('userLogin', (res) => {
+  if (!res.Data?.User) return
   user.value = {
     coins: res.Data.User.Gold,
     gems: res.Data.User.Diamond,
@@ -160,19 +150,19 @@ Emitter.on("userLogin", (res) => {
     username: res.Data.User.Nickname,
     avatarUrl: getUserUrl(res.Data.User),
     ID: res.Data.User.ID,
-  };
-});
+  }
+})
 // It is astonishing that server respond with projects data when login with (null,null)
 // And responed with user data when login with token/password
 // Fourtunately, both data has the same structure
-async function loadPageData(response: ResultOf<Users["Authenticate"]>) {
-  if (!response.Data) return;
-  isLoading.value = false;
+async function loadPageData(response: ResultOf<Users['Authenticate']>) {
+  if (!response.Data) return
+  isLoading.value = false
   if (response.Data.ContentTags) {
-    Emitter.emit("updateTagConfig", response.Data.ContentTags);
+    Emitter.emit('updateTagConfig', response.Data.ContentTags)
   }
-  blocks.value = [...(response.Data.Library?.Blocks ?? [])];
-  const userData = response.Data.User;
+  blocks.value = [...(response.Data.Library?.Blocks ?? [])]
+  const userData = response.Data.User
 
   // Both null-null-login or real-login can get user data,but the previous one is fake
   // The nickName is null in fake user data
@@ -181,27 +171,27 @@ async function loadPageData(response: ResultOf<Users["Authenticate"]>) {
       coins: userData.Gold,
       gems: userData.Diamond,
       level: userData.Level,
-      username: userData.Nickname || t("user.clickToLogin"),
+      username: userData.Nickname || t('user.clickToLogin'),
       avatarUrl: getUserUrl(userData),
       ID: userData.ID,
-    };
+    }
   }
 
   window.$Logger.logPageView({
-    pageLink: "/Account/Login/",
+    pageLink: '/Account/Login/',
     timeStamp: Date.now(),
-  });
+  })
 }
 
 function showModalFn() {
   if (checkLogin(false)) {
-    router.push(`/u/${user.value.ID}`);
+    router.push(`/u/${user.value.ID}`)
     window.$Logger.logPageView({
-      pageLink: "/Profile/",
+      pageLink: '/Profile/',
       timeStamp: Date.now(),
-    });
+    })
   } else {
-    showLoginModel();
+    showLoginModel()
   }
 }
 </script>

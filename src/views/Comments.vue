@@ -1,18 +1,11 @@
 <template>
   <Header>
     <div class="header">
-      <img
-        src="/assets/library/Navigation-Return.png"
-        style="width: 3em"
-        @click="goBack"
-      />
+      <img src="/assets/library/Navigation-Return.png" style="width: 3em" @click="goBack" />
       <div class="title">
         {{ title }}
       </div>
-      <img
-        src="/assets/library/Button-Category.png"
-        style="width: 3em; margin-left: auto"
-      />
+      <img src="/assets/library/Button-Category.png" style="width: 3em; margin-left: auto" />
     </div>
   </Header>
   <div class="content">
@@ -40,41 +33,38 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import MessagesList from "../components/messages/MessageList.vue";
-import { useRoute } from "vue-router";
-import Header from "../components/utils/Header.vue";
-import parse from "@services/pltxt2htm/commonParser";
-import postComment from "@services/postComment.ts";
-import { useI18n } from "vue-i18n";
-import CommentComposer from "../components/utils/CommentComposer.vue";
-import type {
-  Category,
-  CommentResult,
-} from "@services/../pl-serve-type-main/type/main";
+import { ref, onMounted } from 'vue'
+import MessagesList from '../components/messages/MessageList.vue'
+import { useRoute } from 'vue-router'
+import Header from '../components/utils/Header.vue'
+import parse from '@services/pltxt2htm/commonParser'
+import postComment from '@services/postComment.ts'
+import { useI18n } from 'vue-i18n'
+import CommentComposer from '../components/utils/CommentComposer.vue'
+import type { Category, CommentResult } from '@services/../pl-serve-type-main/type/main'
 
-const { t } = useI18n();
-const route = useRoute();
-let isLoading = ref(false);
-let replyID = ref("");
-let upDate = ref(0);
-const title = ref("");
-let comment = ref(""); // 输入的内容 Input content
+const { t } = useI18n()
+const route = useRoute()
+let isLoading = ref(false)
+let replyID = ref('')
+let upDate = ref(0)
+const title = ref('')
+let comment = ref('') // 输入的内容 Input content
 
 onMounted(async () => {
-  const parsedName = await parse(route.params.name as string);
+  const parsedName = await parse(route.params.name as string)
   title.value = `${parsedName} 的 ${
-    route.params.category === "User" ? t("comments.home") : t("comments.area")
-  }`;
-});
+    route.params.category === 'User' ? t('comments.home') : t('comments.area')
+  }`
+})
 
 const goBack = () => {
-  window.history.back();
-};
+  window.history.back()
+}
 
 function handleMsgClick(item: CommentResult) {
-  replyID.value = item.UserID;
-  comment.value = `${t("ui.messages.replyToUser")}@${item.Nickname}: `;
+  replyID.value = item.UserID
+  comment.value = `${t('ui.messages.replyToUser')}@${item.Nickname}: `
 }
 
 const handleEnter = async () => {
@@ -85,8 +75,8 @@ const handleEnter = async () => {
     route.params.id as string,
     replyID,
     upDate,
-  );
-};
+  )
+}
 </script>
 
 <style scoped>

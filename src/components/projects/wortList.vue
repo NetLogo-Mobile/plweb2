@@ -10,57 +10,54 @@
 </template>
 
 <script setup lang="ts">
-import { NGrid, NGi } from "naive-ui";
-import Works from "./item.vue";
-import { ref } from "vue";
-import type {
-  ExperimentQuery,
-  Summary,
-} from "@services/../pl-serve-type-main/type/main";
-import { getData } from "@services/api/getData.ts";
-import { showAPiError } from "@popup/index.ts";
-import { removeToken } from "@services/utils.ts";
-import { showMessage } from "@popup/naiveui";
-import infiniteScroll from "../utils/infiniteScroll.vue";
-import { useI18n } from "vue-i18n";
+import { NGrid, NGi } from 'naive-ui'
+import Works from './item.vue'
+import { ref } from 'vue'
+import type { ExperimentQuery, Summary } from '@services/../pl-serve-type-main/type/main'
+import { getData } from '@services/api/getData.ts'
+import { showAPiError } from '@popup/index.ts'
+import { removeToken } from '@services/utils.ts'
+import { showMessage } from '@popup/naiveui'
+import infiniteScroll from '../utils/infiniteScroll.vue'
+import { useI18n } from 'vue-i18n'
 
 const { q } = defineProps<{
-  row?: number;
-  q?: Partial<ExperimentQuery>;
-}>();
+  row?: number
+  q?: Partial<ExperimentQuery>
+}>()
 
-const { t } = useI18n();
+const { t } = useI18n()
 
-const loading = ref(true);
-const items = ref<Summary[]>([]);
-const from = ref("");
-const isGettingData = ref(false);
+const loading = ref(true)
+const items = ref<Summary[]>([])
+const from = ref('')
+const isGettingData = ref(false)
 
-let skip = ref(0);
-let noMore = ref(false);
-let hasInformed = ref(false);
+let skip = ref(0)
+let noMore = ref(false)
+let hasInformed = ref(false)
 
 async function handleLoad() {
   if (noMore.value) {
-    hasInformed.value = true;
-    return;
+    hasInformed.value = true
+    return
   }
-  if (isGettingData.value === true) return; // Lock
-  isGettingData.value = true;
+  if (isGettingData.value === true) return // Lock
+  isGettingData.value = true
 
-  const getProjectsRes = await getData("/Contents/QueryExperiments", {
+  const getProjectsRes = await getData('/Contents/QueryExperiments', {
     Query: {
-      Category: "Discussion",
+      Category: 'Discussion',
       Languages: [],
       ExcludeLanguages: null,
-      Tags: ["精选"],
+      Tags: ['精选'],
       ModelTags: null,
       ExcludeTags: null,
       ModelID: null,
       ParentID: null,
       UserID: null,
       Special: null,
-      From: from.value === "" ? null : from.value,
+      From: from.value === '' ? null : from.value,
       Skip: skip.value,
       Take: 24,
       Days: 0,
@@ -68,30 +65,30 @@ async function handleLoad() {
       ShowAnnouncement: false,
       ...q,
     },
-  });
+  })
   if (getProjectsRes.Status !== 200) {
     showAPiError(
-      t("errors.apiErrorTitle"),
-      t("errors.apiErrorMessage", {
-        path: "/Contents/QueryExperiments",
+      t('errors.apiErrorTitle'),
+      t('errors.apiErrorMessage', {
+        path: '/Contents/QueryExperiments',
         status: getProjectsRes.Status,
-        message: getProjectsRes?.Message || "",
+        message: getProjectsRes?.Message || '',
       }),
       handleLoad,
-    );
+    )
     const _req = removeToken({
       Query: {
-        Category: "Discussion",
+        Category: 'Discussion',
         Languages: [],
         ExcludeLanguages: null,
-        Tags: ["精选"],
+        Tags: ['精选'],
         ModelTags: null,
         ExcludeTags: null,
         ModelID: null,
         ParentID: null,
         UserID: null,
         Special: null,
-        From: from.value === "" ? null : from.value,
+        From: from.value === '' ? null : from.value,
         Skip: skip.value,
         Take: 24,
         Days: 0,
@@ -99,43 +96,35 @@ async function handleLoad() {
         ShowAnnouncement: false,
         ...q,
       },
-    });
-    const _res = removeToken(getProjectsRes);
+    })
+    const _res = removeToken(getProjectsRes)
     window.$ErrorLogger.captureApiError(
-      "POST",
-      "/Contents/QueryExperiments",
+      'POST',
+      '/Contents/QueryExperiments',
       getProjectsRes.Status,
       _res,
       _req,
-    );
-    console.error(
-      `/Contents/QueryExperiments returned ${getProjectsRes.Status}`,
-      _res,
-    );
-    isGettingData.value = false;
-    return;
+    )
+    console.error(`/Contents/QueryExperiments returned ${getProjectsRes.Status}`, _res)
+    isGettingData.value = false
+    return
   }
   if (!getProjectsRes.Data) {
-    showAPiError(
-      t("errors.apiErrorTitle"),
-      t("errors.apiErrorMessage"),
-      handleLoad,
-    );
-    return;
+    showAPiError(t('errors.apiErrorTitle'), t('errors.apiErrorMessage'), handleLoad)
+    return
   }
   if (getProjectsRes.Data.$values.length < 24) {
-    if (!hasInformed.value)
-      showMessage("warning", t("ui.messages.noMore"), { duration: 1000 });
-    noMore.value = true;
+    if (!hasInformed.value) showMessage('warning', t('ui.messages.noMore'), { duration: 1000 })
+    noMore.value = true
   }
-  skip.value += 24;
-  items.value.push(...getProjectsRes.Data.$values);
-  from.value = items.value[items.value.length - 1]?.ID || "";
-  isGettingData.value = false;
+  skip.value += 24
+  items.value.push(...getProjectsRes.Data.$values)
+  from.value = items.value[items.value.length - 1]?.ID || ''
+  isGettingData.value = false
 }
 
-handleLoad();
-loading.value = false;
+handleLoad()
+loading.value = false
 </script>
 
 <style scoped>
@@ -148,7 +137,7 @@ loading.value = false;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-image: url("/assets/messages/Message-Default.png");
+  background-image: url('/assets/messages/Message-Default.png');
   background-position: center;
   background-size: contain;
   background-repeat: no-repeat;

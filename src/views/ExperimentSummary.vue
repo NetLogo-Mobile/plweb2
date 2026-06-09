@@ -5,7 +5,7 @@
         ref="nickname"
         class="cover"
         :style="{
-          backgroundImage: `url(${coverUrl})`,
+          backgroundImage: `url(${coverUrl}), url(${defaultCoverUrl})`,
         }"
       >
         <div>
@@ -31,18 +31,9 @@
           </div>
         </div>
         <div style="margin-top: auto" class="coverBottom">
-          <div
-            class="btns"
-            style="display: flex; justify-content: space-around"
-          >
-            <n-button
-              type="info"
-              strong
-              round
-              class="enter"
-              @click="goToExperiment"
-            >
-              {{ t("expeSummary.enterExp") }}
+          <div class="btns" style="display: flex; justify-content: space-around">
+            <n-button type="info" strong round class="enter" @click="goToExperiment">
+              {{ t('expeSummary.enterExp') }}
             </n-button>
           </div>
         </div>
@@ -51,11 +42,7 @@
 
     <template #right>
       <div class="context">
-        <n-tabs
-          v-model:value="selectedTab"
-          justify-content="space-evenly"
-          type="line"
-        >
+        <n-tabs v-model:value="selectedTab" justify-content="space-evenly" type="line">
           <n-tab-pane name="Intro" :tab="t('expeSummary.introTab')">
             <div class="gray">
               <div
@@ -68,19 +55,33 @@
                 "
                 @click="showUserCard(data.User.ID)"
               >
-                <img
-                  :src="avatarUrl"
-                  style="margin: auto 10px; height: 90%; border-radius: 50%"
-                />
-                <div style="text-align: left">
-                  <p
+                <div
+                  style="
+                    margin: auto 10px;
+                    height: 90%;
+                    aspect-ratio: 1;
+                    border-radius: 50%;
+                    overflow: hidden;
+                    background: #e8e8e8;
+                    flex-shrink: 0;
+                  "
+                >
+                  <img
+                    :src="avatarUrl"
                     style="
-                      color: #007bff;
-                      margin: 2% 0 2% 0;
                       width: 100%;
-                      font-size: 16px;
+                      height: 100%;
+                      border-radius: 50%;
+                      object-fit: cover;
+                      transition: opacity 0.25s;
                     "
-                  >
+                    :style="{ opacity: avatarLoaded ? 1 : 0 }"
+                    @load="avatarLoaded = true"
+                    @error="avatarLoaded = true"
+                  />
+                </div>
+                <div style="text-align: left">
+                  <p style="color: #007bff; margin: 2% 0 2% 0; width: 100%; font-size: 16px">
                     {{ data.User.Nickname }}
                   </p>
                   <p
@@ -98,15 +99,8 @@
                   margin: 5px;
                 "
               >
-                <h3
-                  style="
-                    color: #007bff;
-                    text-align: left;
-                    margin-top: 2px;
-                    margin-bottom: 2px;
-                  "
-                >
-                  {{ t("expeSummary.intro") }}
+                <h3 style="color: #007bff; text-align: left; margin-top: 2px; margin-bottom: 2px">
+                  {{ t('expeSummary.intro') }}
                 </h3>
 
                 <div
@@ -118,8 +112,7 @@
                           : data.Description,
                         {
                           project: data.Subject,
-                          visitorId:
-                            storageManager.getObj('userInfo')?.value?.ID ?? '',
+                          visitorId: storageManager.getObj('userInfo')?.value?.ID ?? '',
                           authorId: data.User.ID,
                           coauthorIds: data.Coauthors.map((user) => user.ID),
                         },
@@ -127,26 +120,19 @@
                   "
                   class="intro"
                 ></div>
-                <div>
-                  {{ t("expeSummary.wordCount") }}
+                <div class="word-count">
+                  {{ t('expeSummary.wordCount') }}：{{ descriptionWordCount }}
                 </div>
               </div>
             </div>
           </n-tab-pane>
-          <n-tab-pane
-            name="Comment"
-            :tab="`${t('expeSummary.comments')}(${data.Comments})`"
-          >
+          <n-tab-pane name="Comment" :tab="`${t('expeSummary.comments')}(${data.Comments})`">
             <div class="right-bottom-container">
               <div class="message-wrapper">
                 <MessageList
+                  v-if="route.params.id"
                   :ID="route.params.id as string"
-                  :Category="
-                    route.params.category as
-                      | 'Experiment'
-                      | 'User'
-                      | 'Discussion'
-                  "
+                  :Category="route.params.category as 'Experiment' | 'User' | 'Discussion'"
                   :upDate="upDate"
                   @msgClick="handleMsgClick"
                 />
@@ -199,9 +185,9 @@ import type {
   Summary,
 } from "@services/../pl-serve-type-main/type/main";
 
-const comment = ref("");
-const isLoading = ref(false);
-const upDate = ref(1);
+const comment = ref('')
+const isLoading = ref(false)
+const upDate = ref(1)
 // 用于使用watch触发刷新 To trigger a refresh using watch
 const replyID = ref("");
 const selectedTab = ref("Intro");
@@ -213,13 +199,13 @@ const returnImagePath = ref(
 );
 
 const data = ref<Summary>({
-  $type: "Quantum.Models.Contents.Summary, Quantum Models",
+  $type: 'Quantum.Models.Contents.Summary, Quantum Models',
   Type: 0,
-  ContentID: "642cf37a494746375aae306a",
+  ContentID: '642cf37a494746375aae306a',
   Coauthors: [],
-  Description: ["Loading..."],
+  Description: ['Loading...'],
   LocalizedDescription: null,
-  Tags: ["C-Loading"],
+  Tags: ['C-Loading'],
   Visits: 0,
   Stars: 0,
   Supports: 0,
@@ -227,32 +213,55 @@ const data = ref<Summary>({
   Comments: 0,
   Price: 0,
   Popularity: 0,
-  ID: "",
-  Category: "Discussion",
-  Subject: "Loading...",
+  ID: '',
+  Category: 'Discussion',
+  Subject: 'Loading...',
   LocalizedSubject: null,
   Image: 0,
   ImageRegion: 0,
   Version: 0,
-  Language: "Chinese",
+  Language: 'Chinese',
   UpdateDate: 0,
   Visibility: 0,
   SortingDate: 0,
   CreationDate: 0,
   Multilingual: false,
   User: {
-    ID: "0",
-    Nickname: "Loading...",
-    Signature: "Loading...",
+    ID: '0',
+    Nickname: 'Loading...',
+    Signature: 'Loading...',
     Avatar: 0,
     AvatarRegion: 0,
     Decoration: 0,
-    Verification: "Banned",
+    Verification: 'Banned',
   },
-});
+})
 
-let coverUrl = ref(getPath("/@base/assets/messages/Experiment-Default.png"));
-let avatarUrl = ref(getUserUrl(data.value.User));
+let coverUrl = ref(defaultCoverUrl)
+let avatarUrl = ref(getUserUrl(data.value.User))
+let avatarLoaded = ref(false)
+
+const descriptionSource = computed(() => {
+  const description = data.value.Description
+  return Array.isArray(description) ? description.join('\n') : description || ''
+})
+
+const descriptionWordCount = computed(() => countReadableWords(descriptionSource.value))
+
+function countReadableWords(source: string) {
+  const plainText = source
+    .replace(/```[\s\S]*?```/gu, ' ')
+    .replace(/!\[[^\]]*\]\([^)]*\)/gu, ' ')
+    .replace(/\[([^\]]*)\]\([^)]*\)/gu, ' $1 ')
+    .replace(/<[^>]+>/gu, ' ')
+    .replace(/`([^`]*)`/gu, ' $1 ')
+    .replace(/[#>*_~|=\-]+/gu, ' ')
+  const readableUnits = plainText.match(
+    /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]|[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*/gu,
+  )
+  return readableUnits?.reduce((count) => count + 1, 0) ?? 0
+}
+
 const canEdit = computed(() => canEditSummary(data.value));
 
 function goToEditor() {
@@ -260,50 +269,45 @@ function goToEditor() {
 }
 
 async function fetchSummary() {
-  const res = await getData("/Contents/GetSummary", {
+  const res = await getData('/Contents/GetSummary', {
     ContentID: route.params.id as string,
     Category: route.params.category as string,
-  });
+  })
   if (res.Status !== 200) {
     showAPiError(
-      t("errors.apiErrorTitle"),
-      t("errors.apiErrorMessage", {
-        path: "/Contents/GetSummary",
+      t('errors.apiErrorTitle'),
+      t('errors.apiErrorMessage', {
+        path: '/Contents/GetSummary',
         status: res.Status,
-        message: res?.Message || "",
+        message: res?.Message || '',
       }),
       fetchSummary,
-    );
+    )
     const _req = removeToken({
       ContentID: route.params.id as string,
       Category: route.params.category as string,
-    });
-    const _res = removeToken(res);
-    window.$ErrorLogger.captureApiError(
-      "POST",
-      "/Contents/GetSummary",
-      res.Status,
-      _res,
-      _req,
-    );
-    console.error(`/Contents/GetSummary returned ${res.Status}`, _res);
-    return;
+    })
+    const _res = removeToken(res)
+    window.$ErrorLogger.captureApiError('POST', '/Contents/GetSummary', res.Status, _res, _req)
+    console.error(`/Contents/GetSummary returned ${res.Status}`, _res)
+    return
   }
-  if (!res.Data) return;
-  data.value = res.Data;
-  avatarUrl.value = getUserUrl(data.value.User);
+  if (!res.Data) return
+  data.value = res.Data
+  avatarUrl.value = getUserUrl(data.value.User)
+  avatarLoaded.value = false
   // Civitas-john always procrastinate on addressing the request to solve the anti-leeching issue.
   // That's why the below occurs
   await fetch(getCoverUrl(res.Data), {
-    referrerPolicy: "no-referrer",
-    mode: "no-cors",
-  });
-  coverUrl.value = getCoverUrl(res.Data);
+    referrerPolicy: 'no-referrer',
+    mode: 'no-cors',
+  })
+  coverUrl.value = getCoverUrl(res.Data)
 }
 
 onMounted(() => {
-  fetchSummary();
-});
+  fetchSummary()
+})
 
 watch(
   () => route.params.id,
@@ -313,8 +317,8 @@ watch(
 );
 
 function handleMsgClick(item: CommentResult) {
-  replyID.value = item.UserID;
-  comment.value = `${t("ui.messages.replyToUser")}@${item.Nickname}: `;
+  replyID.value = item.UserID
+  comment.value = `${t('ui.messages.replyToUser')}@${item.Nickname}: `
 }
 
 async function handleEnter() {
@@ -325,26 +329,26 @@ async function handleEnter() {
     route.params.id as string,
     replyID,
     upDate,
-  );
+  )
 }
 
 function goBack() {
-  window.history.back();
+  window.history.back()
 }
 
 function goToExperiment() {
-  const category = (route.params.category as string).toLowerCase();
-  const contentType = category === "experiment" ? "experiment" : "discussion";
-  const target = `physics://chinese/${contentType}/${route.params.id as string}`;
-  window.location.href = target;
+  const category = (route.params.category as string).toLowerCase()
+  const contentType = category === 'experiment' ? 'experiment' : 'discussion'
+  const target = `physics://chinese/${contentType}/${route.params.id as string}`
+  window.location.href = target
 }
 
 async function copy(text: string) {
-  const ok = await copyText(text);
+  const ok = await copyText(text)
   if (ok) {
-    showMessage("info", t("ui.messages.copySuccess"), { duration: 1000 });
+    showMessage('info', t('ui.messages.copySuccess'), { duration: 1000 })
   } else {
-    showMessage("error", t("ui.messages.copyFailed"), { duration: 2000 });
+    showMessage('error', t('ui.messages.copyFailed'), { duration: 2000 })
   }
 }
 // eslint-disable-next-line max-lines-per-function
@@ -376,272 +380,254 @@ function copySubject() {
     } else if (action === t("expeSummary.changeCover")) {
       try {
         // ask user to select an image
-        const input = document.createElement("input");
-        input.type = "file";
-        input.accept = "image/*";
+        const input = document.createElement('input')
+        input.type = 'file'
+        input.accept = 'image/*'
         // eslint-disable-next-line max-lines-per-function
         input.onchange = async (e: Event) => {
           try {
-            const target = e.target as HTMLInputElement | null;
-            const file = target?.files?.[0];
-            if (!file) return;
-            const summaryRes = await getData("/Contents/GetSummary", {
+            const target = e.target as HTMLInputElement | null
+            const file = target?.files?.[0]
+            if (!file) return
+            const summaryRes = await getData('/Contents/GetSummary', {
               ContentID: route.params.id as string,
               Category: route.params.category as string,
-            });
+            })
             if (summaryRes.Status !== 200) {
               showAPiError(
-                t("errors.apiErrorTitle"),
-                t("errors.apiErrorMessage", {
-                  path: "/Contents/GetSummary",
+                t('errors.apiErrorTitle'),
+                t('errors.apiErrorMessage', {
+                  path: '/Contents/GetSummary',
                   status: summaryRes.Status,
-                  message: summaryRes?.Message || "",
+                  message: summaryRes?.Message || '',
                 }),
                 async () => {
-                  return getData("/Contents/GetSummary", {
+                  return getData('/Contents/GetSummary', {
                     ContentID: route.params.id as string,
                     Category: route.params.category as string,
-                  });
+                  })
                 },
-              );
+              )
               const _req = removeToken({
                 ContentID: route.params.id,
                 Category: route.params.category,
-              });
-              const _res = removeToken(summaryRes);
+              })
+              const _res = removeToken(summaryRes)
               window.$ErrorLogger.captureApiError(
-                "POST",
-                "/Contents/GetSummary",
+                'POST',
+                '/Contents/GetSummary',
                 summaryRes.Status,
                 _res,
                 _req,
-              );
-              console.error(
-                `/Contents/GetSummary returned ${summaryRes.Status}`,
-                _res,
-              );
-              return;
+              )
+              console.error(`/Contents/GetSummary returned ${summaryRes.Status}`, _res)
+              return
             }
-            if (!summaryRes.Data) return;
-            const imageIndex = (summaryRes.Data.Image || 0) + 1;
-            const confirmRes = await getData("/Contents/ConfirmExperiment", {
+            if (!summaryRes.Data) return
+            const imageIndex = (summaryRes.Data.Image || 0) + 1
+            const confirmRes = await getData('/Contents/ConfirmExperiment', {
               Category: route.params.category as string,
               SummaryID: route.params.id as string,
               Image: imageIndex,
-              Extension: ".png",
-            });
+              Extension: '.png',
+            })
             if (confirmRes.Status !== 200) {
               showAPiError(
-                t("errors.apiErrorTitle"),
-                t("errors.apiErrorMessage", {
-                  path: "/Contents/ConfirmExperiment",
+                t('errors.apiErrorTitle'),
+                t('errors.apiErrorMessage', {
+                  path: '/Contents/ConfirmExperiment',
                   status: confirmRes.Status,
-                  message: confirmRes?.Message || "",
+                  message: confirmRes?.Message || '',
                 }),
                 async () => {
-                  return getData("/Contents/ConfirmExperiment", {
+                  return getData('/Contents/ConfirmExperiment', {
                     Category: route.params.category as string,
                     SummaryID: route.params.id as string,
                     Image: imageIndex,
-                    Extension: ".png",
-                  });
+                    Extension: '.png',
+                  })
                 },
-              );
+              )
               const _req = removeToken({
                 Category: route.params.category,
                 SummaryID: route.params.id,
                 Image: imageIndex,
-                Extension: ".png",
-              });
-              const _res = removeToken(confirmRes);
+                Extension: '.png',
+              })
+              const _res = removeToken(confirmRes)
               window.$ErrorLogger.captureApiError(
-                "POST",
-                "/Contents/ConfirmExperiment",
+                'POST',
+                '/Contents/ConfirmExperiment',
                 confirmRes.Status,
                 _res,
                 _req,
-              );
-              console.error(
-                `/Contents/ConfirmExperiment returned ${confirmRes.Status}`,
-                _res,
-              );
-              return;
+              )
+              console.error(`/Contents/ConfirmExperiment returned ${confirmRes.Status}`, _res)
+              return
             }
-            const submitRes = await getData("/Contents/SubmitExperiment", {
+            const submitRes = await getData('/Contents/SubmitExperiment', {
               Request: {
                 FileSize: 0 - Math.abs(file.size),
-                Extension: ".jpg",
+                Extension: '.jpg',
               },
               Summary: summaryRes.Data,
-            });
+            })
             if (submitRes.Status !== 200) {
               showAPiError(
-                t("errors.apiErrorTitle"),
-                t("errors.apiErrorMessage", {
-                  path: "/Contents/SubmitExperiment",
+                t('errors.apiErrorTitle'),
+                t('errors.apiErrorMessage', {
+                  path: '/Contents/SubmitExperiment',
                   status: submitRes.Status,
-                  message: submitRes?.Message || "",
+                  message: submitRes?.Message || '',
                 }),
                 async () => {
-                  return getData("/Contents/SubmitExperiment", {
+                  return getData('/Contents/SubmitExperiment', {
                     Request: {
                       FileSize: 0 - Math.abs(file.size),
-                      Extension: ".jpg",
+                      Extension: '.jpg',
                     },
                     Summary: summaryRes.Data,
-                  });
+                  })
                 },
-              );
+              )
               const _req = removeToken({
                 Request: {
                   FileSize: 0 - Math.abs(file.size),
-                  Extension: ".jpg",
+                  Extension: '.jpg',
                 },
                 Summary: summaryRes.Data,
-              });
-              const _res = removeToken(submitRes);
+              })
+              const _res = removeToken(submitRes)
               window.$ErrorLogger.captureApiError(
-                "POST",
-                "/Contents/SubmitExperiment",
+                'POST',
+                '/Contents/SubmitExperiment',
                 submitRes.Status,
                 _res,
                 _req,
-              );
-              console.error(
-                `/Contents/SubmitExperiment returned ${submitRes.Status}`,
-                _res,
-              );
-              return;
+              )
+              console.error(`/Contents/SubmitExperiment returned ${submitRes.Status}`, _res)
+              return
             }
             try {
-              const form = new FormData();
-              form.append(
-                "authorization",
-                submitRes.Data?.Token?.Authorization || "",
-              );
-              form.append("policy", submitRes.Data?.Token?.Policy || "");
-              form.append("file", file, "cover.jpg");
-              await fetch("https://v0.api.upyun.com/qphysics", {
-                method: "POST",
+              const form = new FormData()
+              form.append('authorization', submitRes.Data?.Token?.Authorization || '')
+              form.append('policy', submitRes.Data?.Token?.Policy || '')
+              form.append('file', file, 'cover.jpg')
+              await fetch('https://v0.api.upyun.com/qphysics', {
+                method: 'POST',
                 body: form,
-              });
-              const confirmRes2 = await getData("/Contents/ConfirmExperiment", {
+              })
+              const confirmRes2 = await getData('/Contents/ConfirmExperiment', {
                 Category: route.params.category as string,
                 SummaryID: route.params.id as string,
                 Image: imageIndex,
-                Extension: ".png",
-              });
+                Extension: '.png',
+              })
               if (confirmRes2.Status !== 200) {
                 showAPiError(
-                  t("errors.apiErrorTitle"),
-                  t("errors.apiErrorMessage", {
-                    path: "/Contents/ConfirmExperiment",
+                  t('errors.apiErrorTitle'),
+                  t('errors.apiErrorMessage', {
+                    path: '/Contents/ConfirmExperiment',
                     status: confirmRes2.Status,
-                    message: confirmRes2?.Message || "",
+                    message: confirmRes2?.Message || '',
                   }),
                   async () => {
-                    return getData("/Contents/ConfirmExperiment", {
+                    return getData('/Contents/ConfirmExperiment', {
                       Category: route.params.category as string,
                       SummaryID: route.params.id as string,
                       Image: imageIndex,
-                      Extension: ".png",
-                    });
+                      Extension: '.png',
+                    })
                   },
-                );
+                )
                 const _req = removeToken({
                   Category: route.params.category,
                   SummaryID: route.params.id,
                   Image: imageIndex,
-                  Extension: ".png",
-                });
-                const _res = removeToken(confirmRes2);
+                  Extension: '.png',
+                })
+                const _res = removeToken(confirmRes2)
                 window.$ErrorLogger.captureApiError(
-                  "POST",
-                  "/Contents/ConfirmExperiment",
+                  'POST',
+                  '/Contents/ConfirmExperiment',
                   confirmRes2.Status,
                   _res,
                   _req,
-                );
-                console.error(
-                  `/Contents/ConfirmExperiment returned ${confirmRes2.Status}`,
-                  _res,
-                );
-                return;
+                )
+                console.error(`/Contents/ConfirmExperiment returned ${confirmRes2.Status}`, _res)
+                return
               }
             } catch (_upErr) {
-              showMessage("error", t("ui.messages.uploadFailed"), {
+              showMessage('error', t('ui.messages.uploadFailed'), {
                 duration: 2000,
-              });
-              return;
+              })
+              return
             }
-            showMessage("success", t("ui.messages.uploadSuccess"), {
+            showMessage('success', t('ui.messages.uploadSuccess'), {
               duration: 2000,
-            });
+            })
             // refresh current cover (using existing utility function)
             setTimeout(async () => {
-              const refreshed = await getData("/Contents/GetSummary", {
+              const refreshed = await getData('/Contents/GetSummary', {
                 ContentID: route.params.id as string,
                 Category: route.params.category as string,
-              });
+              })
               if (refreshed.Status !== 200) {
                 showAPiError(
-                  t("errors.apiErrorTitle"),
-                  t("errors.apiErrorMessage", {
-                    path: "/Contents/GetSummary",
+                  t('errors.apiErrorTitle'),
+                  t('errors.apiErrorMessage', {
+                    path: '/Contents/GetSummary',
                     status: refreshed.Status,
-                    message: refreshed?.Message || "",
+                    message: refreshed?.Message || '',
                   }),
                   async () => {
-                    return getData("/Contents/GetSummary", {
+                    return getData('/Contents/GetSummary', {
                       ContentID: route.params.id as string,
                       Category: route.params.category as string,
-                    });
+                    })
                   },
-                );
+                )
                 const _req = removeToken({
                   ContentID: route.params.id,
                   Category: route.params.category,
-                });
-                const _res = removeToken(refreshed);
+                })
+                const _res = removeToken(refreshed)
                 window.$ErrorLogger.captureApiError(
-                  "POST",
-                  "/Contents/GetSummary",
+                  'POST',
+                  '/Contents/GetSummary',
                   refreshed.Status,
                   _res,
                   _req,
-                );
-                console.error(
-                  `/Contents/GetSummary returned ${refreshed.Status}`,
-                  _res,
-                );
-                return;
+                )
+                console.error(`/Contents/GetSummary returned ${refreshed.Status}`, _res)
+                return
               }
-              coverUrl.value = getCoverUrl(refreshed.Data);
-            }, 800);
+              coverUrl.value = getCoverUrl(refreshed.Data)
+            }, 800)
           } catch (_err) {
-            showMessage("error", t("ui.messages.changeCoverFailed"), {
+            showMessage('error', t('ui.messages.changeCoverFailed'), {
               duration: 2000,
-            });
+            })
           }
-        };
-        input.click();
+        }
+        input.click()
       } catch (_error) {
-        showMessage("error", t("errors.unknownError"), {
+        showMessage('error', t('errors.unknownError'), {
           duration: 2000,
-        });
+        })
       }
     } else if (action === t("expeSummary.editWork")) {
       goToEditor();
     }
-  });
+  })
 }
 
 onActivated(() => {
   window.$Logger.logPageView({
     pageLink: `/${route.params.category}/${route.params.id}/`,
     timeStamp: Date.now(),
-  });
-});
+  })
+})
 </script>
 
 <style scoped>
@@ -683,9 +669,36 @@ onActivated(() => {
   min-height: 0;
 }
 
-.intro :deep(img) {
+.intro {
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.intro :deep(img),
+.intro :deep(svg) {
   max-width: 100%;
   height: auto;
+}
+
+.intro :deep(.mermaid-diagram) {
+  display: block;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.intro :deep(.mermaid-diagram svg) {
+  display: block;
+  max-width: none;
+}
+
+.word-count {
+  color: #666;
+  font-size: 14px;
+  margin-top: 12px;
+  text-align: right;
 }
 
 .context .n-tabs {

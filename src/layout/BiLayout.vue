@@ -45,17 +45,13 @@
 }
 
 .layout-left::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    to bottom,
-    rgba(128, 128, 128, 0.2) 10%,
-    rgba(128, 128, 128, 0) 90%
-  );
+  background: linear-gradient(to bottom, rgba(128, 128, 128, 0.2) 10%, rgba(128, 128, 128, 0) 90%);
   pointer-events: none;
   border-radius: 8px;
   z-index: 2;

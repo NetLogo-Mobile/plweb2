@@ -4,62 +4,62 @@ import type {
   Messages,
   ParamOf,
   ResultOf,
-} from "../../pl-serve-type-main/type/main.ts";
+} from '../../pl-serve-type-main/type/main.ts'
 
 export interface PathMap {
-  "/Users/Authenticate": Users["Authenticate"];
-  "/Users/GetUser": Users["GetUser"];
-  "/Users/ModifyInformation": Users["ModifyInformation"];
-  "/Users/Rename": Users["Rename"];
-  "/Users/Follow": Users["Follow"];
-  "/Users/GetRelations": Users["GetRelations"];
-  "/Users/Appoint": Users["Appoint"];
-  "/Users/Ban": Users["Ban"];
-  "/Users/Block": Users["Block"];
-  "/Users/Logout": Users["Logout"];
-  "/Users/ReceiveBonus": Users["ReceiveBonus"];
-  "/Users/SetCover": Users["SetCover"];
-  "/Users/Unban": Users["Unban"];
+  '/Users/Authenticate': Users['Authenticate']
+  '/Users/GetUser': Users['GetUser']
+  '/Users/ModifyInformation': Users['ModifyInformation']
+  '/Users/Rename': Users['Rename']
+  '/Users/Follow': Users['Follow']
+  '/Users/GetRelations': Users['GetRelations']
+  '/Users/Appoint': Users['Appoint']
+  '/Users/Ban': Users['Ban']
+  '/Users/Block': Users['Block']
+  '/Users/Logout': Users['Logout']
+  '/Users/ReceiveBonus': Users['ReceiveBonus']
+  '/Users/SetCover': Users['SetCover']
+  '/Users/Unban': Users['Unban']
 
-  "/Contents/QueryExperiments": Contents["QueryExperiments"];
-  "/Contents/GetWorkspace": Contents["GetWorkspace"];
-  "/Contents/GetLibrary": Contents["GetLibrary"];
-  "/Contents/SubmitExperiment": Contents["SubmitExperiment"];
-  "/Contents/GetDerivatives": Contents["GetDerivatives"];
-  "/Contents/GetProfile": Contents["GetProfile"];
-  "/Contents/ConfirmExperiment": Contents["ConfirmExperiment"];
-  "/Contents/GetSummary": Contents["GetSummary"];
-  "/Contents/MoveCategory": Contents["MoveCategory"];
-  "/Contents/StarContent": Contents["StarContent"];
+  '/Contents/QueryExperiments': Contents['QueryExperiments']
+  '/Contents/GetWorkspace': Contents['GetWorkspace']
+  '/Contents/GetLibrary': Contents['GetLibrary']
+  '/Contents/SubmitExperiment': Contents['SubmitExperiment']
+  '/Contents/GetDerivatives': Contents['GetDerivatives']
+  '/Contents/GetProfile': Contents['GetProfile']
+  '/Contents/ConfirmExperiment': Contents['ConfirmExperiment']
+  '/Contents/GetSummary': Contents['GetSummary']
+  '/Contents/MoveCategory': Contents['MoveCategory']
+  '/Contents/StarContent': Contents['StarContent']
 
-  "/Messages/RemoveComment": Messages["RemoveComment"];
-  "/Messages/GetComments": Messages["GetComments"];
-  "/Messages/PostComment": Messages["PostComment"];
-  "/Messages/GetMessage": Messages["GetMessage"];
-  "/Messages/GetMessages": Messages["GetMessages"];
+  '/Messages/RemoveComment': Messages['RemoveComment']
+  '/Messages/GetComments': Messages['GetComments']
+  '/Messages/PostComment': Messages['PostComment']
+  '/Messages/GetMessage': Messages['GetMessage']
+  '/Messages/GetMessages': Messages['GetMessages']
 }
 
-export type ApiPath = keyof PathMap & string;
-export type APIParam<P extends ApiPath> = ParamOf<PathMap[P]>;
-export type APIResult<P extends ApiPath> = ResultOf<PathMap[P]>;
+export type ApiPath = keyof PathMap & string
+export type APIParam<P extends ApiPath> = ParamOf<PathMap[P]>
+export type APIResult<P extends ApiPath> = ResultOf<PathMap[P]>
 
 /**
  * 运行时归一化：支持 `?user/GetUser` 等一些简写（不是必须，但常见）。
  */
 export function normalizePath(path: string): string {
-  if (path.startsWith("?")) {
-    const p = path.slice(1);
-    const [first, ...rest] = p.split("/");
+  if (path.startsWith('?')) {
+    const p = path.slice(1)
+    const [first, ...rest] = p.split('/')
     if (first) {
-      const firstCap = first.charAt(0).toUpperCase() + first.slice(1);
-      const firstFinal = firstCap.endsWith("s") ? firstCap : `${firstCap}s`;
-      return `/${firstFinal}/${rest.join("/")}`;
+      const firstCap = first.charAt(0).toUpperCase() + first.slice(1)
+      const firstFinal = firstCap.endsWith('s') ? firstCap : `${firstCap}s`
+      return `/${firstFinal}/${rest.join('/')}`
     }
   }
-  if (path.startsWith("/@api")) {
-    return path.replace(/^\/@api/, "") || "/";
+  if (path.startsWith('/@api')) {
+    return path.replace(/^\/@api/, '') || '/'
   }
-  return path;
+  return path
 }
 
 /**

@@ -27,85 +27,83 @@
 //   </InfiniteScroll>
 // </template>
 
-import { ref, onMounted, onUnmounted, watch } from "vue";
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 
 interface Props {
-  initialItems?: unknown[];
-  hasMore: boolean;
-  scrollTarget?: string | null;
-  marginTop?: number;
+  initialItems?: unknown[]
+  hasMore: boolean
+  scrollTarget?: string | null
+  marginTop?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
   initialItems: () => [],
   scrollTarget: null,
   marginTop: -800,
-});
+})
 
-const emit = defineEmits(["load"]);
+const emit = defineEmits(['load'])
 
-const sentinel = ref<HTMLElement>();
-const items = ref([...props.initialItems]);
-const loading = ref(false);
-const noMore = ref(!props.hasMore);
-let observer: IntersectionObserver;
+const sentinel = ref<HTMLElement>()
+const items = ref([...props.initialItems])
+const loading = ref(false)
+const noMore = ref(!props.hasMore)
+let observer: IntersectionObserver
 
 const initObserver = () => {
   observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting && !loading.value && !noMore.value) {
-          handleLoad();
+          handleLoad()
         }
-      });
+      })
     },
     {
-      root: props.scrollTarget
-        ? document.querySelector(props.scrollTarget)
-        : null,
-      rootMargin: "200px",
-      threshold: 0.1,
+      root: props.scrollTarget ? document.querySelector(props.scrollTarget) : null,
+      rootMargin: '30%',
+      threshold: 0,
     },
-  );
+  )
 
-  if (sentinel.value) observer.observe(sentinel.value);
-  sentinel.value?.style.setProperty("margin-top", `${props.marginTop}px`);
-};
+  if (sentinel.value) observer.observe(sentinel.value)
+  sentinel.value?.style.setProperty('margin-top', `${props.marginTop}px`)
+}
 
 const handleLoad = async () => {
   try {
-    loading.value = true;
-    emit("load");
+    loading.value = true
+    emit('load')
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 // 重置状态
 const reset = () => {
-  items.value = [...props.initialItems];
-  noMore.value = !props.hasMore;
-};
+  items.value = [...props.initialItems]
+  noMore.value = !props.hasMore
+}
 
 watch(
   () => props.hasMore,
   (val) => {
-    noMore.value = !val;
+    noMore.value = !val
   },
-);
+)
 
 watch(
   () => props.initialItems,
   (newVal) => {
-    items.value = [...newVal];
+    items.value = [...newVal]
   },
   { deep: true },
-);
+)
 
-onMounted(initObserver);
-onUnmounted(() => observer?.disconnect());
+onMounted(initObserver)
+onUnmounted(() => observer?.disconnect())
 
-defineExpose({ reset });
+defineExpose({ reset })
 </script>
 
 <style scoped>

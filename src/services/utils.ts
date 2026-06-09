@@ -4,30 +4,72 @@ import {
   differenceInCalendarDays,
   differenceInMinutes,
   differenceInHours,
-} from "date-fns";
-import i18n from "@i18n/index";
-import storageManager from "./storage";
-import { showDialog } from "@popup/naiveui";
-import router from "../router/index";
-import type { ExperimentQuery } from "../pl-serve-type-main/type/main";
+} from 'date-fns'
+import i18n from '@i18n/index'
+import storageManager from './storage'
+import { showDialog } from '@popup/naiveui'
+import router from '../router/index'
+import type { ExperimentQuery } from '../pl-serve-type-main/type/main'
 
 type PUser = {
-  ID: string;
-  Avatar: number;
-  Verification?: string;
+  ID: string
+  Avatar: number
+  Verification?: string
   // 封禁用户直接返回默认头像 ，在getUserCurentAvatarByID.ts中不会传入Verification。所以可选
   // If the user is banned, return the default avatar directly. It will not be passed in Verification in getUserCurentAvatarByID.ts. So it's optional.
-};
+}
 
 type PProjects = {
-  ID: string;
-  Image?: number;
-};
+  ID: string
+  Image?: number
+}
 
-const apiUrl = import.meta.env.VITE_API_URL;
-const staticUrl = import.meta.env.VITE_STATIC_URL;
-const rootUrl = import.meta.env.VITE_ROOT_URL;
-const baseUrl = import.meta.env.VITE_BASE_URL;
+const defaultApiUrl = import.meta.env.VITE_API_URL
+const defaultStaticUrl = import.meta.env.VITE_STATIC_URL
+const rootUrl = import.meta.env.VITE_ROOT_URL
+const baseUrl = import.meta.env.VITE_BASE_URL
+let coverImgSuffix = getCoverImgSuffix()
+let avatarImgSuffix = getAvatarImgSuffix()
+
+function getCoverImgSuffix () {
+  const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection
+  if (connection) {
+    if(connection.saveData){
+      return '!block'
+    }
+    if(['2g','3g'].includes(connection.effectiveType)){
+      return '!block'
+    }
+  }
+  return ''
+
+}
+
+function getAvatarImgSuffix () {
+  const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection
+  if (connection) {
+    if(connection.saveData){
+      return '!tiny.round'
+    }
+    if(connection.effectiveType === '2g'){
+      return '!tiny.round'
+    }
+    if(connection.effectiveType === '3g'){
+      return '!small.round'
+    }
+  }
+  return ''
+}
+
+export function registerNetworkListener() {
+  const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection
+  if(connection){
+    connection.addEventListener('change', () => {
+      coverImgSuffix = getCoverImgSuffix()
+      avatarImgSuffix = getAvatarImgSuffix()
+    })
+  }
+}
 
 /**
  * 替换路径中的预设标记为配置的URL地址,静态资源走@/base，路由走@/root
@@ -40,27 +82,31 @@ const baseUrl = import.meta.env.VITE_BASE_URL;
  */
 
 export function getPath(path: string): string {
+  const userConfig = storageManager.getObj('userConfig')?.value || {}
+  const apiUrl = (userConfig.apiBaseUrl as string) || defaultApiUrl
+  const staticUrl = (userConfig.staticBaseUrl as string) || defaultStaticUrl
+
   const a = path
     .replace(/\/@api/g, apiUrl)
     .replace(/\/@static/g, staticUrl)
     .replace(/\/@base/g, baseUrl)
-    .replace(/\/@root/g, rootUrl);
-  if (window.location.host.includes("turtlesim")) {
-    return a.replace("/plweb2/", "");
+    .replace(/\/@root/g, rootUrl)
+  if (window.location.host.includes('turtlesim')) {
+    return a.replace('/plweb2/', '')
   }
-  return a;
+  return a
 }
 
 export function getUserUrl(user: PUser): string {
   const url =
-    user.Avatar === 0 || user.Verification === "Banned"
-      ? "/@base/assets/user/default-avatar.png"
+    user.Avatar === 0 || user.Verification === 'Banned'
+      ? '/@base/assets/user/default-avatar.png'
       : `/@static/users/avatars/${user.ID.slice(0, 4)}/${user.ID.slice(4, 6)}/${user.ID.slice(
           6,
           8,
-        )}/${user.ID.slice(8, 24)}/${user.Avatar}.jpg`;
+        )}/${user.ID.slice(8, 24)}/${user.Avatar}.jpg${avatarImgSuffix}`
 
-  return getPath(url);
+  return getPath(url)
 }
 
 /**
@@ -69,29 +115,29 @@ export function getUserUrl(user: PUser): string {
  */
 export function getAnonymousAvatarByNickname(nickname: string): string {
   if (!/^\d{4}$/.test(nickname)) {
-    return getPath("/@base/assets/user/default-avatar.png");
+    return getPath('/@base/assets/user/default-avatar.png')
   }
 
-  const seed = Number.parseInt(nickname, 10);
-  const hue = seed % 360;
-  const bg = `hsl(${hue} 70% 55%)`;
-  const fg = `hsl(${(hue + 210) % 360} 85% 98%)`;
-  const a = nickname[0];
-  const b = nickname[1];
-  const c = nickname[2];
-  const d = nickname[3];
+  const a = nickname[0]
+  const b = nickname[1]
+  const c = nickname[2]
+  const d = nickname[3]
+  const seed = (Number.parseInt(nickname, 10) % 1000) + Number.parseInt(a, 10)
+  const hue = seed % 360
+  const bg = `hsl(${hue} 70% 55%)`
+  const fg = `hsl(${(hue + 210) % 360} 85% 98%)`
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="anonymous-avatar-${nickname}"><defs><clipPath id="clip"><circle cx="50" cy="50" r="50"/></clipPath></defs><g clip-path="url(#clip)"><rect width="100" height="100" fill="${bg}"/><circle cx="28" cy="32" r="${10 + Number(a)}" fill="${fg}" opacity="0.35"/><rect x="${8 + Number(b) * 2}" y="${56 - Number(c)}" width="${52 + Number(d) * 3}" height="${22 + Number(a)}" rx="12" fill="${fg}" opacity="0.4"/><path d="M18 ${76 - Number(c)} Q50 ${32 + Number(d)} 82 ${76 - Number(b)}" stroke="${fg}" stroke-width="${5 + (seed % 4)}" fill="none" opacity="0.85"/></g></svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="anonymous-avatar-${nickname}"><defs><clipPath id="clip"><circle cx="50" cy="50" r="50"/></clipPath></defs><g clip-path="url(#clip)"><rect width="100" height="100" fill="${bg}"/><circle cx="28" cy="32" r="${10 + Number(a)}" fill="${fg}" opacity="0.35"/><rect x="${8 + Number(b) * 2}" y="${56 - Number(c)}" width="${52 + Number(d) * 3}" height="${22 + Number(a)}" rx="12" fill="${fg}" opacity="0.4"/><path d="M18 ${76 - Number(c)} Q50 ${32 + Number(d)} 82 ${76 - Number(b)}" stroke="${fg}" stroke-width="${5 + (seed % 4)}" fill="none" opacity="0.85"/></g></svg>`
 
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
 }
 
 export function getCoverUrl(data: PProjects): string {
   const url = `/@static/experiments/images/${data.ID.slice(0, 4)}/${data.ID.slice(
     4,
     6,
-  )}/${data.ID.slice(6, 8)}/${data.ID.slice(8, 24)}/${data.Image || 0}.jpg`;
-  return getPath(url);
+  )}/${data.ID.slice(6, 8)}/${data.ID.slice(8, 24)}/${data.Image || 0}.jpg${coverImgSuffix}`
+  return getPath(url)
 }
 
 /**
@@ -101,33 +147,33 @@ export function getCoverUrl(data: PProjects): string {
  */
 export async function copyText(text: string): Promise<boolean> {
   if (
-    typeof navigator !== "undefined" &&
+    typeof navigator !== 'undefined' &&
     navigator.clipboard &&
-    typeof navigator.clipboard.writeText === "function"
+    typeof navigator.clipboard.writeText === 'function'
   ) {
     try {
-      await navigator.clipboard.writeText(text);
-      return true;
+      await navigator.clipboard.writeText(text)
+      return true
     } catch {
       // fallback below
     }
   }
 
   try {
-    const textArea = document.createElement("textarea");
-    textArea.value = text;
-    textArea.setAttribute("readonly", "");
-    textArea.style.position = "fixed";
-    textArea.style.top = "-1000px";
-    textArea.style.opacity = "0";
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-    const ok = document.execCommand("copy");
-    document.body.removeChild(textArea);
-    return ok;
+    const textArea = document.createElement('textarea')
+    textArea.value = text
+    textArea.setAttribute('readonly', '')
+    textArea.style.position = 'fixed'
+    textArea.style.top = '-1000px'
+    textArea.style.opacity = '0'
+    document.body.appendChild(textArea)
+    textArea.focus()
+    textArea.select()
+    const ok = document.execCommand('copy')
+    document.body.removeChild(textArea)
+    return ok
   } catch {
-    return false;
+    return false
   }
 }
 
@@ -151,50 +197,50 @@ export async function copyText(text: string): Promise<boolean> {
  */
 export function EncodeAPITargetLink(input: string) {
   const result: Partial<ExperimentQuery> & {
-    Category: "Discussion" | "Experiment" | null;
-    Tags: string[] | null;
-    ExcludeTags: string[] | null;
-    [key: string]: unknown;
+    Category: 'Discussion' | 'Experiment' | null
+    Tags: string[] | null
+    ExcludeTags: string[] | null
+    [key: string]: unknown
   } = {
     Category: null,
     Tags: null,
     ExcludeTags: null,
-  };
+  }
   // 处理前缀以确定 Category
   // To handle the prefix to determine Category
-  result.Category = input.startsWith("d") ? "Discussion" : "Experiment";
-  const segments = input.split("://").slice(1).join("://");
-  const parts = segments.split("/");
+  result.Category = input.startsWith('d') ? 'Discussion' : 'Experiment'
+  const segments = input.split('://').slice(1).join('://')
+  const parts = segments.split('/')
 
   for (let i = 0; i < parts.length; i += 2) {
-    const key = parts[i] as string;
-    const value = parts[i + 1];
+    const key = parts[i] as string
+    const value = parts[i + 1]
 
-    if (key === "ExcludeTags" || key === "Tags") {
+    if (key === 'ExcludeTags' || key === 'Tags') {
       if (!result[key]) {
-        result[key] = [];
+        result[key] = []
       }
       if (value) {
-        result[key].push(value);
+        result[key].push(value)
       }
     } else {
-      result[key] = value;
+      result[key] = value
     }
   }
   // 确保 Tag 和 ExcludeTags 是数组或 null
   // Ensure that Tag and ExcludeTags are arrays or null
   if (!Array.isArray(result.Tags) || result.Tags.length === 0) {
-    result.Tags = null;
+    result.Tags = null
   }
   if (!Array.isArray(result.ExcludeTags) || result.ExcludeTags.length === 0) {
-    result.ExcludeTags = null;
+    result.ExcludeTags = null
   }
 
-  const jsonString = JSON.stringify(result);
-  const utf8Bytes = new TextEncoder().encode(jsonString);
-  const base64String = btoa(String.fromCharCode(...utf8Bytes));
+  const jsonString = JSON.stringify(result)
+  const utf8Bytes = new TextEncoder().encode(jsonString)
+  const base64String = btoa(String.fromCharCode(...utf8Bytes))
 
-  return base64String.replace(/\//g, "DEVIDER");
+  return base64String.replace(/\//g, 'DEVIDER')
 }
 
 /**
@@ -204,24 +250,22 @@ export function EncodeAPITargetLink(input: string) {
  * @see EncodeAPITargetLink
  */
 export function decodeHrefToQueryObj(base64Input: string) {
-  if (!base64Input || typeof base64Input !== "string") {
-    return {};
+  if (!base64Input || typeof base64Input !== 'string') {
+    return {}
   }
-  const latin1String = atob(base64Input.replace(/DEVIDER/g, "/"));
-  const utf8Bytes = new Uint8Array(
-    [...latin1String].map((char) => char.charCodeAt(0)),
-  );
-  const jsonString = new TextDecoder().decode(utf8Bytes);
-  const result = JSON.parse(jsonString);
+  const latin1String = atob(base64Input.replace(/DEVIDER/g, '/'))
+  const utf8Bytes = new Uint8Array([...latin1String].map((char) => char.charCodeAt(0)))
+  const jsonString = new TextDecoder().decode(utf8Bytes)
+  const result = JSON.parse(jsonString)
   for (const k in result) {
     if (Object.prototype.hasOwnProperty.call(result, k)) {
-      const v = result[k];
-      if (Array.isArray(v) && v.join("").includes(",")) {
-        result[k] = v[0].split(",");
+      const v = result[k]
+      if (Array.isArray(v) && v.join('').includes(',')) {
+        result[k] = v[0].split(',')
       }
     }
   }
-  return result;
+  return result
 }
 
 /**
@@ -233,67 +277,58 @@ export function decodeHrefToQueryObj(base64Input: string) {
  * @returns 格式化后的日期文本 Formatted date text
  */
 // eslint-disable-next-line max-lines-per-function
-export function formatDate(
-  id: string,
-  showRelative?: boolean,
-  type?: string,
-): string {
+export function formatDate(id: string, showRelative?: boolean, type?: string): string {
   // 1. 提取并转换16进制时间戳
   // 1. Extract and convert 16-bit timestamp
-  const hexTimestamp = id.substring(0, 8);
-  const timestampSeconds = parseInt(hexTimestamp, 16);
-  const date = new Date(timestampSeconds * 1000);
-  const now = new Date();
+  const hexTimestamp = id.substring(0, 8)
+  const timestampSeconds = parseInt(hexTimestamp, 16)
+  const date = new Date(timestampSeconds * 1000)
+  const now = new Date()
 
   // 2. 处理相对时间 (当 showRelative=true 且日期在3天内)
   // 2. Handle relative time (when showRelative=true and date is within 3 days)
   if (showRelative) {
-    const diffDays = differenceInCalendarDays(now, date);
+    const diffDays = differenceInCalendarDays(now, date)
 
     // 当天的时间处理
     // Time processing for today
     if (isSameDay(date, now)) {
-      const diffMinutes = differenceInMinutes(now, date);
+      const diffMinutes = differenceInMinutes(now, date)
 
       if (diffMinutes < 1) {
-        return i18n.global.t("date.justNow") as string; // "刚刚"
+        return i18n.global.t('date.justNow') as string // "刚刚"
       } else if (diffMinutes < 60) {
-        return i18n.global.t("date.minutesAgo", {
+        return i18n.global.t('date.minutesAgo', {
           minutes: diffMinutes,
-        }) as string; // "X分钟前"
+        }) as string // "X分钟前"
       } else {
-        const diffHours = differenceInHours(now, date);
-        return i18n.global.t("date.hoursAgo", { hours: diffHours }) as string; // "X小时前"
+        const diffHours = differenceInHours(now, date)
+        return i18n.global.t('date.hoursAgo', { hours: diffHours }) as string // "X小时前"
       }
     }
     // 昨天
     // Yesterday
     else if (diffDays === 1) {
-      return `${i18n.global.t("date.yesterday") as string} ${i18n.global.d(
-        date,
-        "time",
-      )}`;
+      return `${i18n.global.t('date.yesterday') as string} ${i18n.global.d(date, 'time')}`
     }
     // 前天
     // Day before yesterday
     else if (diffDays === 2) {
-      return `${
-        i18n.global.t("date.dayBeforeYesterday") as string
-      } ${i18n.global.d(date, "time")}`;
+      return `${i18n.global.t('date.dayBeforeYesterday') as string} ${i18n.global.d(date, 'time')}`
     }
   }
 
   // 3. 常规日期格式化
   // 3. Regular date formatting
   if (type) {
-    return i18n.global.d(date, type);
+    return i18n.global.d(date, type)
   } else {
     if (isSameDay(date, now)) {
-      return i18n.global.d(date, "time");
+      return i18n.global.d(date, 'time')
     } else if (isThisYear(date)) {
-      return i18n.global.d(date, "monthDay");
+      return i18n.global.d(date, 'monthDay')
     } else {
-      return i18n.global.d(date, "yearMonthDay");
+      return i18n.global.d(date, 'yearMonthDay')
     }
   }
 }
@@ -304,8 +339,8 @@ export function formatDate(
  * @returns any
  */
 export function removeToken<T>(obj: T): T {
-  if (obj && typeof obj === "object") {
-    const record = obj as Record<string, unknown>;
+  if (obj && typeof obj === 'object') {
+    const record = obj as Record<string, unknown>
     for (const key in record) {
       if (Object.prototype.hasOwnProperty.call(record, key)) {
         if (
@@ -318,13 +353,13 @@ export function removeToken<T>(obj: T): T {
           if (typeof value === "string") {
             record[key] = `${value.slice(0, 6)}******`;
           }
-        } else if (typeof record[key] === "object") {
-          removeToken(record[key]);
+        } else if (typeof record[key] === 'object') {
+          removeToken(record[key])
         }
       }
     }
   }
-  return obj;
+  return obj
 }
 
 /**
@@ -333,17 +368,17 @@ export function removeToken<T>(obj: T): T {
  * @returns
  */
 export function checkLogin(showLoginLeader = true): boolean {
-  if (storageManager.getObj("userInfo").value?.Nickname == null) {
+  if (storageManager.getObj('userInfo').value?.Nickname == null) {
     if (showLoginLeader)
-      showDialog("warning", {
-        title: i18n.global.t("login.loginRequired"),
-        content: i18n.global.t("login.loginContent"),
-        positiveText: i18n.global.t("login.confirm"),
+      showDialog('warning', {
+        title: i18n.global.t('login.loginRequired'),
+        content: i18n.global.t('login.loginContent'),
+        positiveText: i18n.global.t('login.confirm'),
         onPositiveClick: async () => {
-          router.push({ name: "Home" });
+          router.push({ name: 'Home' })
         },
-      });
-    return false;
+      })
+    return false
   }
-  return true;
+  return true
 }

@@ -1,21 +1,101 @@
-## API Inreface
+# API Service (`src/services/api/`)
 
-For static image resources, we will use service workers in the future to replace failed network communications with our default images.
+This module handles **all communication with the backend server**. Never make raw `fetch()` calls outside of this module.
 
-And for other data exchanges, directly access the getData function in any component or script. **The return value of the function is not the original data from the API**, but rather data that has been processed, which matches the format of the API interface and is intended to be rendered on the page.
+## Quick Start
 
-For example: In the front end, we use beforeRequest to directly return `{Status:403,Data:bull,message:Too many request}` for high-frequency getData calls.
+```ts
+import { getData } from '@api/getData';
 
-For example: (hypothetically) we can customize the homepage data(using  content/getExps for example). When calling this path, we actually execute multiple concurrent getLibrary requests and finally combine these requests into a format that matches the authcate interface return value. In Home.vue, just directly use loadPageData regardless of what the return value is.
+const result = await getData('/Users/GetUser', { ID: '123' });
+if (result.Status === 200) {
+  console.log(result.Data);
+}
+```
 
-It is worth mentioning that it has something to do with our storage interface.
+## Files & What They Do
 
-对于静态图片资源，我们日后会使用service worker将失败的网络通讯替换为我们的默认图片。
+### `getData.ts` — The one function you'll use most
 
-对于其他，在任何组件或脚本中请使用getData函数。需要注意的是，函数返回值不是API的源数据，而是经过我们项目，自己的中间层处理之后，与API接口格式一模一样的，希望被渲染到页面上的数据。
+**Exports:**
+- `getData<Path>(path, body)` — sends a typed POST request to any API endpoint
+- `login(arg1, arg2, is_token?)` — authenticates the user (password or token)
 
-例如：在前端做校验，使用beforeRequest对过高频率的getData调用直接返回`{Status:403,Data:bull,message:Too many request}`。
+**What happens when you call `getData`:**
+1. Interceptor checks rate limits (you can't spam comments too fast)
+2. Auto-injects `x-API-Token`, `x-API-AuthCode`, `x-API-Version` headers
+3. Sends POST to the server (auto-resolves `@api` → real URL)
+4. If network fails, tries to serve from offline cache (works for 6 paths)
+5. Logs API errors to `$ErrorLogger` and shows a notification on failure
 
-例如：（假设）我们可以自定义首页数据，在Home.vue请求：content/getExps，使用beforeRequest拦截，实际上执行并发多个getLibrary请求，合并成符合authcate接口返回值的格式。在Home.vue不用考虑太多，对于结果一律loadPageData就行。
+**Typed paths:** Every API path has TypeScript types. Use `ApiPath` to get full parameter/result types:
 
-同时留意本设计与缓存的关系。
+```ts
+import type { ApiPath, APIParam, APIResult } from '@api/types';
+
+// TypeScript will check your parameters and return type
+const result: APIResult<'/Users/GetUser'> = await getData('/Users/GetUser', {
+  ID: '123',
+});
+```
+
+### `types.ts` — API type map
+
+**Exports:**
+- `PathMap` — a TypeScript interface mapping endpoint paths to their backend function types
+- `ApiPath` — all valid endpoint paths as a union type
+- `APIParam<Path>` — extracts the parameter type for a given path
+- `APIResult<Path>` — extracts the return type for a given path
+- `normalizePath(path)` — converts shorthand like `?user/GetUser` to `/Users/GetUser`
+
+### `Interceptor.ts` — Before & after each request
+
+**Exports:**
+- `beforeRequest(path)` — checks rate limits, shows a loading message
+- `afterRequest(response)` — hides the loading message
+- `isRateLimitResponse(response)` — check if a response means "too many requests"
+
+### `cache.ts` — Offline response cache
+
+**Exports:**
+- `buildApiCacheKey(path, body?)` — builds a unique cache key per user + path + body
+- `readApiCache<T>(path, body?)` — reads cached API response
+- `writeApiCache(path, body, value)` — writes API response to cache
+
+Cached in localStorage under `apiResponseCache` key, expires after 30 days.
+
+### `getDevice.ts` — Browser & device info
+
+**Exports:**
+- `getVisitorId()` — uses FingerprintJS to generate a stable device ID
+- `getDeviceInfo()` — returns `Device` object (platform, screen size, CPU, GPU, timezone, etc.)
+
+### `logWriter.ts` — Telemetry logger
+
+**Exports:**
+- `LogSession` — type for session start log
+- `LogPage` — type for page view log
+- `LogEvent` — type for user action log
+- `LogItem` — union of all log types
+- `LogManager` — singleton Logger instance (also available as `window.$Logger`)
+
+**Usage:**
+```ts
+window.$Logger.logSession({ region: 'CN', userID: '123', ... });
+window.$Logger.logPageView({ pageLink: '/home' });
+window.$Logger.logEvent({ category: 'Community', action: 'Comment', label: 'experiment' });
+```
+
+## How to add a new API endpoint
+
+1. Find the backend function type in `src/pl-serve-type-main/type/main.ts`
+2. Add it to `PathMap` in `types.ts`
+3. Call it with `getData('/Your/NewEndpoint', { ... })` — types will work automatically
+4. For offline caching, add the path to `CACHEABLE_PATHS` in `getData.ts`
+
+## Important Notes
+
+- All requests are **POST** only
+- Don't use `fetch()` directly — you'll lose auth headers, error logging, and offline cache
+- The Interceptor auto-shows a loading message and hides it when done
+- Rate limiting currently only applies to `/Messages/PostComment`

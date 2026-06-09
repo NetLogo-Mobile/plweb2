@@ -1,0 +1,71 @@
+name: Sync upstream pltxt2htm release artifacts
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Download latest release asset
+        env:
+          REPO: SekaiArendelle/pltxt2htm
+          ASSET_NAME: wasm32-unknown-emscripten-pltxt2htm-wasm-release.zip
+        run: |
+          set -euo pipefail
+
+          release_json="$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest")"
+          asset_url="$(echo "$release_json" | jq -r --arg name "$ASSET_NAME" '.assets[] | select(.name == $name) | .browser_download_url')"
+
+          if [[ -z "$asset_url" || "$asset_url" == "null" ]]; then
+            echo "Asset not found: ${ASSET_NAME}" >&2
+            exit 1
+          fi
+
+          curl -fL "$asset_url" -o upstream-release.zip
+
+      - name: Extract and replace vendor files
+        run: |
+          set -euo pipefail
+
+          rm -rf tmp-upstream
+          mkdir -p tmp-upstream src/services/pltxt2htm/vendor
+
+          unzip -q upstream-release.zip -d tmp-upstream
+
+          js_file="$(find tmp-upstream -type f -name '*.js' | head -n 1)"
+          wasm_file="$(find tmp-upstream -type f -name '*.wasm' | head -n 1)"
+
+          if [[ -z "$js_file" || -z "$wasm_file" ]]; then
+            echo "Missing .js or .wasm in release zip" >&2
+            exit 1
+          fi
+
+          cp -f "$js_file" src/services/pltxt2htm/vendor/
+          cp -f "$wasm_file" src/services/pltxt2htm/vendor/
+
+      - name: Commit and push if updated
+        run: |
+          set -euo pipefail
+
+          if git diff --quiet -- src/services/pltxt2htm/vendor/; then
+            echo "No changes detected in vendor files."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add src/services/pltxt2htm/vendor/
+          git commit -m "chore: sync pltxt2htm wasm artifacts"
+          git push origin HEAD:main

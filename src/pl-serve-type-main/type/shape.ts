@@ -22,4 +22,4 @@ export type {
   ExperimentQuery,
   ContentSubmitSummary,
   SubmitExperiment,
-} from "./main.ts";
+} from './main.ts'

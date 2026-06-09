@@ -1,6 +1,6 @@
-import { ref } from "vue";
-import storageManager from "./storage";
-import { showNotification } from "@popup/naiveui";
+import { ref } from 'vue'
+import storageManager from './storage'
+import { showNotification } from '@popup/naiveui'
 
 /**
  * 增强的错误日志系统
@@ -8,69 +8,85 @@ import { showNotification } from "@popup/naiveui";
  */
 
 export interface ErrorContext {
-  type: "vue" | "window" | "promise" | "custom" | "api" | "network";
-  message: string;
-  stack?: string;
-  component?: string;
-  source?: string;
-  lineno?: number;
-  colno?: number;
-  method?: string;
-  url?: string;
-  statusCode?: number;
-  responseData?: any;
-  requestData?: any;
-  userAgent?: string;
-  userId?: string;
-  timestamp?: number;
-  breadcrumbs?: Breadcrumb[];
-  [key: string]: any;
+  type: 'vue' | 'window' | 'promise' | 'custom' | 'api' | 'network'
+  message: string
+  stack?: string
+  component?: string
+  source?: string
+  lineno?: number
+  colno?: number
+  method?: string
+  url?: string
+  statusCode?: number
+  responseData?: any
+  requestData?: any
+  userAgent?: string
+  userId?: string
+  timestamp?: number
+  breadcrumbs?: Breadcrumb[]
+  [key: string]: any
 }
 
 export interface Breadcrumb {
-  timestamp: number;
-  category: string;
-  message: string;
-  data?: any;
+  timestamp: number
+  category: string
+  message: string
+  data?: any
 }
 
 export interface ErrorLog extends ErrorContext {
-  id: string;
-  timestamp: number;
-  sessionId: string;
+  id: string
+  timestamp: number
+  sessionId: string
 }
 
 class ErrorLogger {
-  private logs = ref<ErrorLog[]>([]);
-  private maxLogs = 1000;
-  private breadcrumbs: Breadcrumb[] = [];
-  private maxBreadcrumbs = 50;
-  private sessionId: string;
-  private debugMode = true;
-  private maxJsonDepth = 4;
+  private logs = ref<ErrorLog[]>([])
+  private maxLogs = 100
+  private breadcrumbs: Breadcrumb[] = []
+  private maxBreadcrumbs = 20
+  private sessionId: string
+  private debugMode = true
+  private maxJsonDepth = 4
+  private isDev = false
+  private logTextBuffer = ''
   // For deduplication and reducing notification spam
-  private lastErrorSignature?: string;
-  private lastErrorTime = 0;
-  private lastErrorCount = 0;
-  private dedupInterval = 2500; // milliseconds
+  private lastErrorSignature?: string
+  private lastErrorTime = 0
+  private lastErrorCount = 0
+  private dedupInterval = 2500 // milliseconds
 
   constructor(app: any) {
-    this.sessionId = this.generateSessionId();
-    this.initDebugMode();
+    this.sessionId = this.generateSessionId()
+    this.isDev = import.meta.env.DEV
+    this.initDebugMode()
 
     // Always load logs from storage so they survive refreshes (sanitization performed on save)
-    this.loadLogsFromStorage();
+    this.loadLogsFromStorage()
 
-    this.setupGlobalHandlers(app);
+    this.setupGlobalHandlers(app)
+  }
+
+
+
+  private appendToLogBuffer(log: ErrorLog) {
+    this.logTextBuffer += `[${new Date(log.timestamp).toISOString()}] ${log.type.toUpperCase()}\n`
+    this.logTextBuffer += `Message: ${log.message}\n`
+    if (log.url) this.logTextBuffer += `URL: ${log.url}\n`
+    if (log.stack) this.logTextBuffer += `Stack: ${log.stack}\n`
+    if (log.statusCode) this.logTextBuffer += `Status: ${log.statusCode}\n`
+    if (log.requestData) this.logTextBuffer += `Request: ${JSON.stringify(log.requestData)}\n`
+    if (log.responseData) this.logTextBuffer += `Response: ${JSON.stringify(log.responseData)}\n`
+    this.logTextBuffer += `${'='.repeat(50)}\n\n`
   }
 
   private initDebugMode() {
-    const debugConfig = storageManager.getObj("userConfig").value?.debugger;
-    this.debugMode = debugConfig === "on" || debugConfig === "export";
+    const debugConfig = storageManager.getObj('userConfig').value?.debugger
+    this.debugMode = debugConfig === 'on' || debugConfig === 'export'
   }
 
   private generateSessionId(): string {
-    return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   }
 
   /**
@@ -78,54 +94,52 @@ class ErrorLogger {
    */
   private limitJsonDepth(obj: any, depth = 0): any {
     if (depth >= this.maxJsonDepth) {
-      if (typeof obj === "object" && obj !== null) {
-        return `[Object - max depth ${this.maxJsonDepth} reached]`;
+      if (typeof obj === 'object' && obj !== null) {
+        return `[Object - max depth ${this.maxJsonDepth} reached]`
       }
-      return obj;
+      return obj
     }
 
     if (obj === null || obj === undefined) {
-      return obj;
+      return obj
     }
 
-    if (typeof obj !== "object") {
-      return obj;
+    if (typeof obj !== 'object') {
+      return obj
     }
 
     if (Array.isArray(obj)) {
-      return obj
-        .slice(0, 10)
-        .map((item) => this.limitJsonDepth(item, depth + 1));
+      return obj.slice(0, 10).map((item) => this.limitJsonDepth(item, depth + 1))
     }
 
-    const result: any = {};
-    const keys = Object.keys(obj).slice(0, 20);
+    const result: any = {}
+    const keys = Object.keys(obj).slice(0, 20)
 
     for (const key of keys) {
       try {
-        result[key] = this.limitJsonDepth(obj[key], depth + 1);
+        result[key] = this.limitJsonDepth(obj[key], depth + 1)
       } catch {
-        result[key] = "[Error reading property]";
+        result[key] = '[Error reading property]'
       }
     }
 
     if (Object.keys(obj).length > 20) {
-      result["..."] = `[${Object.keys(obj).length - 20} more properties]`;
+      result['...'] = `[${Object.keys(obj).length - 20} more properties]`
     }
 
-    return result;
+    return result
   }
 
   private loadLogsFromStorage() {
     try {
-      const stored = localStorage.getItem("error_logs");
+      const stored = localStorage.getItem('error_logs')
       if (stored) {
-        this.logs.value = JSON.parse(stored);
+        this.logs.value = JSON.parse(stored)
         // 不适用StorageManager是为了防止其本身也有错误
         // We don't use StorageManager to avoid potential errors from it
       }
     } catch (e) {
-      console.error("Failed to load error logs from storage", e);
+      console.error('Failed to load error logs from storage', e)
     }
   }
 
@@ -144,17 +158,17 @@ class ErrorLogger {
           type: log.type,
           message: log.message,
           // keep only the first line of stack to save space and still be useful
-          stack: log.stack ? String(log.stack).split("\n")[0] : undefined,
+          stack: log.stack ? String(log.stack).split('\n')[0] : undefined,
           statusCode: log.statusCode,
           responseData: log.responseData,
           requestData: log.requestData,
           breadcrumbs: log.breadcrumbs,
-        };
-      });
+        }
+      })
 
-      localStorage.setItem("error_logs", JSON.stringify(toStore));
+      localStorage.setItem('error_logs', JSON.stringify(toStore))
     } catch (e) {
-      console.error("Failed to save error logs to storage", e);
+      console.error('Failed to save error logs to storage', e)
     }
   }
 
@@ -162,20 +176,20 @@ class ErrorLogger {
     // Vue error handler
     app.config.errorHandler = (err: any, _vm: any, info: any) => {
       this.captureError({
-        type: "vue",
+        type: 'vue',
         message: err?.message || String(err),
         stack: err?.stack,
         // pass original Error so console can expand it
         error: err,
         component: info,
         breadcrumbs: [...this.breadcrumbs],
-      });
-    };
+      })
+    }
 
     // Window error handler
     window.onerror = (message, source, lineno, colno, error) => {
       this.captureError({
-        type: "window",
+        type: 'window',
         message: String(message),
         stack: error?.stack,
         // pass original error object so console can expand it
@@ -184,23 +198,23 @@ class ErrorLogger {
         lineno,
         colno,
         breadcrumbs: [...this.breadcrumbs],
-      });
+      })
       // Allow browser to also show its default error logging
-      return false;
-    };
+      return false
+    }
 
     // Unhandled promise rejection
-    window.addEventListener("unhandledrejection", (event) => {
+    window.addEventListener('unhandledrejection', (event) => {
       this.captureError({
-        type: "promise",
+        type: 'promise',
         message: event.reason?.message || String(event.reason),
         stack: event.reason?.stack,
         // pass original rejection reason so console can expand it
         error: event.reason,
         breadcrumbs: [...this.breadcrumbs],
-      });
+      })
       // Do not call event.preventDefault() so the browser's default logging remains visible
-    });
+    })
   }
 
   /**
@@ -209,11 +223,8 @@ class ErrorLogger {
   captureError(context: ErrorContext) {
     // Always record API/network errors: even in non-debug mode we want these for diagnostics.
     // Other non-vital logs still respect debugMode.
-    if (
-      !this.debugMode &&
-      !["vue", "window", "promise", "api", "network"].includes(context.type)
-    ) {
-      return;
+    if (!this.debugMode && !['vue', 'window', 'promise', 'api', 'network'].includes(context.type)) {
+      return
     }
 
     // Prepare sanitized log for storage
@@ -222,7 +233,7 @@ class ErrorLogger {
       timestamp: Date.now(),
       sessionId: this.sessionId,
       userAgent: navigator.userAgent,
-      userId: storageManager.getObj("userInfo")?.value?.ID || "unknown",
+      userId: storageManager.getObj('userInfo')?.value?.ID || 'unknown',
       url: window.location.href,
       ...context,
       responseData: context.responseData
@@ -236,57 +247,61 @@ class ErrorLogger {
           ...bc,
           data: bc.data ? this.limitJsonDepth(bc.data) : bc.data,
         })) || [],
-    };
+    }
 
     // Deduplication: if the same message+stack appears within dedupInterval, treat as duplicate
-    const signature = `${context.message || ""}||${context.stack || ""}`;
-    const now = Date.now();
+    const signature = `${context.message || ''}||${context.stack || ''}`
+    const now = Date.now()
     const isDuplicate =
-      signature === this.lastErrorSignature &&
-      now - this.lastErrorTime < this.dedupInterval;
+      signature === this.lastErrorSignature && now - this.lastErrorTime < this.dedupInterval
 
     // push to storage regardless
-    if (this.logs.value.length >= this.maxLogs) this.logs.value.shift();
-    this.logs.value.push(errorLog);
-    this.saveLogsToStorage();
+    if (this.logs.value.length >= this.maxLogs) this.logs.value.shift()
+    this.logs.value.push(errorLog)
+    this.saveLogsToStorage()
+
+    if (this.isDev) {
+      this.appendToLogBuffer(errorLog)
+    }
 
     if (isDuplicate) {
-      this.lastErrorCount++;
+      this.lastErrorCount++
       // skip console and notification for duplicates to avoid spam
-      return;
+      return
     }
 
     // If previous error repeated multiple times, emit a compact summary to console
     if (this.lastErrorCount > 1) {
-      console.info(`(Previous error repeated ${this.lastErrorCount} times)`);
+      console.info(`(Previous error repeated ${this.lastErrorCount} times)`)
     }
 
     // Reset counters for new signature
-    this.lastErrorSignature = signature;
-    this.lastErrorTime = now;
-    this.lastErrorCount = 1;
+    this.lastErrorSignature = signature
+    this.lastErrorTime = now
+    this.lastErrorCount = 1
 
     // Show a concise notification for critical errors
     if (this.isErrorCritical(context.type)) {
-      this.showErrorNotification(errorLog, this.lastErrorCount);
+      this.showErrorNotification(errorLog, this.lastErrorCount)
     }
 
     // Console output: be concise to avoid double noise (browser already prints native errors)
-    const rawContext = { ...context };
-    console.groupCollapsed(
-      `%c[${context.type.toUpperCase()}] ${context.message}`,
-      "color: red; font-weight: bold",
-    );
+    const rawContext = { ...context }
+    // console.groupCollapsed(
+    //   `%c[${context.type.toUpperCase()}] ${context.message}`,
+    //   'color: red; font-weight: bold',
+    // )
+    console.info(context.message)
     if (rawContext.error) {
       // print the original Error object so it can be expanded when needed
-      console.error("Error object:", rawContext.error);
+      console.error('Error object:', rawContext.error)
     } else if (context.stack) {
-      console.error("Stack:", context.stack);
+      console.error('Stack:', context.stack)
     }
     if (this.debugMode) {
-      console.debug("Full context (sanitized):", errorLog);
+      console.debug('Full context (sanitized):', errorLog)
     }
-    console.groupEnd();
+    console.groupEnd()
   }
 
   /**
@@ -298,32 +313,30 @@ class ErrorLogger {
       category,
       message,
       data: data ? this.limitJsonDepth(data) : undefined,
-    };
+    }
 
-    this.breadcrumbs.push(breadcrumb);
+    this.breadcrumbs.push(breadcrumb)
 
     if (this.breadcrumbs.length > this.maxBreadcrumbs) {
-      this.breadcrumbs.shift();
+      this.breadcrumbs.shift()
     }
   }
 
   /**
    * 记录自定义日志
    */
-  writeLog(message: any, category = "info", data?: any) {
-    if (!this.debugMode) return;
+  writeLog(message: any, category = 'info', data?: any) {
+    if (!this.debugMode) return
 
     const messageStr =
-      typeof message === "string"
-        ? message
-        : JSON.stringify(this.limitJsonDepth(message));
-    this.addBreadcrumb(category, messageStr, data);
+      typeof message === 'string' ? message : JSON.stringify(this.limitJsonDepth(message))
+    this.addBreadcrumb(category, messageStr, data)
 
     this.captureError({
-      type: "custom",
+      type: 'custom',
       message: messageStr,
       breadcrumbs: [...this.breadcrumbs],
-    });
+    })
   }
 
   /**
@@ -337,40 +350,37 @@ class ErrorLogger {
     requestData?: any,
   ) {
     this.captureError({
-      type: "api",
+      type: 'api',
       message: `API Error: ${method} ${path}`,
       method,
       url: path,
       statusCode,
-      responseData: responseData
-        ? this.limitJsonDepth(responseData)
-        : undefined,
+      responseData: responseData ? this.limitJsonDepth(responseData) : undefined,
       requestData: requestData ? this.limitJsonDepth(requestData) : undefined,
       breadcrumbs: [...this.breadcrumbs],
-    });
+    })
   }
 
   private isErrorCritical(type: string): boolean {
-    return ["vue", "window", "promise"].includes(type);
+    return ['vue', 'window', 'promise'].includes(type)
   }
 
   private showErrorNotification(errorLog: ErrorLog, repeatCount = 1) {
-    const shortDescription =
-      repeatCount > 1 ? `Occurred ${repeatCount} times` : "";
+    const shortDescription = repeatCount > 1 ? `Occurred ${repeatCount} times` : ''
 
     showNotification({
-      title: "Error",
+      title: 'Error',
       content: errorLog.message,
       description: shortDescription,
-    });
+    })
 
     // Only print the full sanitized details when debug mode is enabled to avoid noise
     if (this.debugMode) {
-      console.group(`Error details: ${errorLog.id}`);
-      console.log("Sanitized context:", errorLog);
-      const raw = (errorLog as any).error;
-      if (raw) console.log("Original error:", raw);
-      console.groupEnd();
+      console.group(`Error details: ${errorLog.id}`)
+      console.log('Sanitized context:', errorLog)
+      const raw = (errorLog as any).error
+      if (raw) console.log('Original error:', raw)
+      console.groupEnd()
     }
   }
 
@@ -378,7 +388,7 @@ class ErrorLogger {
    * 获取所有日志
    */
   getLogs() {
-    return this.logs.value;
+    return this.logs.value
   }
 
   /**
@@ -386,37 +396,37 @@ class ErrorLogger {
    */
   filterLogs(filter: { type?: string; sessionId?: string; userId?: string }) {
     return this.logs.value.filter((log) => {
-      if (filter.type && log.type !== filter.type) return false;
-      if (filter.sessionId && log.sessionId !== filter.sessionId) return false;
-      if (filter.userId && log.userId !== filter.userId) return false;
-      return true;
-    });
+      if (filter.type && log.type !== filter.type) return false
+      if (filter.sessionId && log.sessionId !== filter.sessionId) return false
+      if (filter.userId && log.userId !== filter.userId) return false
+      return true
+    })
   }
 
   /**
    * 获取面包屑轨迹
    */
   getBreadcrumbs() {
-    return this.breadcrumbs;
+    return this.breadcrumbs
   }
 
   /**
    * 清空所有日志
    */
   clearLogs() {
-    this.logs.value = [];
-    this.breadcrumbs = [];
-    localStorage.removeItem("error_logs");
+    this.logs.value = []
+    this.breadcrumbs = []
+    localStorage.removeItem('error_logs')
   }
 
   /**
    * 获取统计信息
    */
   getStatistics() {
-    const typeCount: { [key: string]: number } = {};
+    const typeCount: { [key: string]: number } = {}
     this.logs.value.forEach((log) => {
-      typeCount[log.type] = (typeCount[log.type] || 0) + 1;
-    });
+      typeCount[log.type] = (typeCount[log.type] || 0) + 1
+    })
 
     return {
       totalErrors: this.logs.value.length,
@@ -424,58 +434,58 @@ class ErrorLogger {
       typeCount,
       firstError: this.logs.value[0],
       lastError: this.logs.value[this.logs.value.length - 1],
-    };
+    }
   }
 
   exportToTxt(): void {
-    let content = `=== Error Log Report ===\n`;
-    content += `Generated: ${new Date().toISOString()}\n`;
-    content += `Session ID: ${this.sessionId}\n`;
-    content += `Total Errors: ${this.logs.value.length}\n`;
-    content += `\n=== Statistics ===\n`;
+    let content = `=== Error Log Report ===\n`
+    content += `Generated: ${new Date().toISOString()}\n`
+    content += `Session ID: ${this.sessionId}\n`
+    content += `Total Errors: ${this.logs.value.length}\n`
+    content += `\n=== Statistics ===\n`
 
-    const stats = this.getStatistics();
+    const stats = this.getStatistics()
     Object.entries(stats.typeCount).forEach(([type, count]) => {
-      content += `${type}: ${count}\n`;
-    });
+      content += `${type}: ${count}\n`
+    })
 
-    content += `\n=== Errors ===\n`;
+    content += `\n=== Errors ===\n`
     this.logs.value.forEach((log) => {
-      content += `\n[${new Date(log.timestamp).toISOString()}] ${log.type.toUpperCase()}\n`;
-      content += `ID: ${log.id}\n`;
-      content += `Message: ${log.message}\n`;
-      content += `URL: ${log.url}\n`;
-      content += `User: ${log.userId}\n`;
+      content += `\n[${new Date(log.timestamp).toISOString()}] ${log.type.toUpperCase()}\n`
+      content += `ID: ${log.id}\n`
+      content += `Message: ${log.message}\n`
+      content += `URL: ${log.url}\n`
+      content += `User: ${log.userId}\n`
       if (log.stack) {
-        content += `Stack: ${log.stack}\n`;
+        content += `Stack: ${log.stack}\n`
       }
       if (log.statusCode) {
-        content += `Status Code: ${log.statusCode}\n`;
+        content += `Status Code: ${log.statusCode}\n`
       }
       if (log.requestData) {
-        content += `\nRequest Data:\n${JSON.stringify(log.requestData, null, 2)}\n`;
+        content += `\nRequest Data:\n${JSON.stringify(log.requestData, null, 2)}\n`
       }
       if (log.responseData) {
-        content += `\nResponse Data:\n${JSON.stringify(log.responseData, null, 2)}\n`;
+        content += `\nResponse Data:\n${JSON.stringify(log.responseData, null, 2)}\n`
       }
       if (log.breadcrumbs && log.breadcrumbs.length > 0) {
-        content += `\nBreadcrumbs:\n`;
+        content += `\nBreadcrumbs:\n`
         log.breadcrumbs.forEach((bc) => {
-          content += `  - [${new Date(bc.timestamp).toISOString()}] ${bc.category}: ${bc.message}\n`;
-        });
+          content += `  - [${new Date(bc.timestamp).toISOString()}] ${bc.category}: ${bc.message}\n`
+        })
       }
-      content += `\n${"=".repeat(50)}\n`;
-    });
+      content += `\n${'='.repeat(50)}\n`
+    })
 
-    if (content === "") content = "No error logs available.";
-    const blob = new Blob([content], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `error_logs_${new Date().toISOString().slice(0, 10)}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
+    if (content === '') content = 'No error logs available.'
+    const blob = new Blob([content], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `error_logs_${new Date().toISOString().slice(0, 10)}.txt`
+    a.click()
+    URL.revokeObjectURL(url)
   }
 }
 
-export default ErrorLogger;
+export default ErrorLogger

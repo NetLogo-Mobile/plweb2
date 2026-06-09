@@ -16,24 +16,24 @@
 
 <script setup lang="ts">
 interface ActionSheetOption {
-  label: string;
-  color?: string;
+  label: string
+  color?: string
 }
 
 interface Props {
-  options: ActionSheetOption[];
-  close: () => void;
-  onSelect: (idx: number) => void;
+  options: ActionSheetOption[]
+  close: () => void
+  onSelect: (idx: number) => void
 }
 
-const props = defineProps<Props>();
+const props = defineProps<Props>()
 
 function select(idx: number) {
-  props.onSelect(idx);
-  props.close();
+  props.onSelect(idx)
+  props.close()
 }
 function close() {
-  props.close();
+  props.close()
 }
 </script>
 

@@ -16,59 +16,59 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import type { Ref } from "vue";
+import { ref, computed } from 'vue'
+import type { Ref } from 'vue'
 
 interface Props {
-  title?: string;
-  message?: string;
-  titleRef?: Ref<string>;
-  messageRef?: Ref<string>;
-  icon?: string;
-  confirmLabel?: string;
-  cancelLabel?: string;
-  confirmingLabel?: string;
-  onConfirm?: () => Promise<unknown> | void;
-  close?: () => void;
+  title?: string
+  message?: string
+  titleRef?: Ref<string>
+  messageRef?: Ref<string>
+  icon?: string
+  confirmLabel?: string
+  cancelLabel?: string
+  confirmingLabel?: string
+  onConfirm?: () => Promise<unknown> | void
+  close?: () => void
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  icon: "/assets/messages/Message-Default.png",
-  confirmLabel: "OK",
-  cancelLabel: "Cancel",
-  confirmingLabel: "Retrying...",
-});
+  icon: '/assets/messages/Message-Default.png',
+  confirmLabel: 'OK',
+  cancelLabel: 'Cancel',
+  confirmingLabel: 'Retrying...',
+})
 
-const loading = ref(false);
+const loading = ref(false)
 
 const displayTitle = computed(() => {
-  const tr = props.titleRef as Ref<string> | undefined;
-  return tr?.value ?? props.title ?? "";
-});
+  const tr = props.titleRef as Ref<string> | undefined
+  return tr?.value ?? props.title ?? ''
+})
 
 const displayMessage = computed(() => {
-  const mr = props.messageRef as Ref<string> | undefined;
-  return mr?.value ?? props.message ?? "";
-});
+  const mr = props.messageRef as Ref<string> | undefined
+  return mr?.value ?? props.message ?? ''
+})
 
 async function onConfirmClick() {
   if (!props.onConfirm) {
-    props.close?.();
-    return;
+    props.close?.()
+    return
   }
   try {
-    loading.value = true;
-    await props.onConfirm();
+    loading.value = true
+    await props.onConfirm()
     // on success the caller may close via close()
   } catch (_e) {
     // keep dialog open on failure – caller can decide behavior
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 
 function onCancel() {
-  props.close?.();
+  props.close?.()
 }
 </script>
 

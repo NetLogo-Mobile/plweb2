@@ -9,4 +9,4 @@ export type {
   APIMessage,
   APIRouterCategory,
   SummaryTag,
-} from "./main.ts";
+} from './main.ts'
