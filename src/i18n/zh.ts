@@ -131,7 +131,7 @@ export default {
       off: "关闭",
     },
   },
-  royterEditor: {
+  mdEditor: {
     title: "Markdown 编辑器",
     refreshWorks: "刷新作品",
     workListAria: "作品列表",

@@ -134,8 +134,8 @@ export default {
       off: "Off",
     },
   },
-  royterEditor: {
-    title: "Royter Markdown Editor",
+  mdEditor: {
+    title: "Markdown Editor",
     refreshWorks: "Refresh",
     workListAria: "Work list",
     searchPlaceholder: "Search works",

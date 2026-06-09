@@ -3,10 +3,10 @@
 declare global {
   // 扩展 Error 构造函数，使其可以处理 unknown 类型
   var Error: ErrorConstructor;
-  
+
   // 定义一个 Error 构造函数，可以接受 unknown 类型的参数
   interface ErrorConstructor {
-    new(message?: string | unknown): Error;
+    new (message?: string | unknown): Error;
     (message?: string | unknown): Error;
   }
 }

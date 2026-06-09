@@ -1,9 +1,6 @@
 import { afterRequest, beforeRequest } from "./Interceptor.ts";
 import sm from "@storage/index.ts";
-import i18n, {
-  detectBrowserLanguage,
-  toApiLanguage,
-} from "@i18n/index.ts";
+import i18n, { detectBrowserLanguage, toApiLanguage } from "@i18n/index.ts";
 import { getDeviceInfo, getVisitorId } from "./getDevice.ts";
 import { showMessage } from "@popup/naiveui.ts";
 import { getPath } from "../utils.ts";
@@ -11,7 +8,12 @@ import { normalizePath } from "./types.ts";
 import { readApiCache, writeApiCache } from "./cache.ts";
 
 import type { ApiPath, APIParam, APIResult } from "./types.ts";
-import type { Device, Result, ResultOf, Users } from "../../pl-serve-type-main/type/main";
+import type {
+  Device,
+  Result,
+  ResultOf,
+  Users,
+} from "../../pl-serve-type-main/type/main";
 
 const CACHEABLE_PATHS = new Set([
   "/Contents/GetProfile",
@@ -34,7 +36,6 @@ function applyAfterRequest<T extends Result>(data: T): T {
   return data;
 }
 
-
 async function getDataImpl(path: string, body?: unknown): Promise<any> {
   const npath = normalizePath(String(path));
   const beforeRes = beforeRequest(npath);
@@ -46,9 +47,8 @@ async function getDataImpl(path: string, body?: unknown): Promise<any> {
   const token = userInfo.value?.token?.trim();
   const authCode = userInfo.value?.authCode;
   const isAuthcatePath = npath === "/Users/Authenticate";
-  const apiToken = !isAuthcatePath && !token
-    ? "7pEWTsF4gR9qauzJCDQkxPLOZlnbMtAG"
-    : token;
+  const apiToken =
+    !isAuthcatePath && !token ? "7pEWTsF4gR9qauzJCDQkxPLOZlnbMtAG" : token;
 
   try {
     const response = await fetch(getPath(`/@api${npath}`), {
@@ -88,7 +88,11 @@ async function getDataImpl(path: string, body?: unknown): Promise<any> {
       showMessage("error", i18n.global.t("errors.networkError"), {
         duration: 5000,
       });
-      return { Status: response.status, Message: "Network Error", Data: null } as unknown as Result;
+      return {
+        Status: response.status,
+        Message: "Network Error",
+        Data: null,
+      } as unknown as Result;
     }
 
     const data = (await response.json()) as Result;
@@ -101,7 +105,13 @@ async function getDataImpl(path: string, body?: unknown): Promise<any> {
     }
 
     if (data.Status !== 200) {
-      window.$ErrorLogger.captureApiError("POST", path, data.Status, data, body);
+      window.$ErrorLogger.captureApiError(
+        "POST",
+        path,
+        data.Status,
+        data,
+        body,
+      );
     } else if (canCache(npath)) {
       writeApiCache(npath, body, data);
     }
@@ -128,7 +138,6 @@ export function getData<Path extends ApiPath>(
 export function getData(path: string, body?: unknown): Promise<any> {
   return getDataImpl(path, body);
 }
-
 
 export async function login(
   arg1: string | null,

@@ -17,7 +17,7 @@ const RATE_LIMIT_STATUS = 429;
 const RATE_LIMIT_MESSAGE = "Server.Offline";
 
 // No loading message for these paths
-const noMessagesPath = ["/Users/GetUser","/Messages/PostComment"];
+const noMessagesPath = ["/Users/GetUser", "/Messages/PostComment"];
 const noDestroyPath = ["Quantum.Models.Packages.UserPackage, Quantum Models"];
 
 type RequestHistoryPayload = {
@@ -155,7 +155,11 @@ export function beforeRequest(path: string): IIntercetporResponse {
 
 export function afterRequest(response: Result): IIntercetporResponse {
   const re = response;
-  if (messageRef && re.Data && !noDestroyPath.some((p) => (re.Data as any)?.$type === p))
+  if (
+    messageRef &&
+    re.Data &&
+    !noDestroyPath.some((p) => (re.Data as any)?.$type === p)
+  )
     messageRef.destroy();
   // re.Status = 400;
   //  For testing purpose

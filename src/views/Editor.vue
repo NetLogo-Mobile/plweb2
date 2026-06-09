@@ -1,22 +1,39 @@
 <template>
-  <div class="royter-editor-page">
+  <div class="md-editor-page">
     <header class="editor-header">
-      <button v-if="!hasRouteId" class="toolbar-icon menu-button" type="button" @click="toggleSidebar">
-        <span>{{ showSidebar ? '✕' : '☰' }}</span>
+      <button
+        v-if="!hideWorkSidebar"
+        class="toolbar-icon menu-button"
+        type="button"
+        @click="toggleSidebar"
+      >
+        <span>{{ showSidebar ? "✕" : "☰" }}</span>
       </button>
-      <button class="toolbar-icon back-button" type="button" @click="goBack">‹</button>
-      <h1>{{ t("royterEditor.title") }}</h1>
-      <button v-if="!hasRouteId" class="primary-button" type="button" :disabled="!isLoggedIn" @click="loadWorks">
-        {{ t("royterEditor.refreshWorks") }}
+      <button class="toolbar-icon back-button" type="button" @click="goBack">
+        ‹
+      </button>
+      <h1>{{ t("mdEditor.title") }}</h1>
+      <button
+        v-if="!hideWorkSidebar"
+        class="primary-button"
+        type="button"
+        :disabled="!isLoggedIn"
+        @click="loadWorks"
+      >
+        {{ t("mdEditor.refreshWorks") }}
       </button>
     </header>
 
     <main v-if="isLoggedIn" class="editor-shell">
-      <aside v-if="!hasRouteId" class="work-sidebar" :class="{ open: showSidebar }">
+      <aside
+        v-if="!hideWorkSidebar"
+        class="work-sidebar"
+        :class="{ open: showSidebar }"
+      >
         <div class="sidebar-header">
           <n-input
             v-model:value="searchKeyword"
-            :placeholder="t('royterEditor.searchPlaceholder')"
+            :placeholder="t('mdEditor.searchPlaceholder')"
             clearable
           />
         </div>
@@ -26,15 +43,23 @@
             class="tab-btn"
             :class="{ active: activeTab === 'Discussion' }"
             @click="activeTab = 'Discussion'"
-          >Discussion</button>
+          >
+            Discussion
+          </button>
           <button
             class="tab-btn"
             :class="{ active: activeTab === 'Experiment' }"
             @click="activeTab = 'Experiment'"
-          >Experiment</button>
+          >
+            Experiment
+          </button>
         </div>
 
-        <div v-show="activeTab === 'Discussion'" ref="discListRef" class="tab-work-list">
+        <div
+          v-show="activeTab === 'Discussion'"
+          ref="discListRef"
+          class="tab-work-list"
+        >
           <button
             v-for="work in currentTabWorks"
             :key="work.id"
@@ -45,16 +70,22 @@
             @contextmenu.prevent="onWorkContextMenu($event, work)"
           >
             <span class="work-title">{{ work.subject }}</span>
-            <span class="work-meta">{{ work.language }}</span>
+            <span class="work-meta">{{ getWorkMeta(work) }}</span>
           </button>
           <div ref="discSentinelRef" class="sentinel" />
           <p v-if="!loading && currentTabWorks.length === 0" class="empty-tip">
-            {{ t("royterEditor.emptyWorks") }}
+            {{ t("mdEditor.emptyWorks") }}
           </p>
-          <p v-if="loadingMoreByCategory[activeTab]" class="loading-more">{{ t("royterEditor.rendering") }}</p>
+          <p v-if="loadingMoreByCategory[activeTab]" class="loading-more">
+            {{ t("mdEditor.rendering") }}
+          </p>
         </div>
 
-        <div v-show="activeTab === 'Experiment'" ref="expListRef" class="tab-work-list">
+        <div
+          v-show="activeTab === 'Experiment'"
+          ref="expListRef"
+          class="tab-work-list"
+        >
           <button
             v-for="work in currentTabWorks"
             :key="work.id"
@@ -65,47 +96,49 @@
             @contextmenu.prevent="onWorkContextMenu($event, work)"
           >
             <span class="work-title">{{ work.subject }}</span>
-            <span class="work-meta">{{ work.language }}</span>
+            <span class="work-meta">{{ getWorkMeta(work) }}</span>
           </button>
           <div ref="expSentinelRef" class="sentinel" />
           <p v-if="!loading && currentTabWorks.length === 0" class="empty-tip">
-            {{ t("royterEditor.emptyWorks") }}
+            {{ t("mdEditor.emptyWorks") }}
           </p>
-          <p v-if="loadingMoreByCategory[activeTab]" class="loading-more">{{ t("royterEditor.rendering") }}</p>
+          <p v-if="loadingMoreByCategory[activeTab]" class="loading-more">
+            {{ t("mdEditor.rendering") }}
+          </p>
         </div>
       </aside>
 
-      <section class="editor-main" :class="{ 'editor-full': hasRouteId }">
+      <section class="editor-main" :class="{ 'editor-full': hideWorkSidebar }">
         <div v-if="selectedWork && !detailLoading" class="editor-toolbar">
           <n-input
             v-model:value="editSubject"
-            :placeholder="t('royterEditor.subjectPlaceholder')"
+            :placeholder="t('mdEditor.subjectPlaceholder')"
             class="subject-input"
           />
-          <n-button type="primary" :loading="saving" :disabled="!dirty" @click="saveCurrentWork">
-{{ t("royterEditor.publish") }}
+          <n-button
+            type="primary"
+            :loading="saving"
+            :disabled="!dirty"
+            @click="saveCurrentWork"
+          >
+            {{ t("mdEditor.publish") }}
           </n-button>
         </div>
 
-        <div v-if="selectedWork && !detailLoading" class="editor-grid">
-          <div class="editor-card">
-            <MdEditor
-              v-model="editMarkdown"
-              :language="editorLocale"
-              :preview="false"
-              :html-preview="false"
-              :toolbars-exclude="toolbarExcludes"
-              :style="{ maxHeight: editorMaxHeight, minHeight: editorMinHeight ,height: editorHeight}"
-              @on-upload-img="handleUploadImg"
-            />
-          </div>
-          <section class="preview-card">
-            <div class="preview-heading">
-              <h2>{{ t("royterEditor.previewTitle") }}</h2>
-              <span v-if="previewLoading">{{ t("royterEditor.rendering") }}</span>
-            </div>
-            <article class="adv-preview" v-html="previewHtml"></article>
-          </section>
+        <div v-if="selectedWork && !detailLoading" class="editor-card">
+          <MdEditor
+            v-model="editMarkdown"
+            :language="editorLocale"
+            :preview="showPreview"
+            preview-theme="github"
+            :html-preview="false"
+            :no-katex="true"
+            :no-mermaid="true"
+            :no-highlight="true"
+            :toolbars="toolbars"
+            :preview-component="PreviewRenderer"
+            @on-upload-img="handleUploadImg"
+          />
         </div>
 
         <div v-else-if="detailLoading" class="placeholder-card">
@@ -114,38 +147,69 @@
 
         <div v-else class="placeholder-card">
           <n-spin v-if="loading" size="large" />
-          <p v-else>{{ t("royterEditor.selectWork") }}</p>
+          <p v-else>{{ t("mdEditor.selectWork") }}</p>
         </div>
       </section>
     </main>
 
     <section v-else class="login-required">
-      <h2>{{ t("royterEditor.loginRequiredTitle") }}</h2>
-      <p>{{ t("royterEditor.loginRequiredContent") }}</p>
+      <h2>{{ t("mdEditor.loginRequiredTitle") }}</h2>
+      <p>{{ t("mdEditor.loginRequiredContent") }}</p>
       <router-link to="/">
-        <n-button type="primary">{{ t("royterEditor.login") }}</n-button>
+        <n-button type="primary">{{ t("mdEditor.login") }}</n-button>
       </router-link>
     </section>
 
-    <div v-if="showSidebar && !hasRouteId" class="sidebar-overlay" @click="showSidebar = false" />
+    <div
+      v-if="showSidebar && !hideWorkSidebar"
+      class="sidebar-overlay"
+      @click="showSidebar = false"
+    />
 
-    <n-modal v-model:show="tagModalVisible" :title="t('royterEditor.editTags')" preset="card" style="width: 400px">
+    <n-modal
+      v-model:show="tagModalVisible"
+      :title="t('mdEditor.editTags')"
+      preset="card"
+      style="width: 400px"
+    >
       <div class="tag-edit">
         <div class="tag-list">
-          <n-tag v-for="(tag, i) in editTags" :key="i" closable @close="editTags.splice(i, 1)">{{ tag }}</n-tag>
+          <n-tag
+            v-for="(tag, i) in editTags"
+            :key="i"
+            closable
+            @close="editTags.splice(i, 1)"
+            >{{ tag }}</n-tag
+          >
         </div>
         <div class="tag-input-row">
-          <n-input v-model:value="newTag" :placeholder="t('royterEditor.tagPlaceholder')" @keyup.enter="addTag" />
+          <n-input
+            v-model:value="newTag"
+            :placeholder="t('mdEditor.tagPlaceholder')"
+            @keyup.enter="addTag"
+          />
           <n-button size="small" @click="addTag">+</n-button>
         </div>
-        <n-button type="primary" size="small" @click="saveTags">{{ t("royterEditor.save") }}</n-button>
+        <n-button type="primary" size="small" @click="updateTags">{{
+          t("mdEditor.save")
+        }}</n-button>
       </div>
     </n-modal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onActivated, onMounted, reactive, ref, watch } from "vue";
+import {
+  computed,
+  defineComponent,
+  h,
+  onActivated,
+  onMounted,
+  onUnmounted,
+  reactive,
+  ref,
+  watch,
+} from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
 import { MdEditor } from "md-editor-v3";
@@ -163,12 +227,13 @@ import {
   fetchEditableWorks,
   getCurrentUserId,
   loadWorkDetail,
-  saveEditorWork,
+  publishEditorWork,
   type EditorWork,
   type CategoryCursor,
 } from "@services/editor/cloudWorks";
+import getTagName from "@i18n/getTagName";
 
-const hasRouteId = computed(() => !!route.params.id);
+const hideWorkSidebar = computed(() => route.query.sidebar === "0");
 const activeTab = ref<Category>("Discussion");
 
 const worksByCategory = reactive<Record<string, EditorWork[]>>({
@@ -192,8 +257,6 @@ const selectedId = ref("");
 const loading = ref(true);
 const saving = ref(false);
 const detailLoading = ref(false);
-const previewLoading = ref(false);
-const previewHtml = ref("");
 const editSubject = ref("");
 const editMarkdown = ref("");
 const searchKeyword = ref("");
@@ -201,7 +264,6 @@ const isLoggedIn = ref(checkLogin(false));
 const showSidebar = ref(false);
 const coverUrl = ref("");
 const defaultCover = getPath("/@base/assets/messages/Experiment-Default.png");
-let previewTicket = 0;
 const route = useRoute();
 const { t, locale } = useI18n();
 
@@ -211,21 +273,48 @@ const newTag = ref("");
 
 const PAGE_SIZE = 20;
 
-const toolbarExcludes: ToolbarNames[] = ["htmlPreview", "catalog", "github"];
+const isMobile = ref(window.innerWidth < 768);
+const isLandscape = ref(
+  window.innerWidth >= 768 ||
+    (window.matchMedia?.("(orientation: landscape)").matches ?? true),
+);
 
-const editorMaxHeight = computed(() => {
-  return window.innerWidth < 768 ? "50vh" : "calc(100vh - 240px)";
-});
+function updateViewState() {
+  isMobile.value = window.innerWidth < 768;
+  isLandscape.value = isMobile.value
+    ? (window.matchMedia?.("(orientation: landscape)").matches ?? true)
+    : true;
+}
 
-const editorMinHeight = computed(() => {
-  return window.innerWidth < 768 ? "50vh" : "calc(100vh - 240px)";
-});
+const showPreview = computed(() => !isMobile.value);
 
-const editorHeight = computed(() => {
-  return window.innerWidth < 768
-    ? "50vh"
-    : "calc(100vh - 240px)";
-});
+const toolbarPortrait: ToolbarNames[] = [
+  "bold",
+  "italic",
+  "underline",
+  "code",
+  "link",
+  "fullscreen",
+  "previewOnly",
+];
+const toolbarLandscape: ToolbarNames[] = [
+  "bold",
+  "italic",
+  "underline",
+  "strikeThrough",
+  "title",
+  "unorderedList",
+  "orderedList",
+  "code",
+  "link",
+  "fullscreen",
+  "preview",
+  "previewOnly",
+];
+
+const toolbars = computed(() =>
+  isLandscape.value ? toolbarLandscape : toolbarPortrait,
+);
 
 const editorLocale = computed(() => {
   const map: Record<string, string> = {
@@ -238,7 +327,10 @@ const editorLocale = computed(() => {
   return map[locale.value] || "zh-CN";
 });
 
-const allWorks = computed(() => [...worksByCategory.Discussion, ...worksByCategory.Experiment]);
+const allWorks = computed(() => [
+  ...worksByCategory.Discussion,
+  ...worksByCategory.Experiment,
+]);
 
 const selectedWork = computed(
   () => allWorks.value.find((work) => work.id === selectedId.value) || null,
@@ -246,7 +338,10 @@ const selectedWork = computed(
 
 const dirty = computed(() => {
   const work = selectedWork.value;
-  return !!work && (work.subject !== editSubject.value || work.markdown !== editMarkdown.value);
+  return (
+    !!work &&
+    (work.subject !== editSubject.value || work.markdown !== editMarkdown.value)
+  );
 });
 
 const currentTabWorks = computed(() => {
@@ -267,7 +362,15 @@ function goBack() {
 function applyWork(work: EditorWork) {
   editSubject.value = work.subject;
   editMarkdown.value = work.markdown;
-  coverUrl.value = work.rawSummary ? getCoverUrl(work.rawSummary) : defaultCover;
+  coverUrl.value = work.rawSummary
+    ? getCoverUrl(work.rawSummary)
+    : defaultCover;
+}
+
+function getWorkMeta(work: EditorWork) {
+  return work.tags
+    .map((tag) => (tag.startsWith("Type-") ? "" : getTagName(tag)))
+    .join(" ");
 }
 
 let selectTicket = 0;
@@ -305,7 +408,10 @@ async function selectWork(id: string) {
 }
 
 async function loadCategory(category: Category) {
-  const result = await fetchEditableWorks(cursorsByCategory[category], PAGE_SIZE);
+  const result = await fetchEditableWorks(
+    cursorsByCategory[category],
+    PAGE_SIZE,
+  );
   cursorsByCategory[category] = result.cursors;
   worksByCategory[category] = result.works;
   hasMoreByCategory[category] = result.hasMore;
@@ -348,55 +454,70 @@ async function loadMoreWorks(category: Category) {
   }
 }
 
-function isLatestPreview(ticket: number) {
-  return ticket === previewTicket;
-}
-
 function buildPreviewContext(work: EditorWork | null) {
   return {
     project: editSubject.value,
-    visitorId: storageManager.getObj("userInfo").value?.ID || getCurrentUserId(),
+    visitorId:
+      storageManager.getObj("userInfo").value?.ID || getCurrentUserId(),
     authorId: work?.rawSummary?.User?.ID || "",
     coauthorIds: work?.rawSummary?.Coauthors?.map((user) => user.ID) || [],
   };
 }
 
-function setPreviewResult(ticket: number, html: string) {
-  if (!isLatestPreview(ticket)) return;
-  previewHtml.value = html || `<p class="empty-preview">${t("royterEditor.emptyPreview")}</p>`;
-}
+const PreviewRenderer = defineComponent({
+  name: "CustomPreview",
+  props: {
+    id: String,
+    class: String,
+  },
+  setup(props) {
+    const html = ref("");
+    let ticket = 0;
 
-async function renderPreview() {
-  const ticket = ++previewTicket;
-  previewLoading.value = true;
-  try {
-    const html = await parse(
-      editMarkdown.value,
-      buildPreviewContext(selectedWork.value),
+    watch(
+      [editMarkdown, editSubject, selectedId],
+      async () => {
+        const cur = ++ticket;
+        try {
+          const result = await parse(
+            editMarkdown.value,
+            buildPreviewContext(selectedWork.value),
+          );
+          if (cur !== ticket) return;
+          html.value =
+            result ||
+            `<p class="empty-preview">${t("mdEditor.emptyPreview")}</p>`;
+        } catch (error) {
+          if (cur !== ticket) return;
+          html.value = `<p class="preview-error">${(error as Error).message}</p>`;
+        }
+      },
+      { immediate: true },
     );
-    setPreviewResult(ticket, html);
-  } catch (error) {
-    setPreviewResult(
-      ticket,
-      `<p class="preview-error">${(error as Error).message}</p>`,
-    );
-  } finally {
-    if (isLatestPreview(ticket)) previewLoading.value = false;
-  }
-}
+
+    return () =>
+      h("div", { id: props.id, class: props.class, innerHTML: html.value });
+  },
+});
 
 async function saveCurrentWork() {
   const work = selectedWork.value;
   if (!work) return;
   saving.value = true;
   try {
-    const result = await saveEditorWork(work, editMarkdown.value, editSubject.value);
+    const result = await publishEditorWork(
+      work,
+      editMarkdown.value,
+      editSubject.value,
+    );
     const cat = result.updatedWork.category;
-    const idx = worksByCategory[cat].findIndex((w) => w.id === result.updatedWork.id);
+    const idx = worksByCategory[cat].findIndex(
+      (w) => w.id === result.updatedWork.id,
+    );
     if (idx >= 0) {
       worksByCategory[cat][idx] = result.updatedWork;
     }
-    showMessage("success", t("royterEditor.saveSuccess"), { duration: 2500 });
+    showMessage("success", t("mdEditor.saveSuccess"), { duration: 2500 });
   } catch (error) {
     showMessage("error", (error as Error).message, { duration: 5000 });
   } finally {
@@ -405,13 +526,11 @@ async function saveCurrentWork() {
 }
 
 function handleUploadImg(_files: File[], _callback: (urls: string[]) => void) {
-  showMessage("info", t("royterEditor.uploadImgHint"), { duration: 3000 });
+  showMessage("info", t("mdEditor.uploadImgHint"), { duration: 3000 });
 }
 
 function onWorkContextMenu(_event: MouseEvent, work: EditorWork) {
-  showActionSheet([
-    { label: t("royterEditor.editTags") },
-  ], (idx) => {
+  showActionSheet([{ label: t("mdEditor.editTags") }], (idx) => {
     if (idx === 0) {
       openTagEditor(work);
     }
@@ -432,7 +551,7 @@ function addTag() {
   newTag.value = "";
 }
 
-async function saveTags() {
+async function updateTags() {
   const work = selectedWork.value;
   if (!work) return;
   const cat = work.category;
@@ -440,26 +559,24 @@ async function saveTags() {
   if (idx < 0) return;
 
   const updatedRaw = { ...work.rawSummary!, Tags: [...editTags.value] };
-  worksByCategory[cat][idx] = { ...worksByCategory[cat][idx], tags: [...editTags.value], rawSummary: updatedRaw };
+  worksByCategory[cat][idx] = {
+    ...worksByCategory[cat][idx],
+    tags: [...editTags.value],
+    rawSummary: updatedRaw,
+  };
 
   try {
-    await saveEditorWork(
+    await publishEditorWork(
       { ...work, rawSummary: updatedRaw },
       editMarkdown.value,
       editSubject.value,
     );
-    showMessage("success", t("royterEditor.saveSuccess"), { duration: 2000 });
+    showMessage("success", t("mdEditor.saveSuccess"), { duration: 2000 });
   } catch (error) {
     showMessage("error", (error as Error).message, { duration: 5000 });
   }
   tagModalVisible.value = false;
 }
-
-let previewTimer: ReturnType<typeof setTimeout> | undefined;
-watch([editMarkdown, editSubject, selectedId], () => {
-  window.clearTimeout(previewTimer);
-  previewTimer = window.setTimeout(renderPreview, 250);
-});
 
 async function loadWorkById(category: string, id: string) {
   loading.value = true;
@@ -494,6 +611,9 @@ async function loadWorkById(category: string, id: string) {
 }
 
 onMounted(() => {
+  updateViewState();
+  window.addEventListener("resize", updateViewState);
+
   if (isLoggedIn.value) {
     const category = route.params.category as string;
     const id = route.params.id as string;
@@ -507,10 +627,14 @@ onMounted(() => {
   }
 });
 
+onUnmounted(() => {
+  window.removeEventListener("resize", updateViewState);
+});
+
 onActivated(() => {
   isLoggedIn.value = checkLogin(false);
   window.$Logger?.logPageView({
-    pageLink: "/royter",
+    pageLink: "/markdown-editor",
     timeStamp: Date.now(),
   });
 });
@@ -531,11 +655,14 @@ function setupTabObserver(
     initialized = true;
     const root = listRef.value || el.parentElement;
     if (!root) return;
-    const obs = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) {
-        loadMoreWorks(category);
-      }
-    }, { root, rootMargin: "200px" });
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadMoreWorks(category);
+        }
+      },
+      { root, rootMargin: "200px" },
+    );
     obs.observe(el);
   });
 }
@@ -545,7 +672,7 @@ setupTabObserver(expSentinelRef, expListRef, "Experiment");
 </script>
 
 <style scoped>
-.royter-editor-page {
+.md-editor-page {
   min-height: 100dvh;
   background: #f4f7fb;
   color: #1f2937;
@@ -604,7 +731,9 @@ setupTabObserver(expSentinelRef, expListRef, "Experiment");
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .back-button {
@@ -630,12 +759,11 @@ setupTabObserver(expSentinelRef, expListRef, "Experiment");
 }
 
 .editor-shell {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: 0;
   padding: 0;
   min-height: calc(100dvh - 52px);
-  align-content: start;
 }
 
 .work-sidebar {
@@ -679,7 +807,9 @@ setupTabObserver(expSentinelRef, expListRef, "Experiment");
   color: #64748b;
   cursor: pointer;
   border-bottom: 2px solid transparent;
-  transition: color 0.15s, border-color 0.15s;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
 }
 
 .tab-btn.active {
@@ -730,7 +860,6 @@ setupTabObserver(expSentinelRef, expListRef, "Experiment");
 
 .work-meta,
 .empty-tip,
-.preview-heading span,
 .loading-more {
   color: #64748b;
   font-size: 11px;
@@ -755,6 +884,7 @@ setupTabObserver(expSentinelRef, expListRef, "Experiment");
 }
 
 .editor-main {
+  flex: 1;
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
@@ -779,51 +909,11 @@ setupTabObserver(expSentinelRef, expListRef, "Experiment");
   flex: 1;
 }
 
-.editor-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 12px;
-}
-
 .editor-card {
-  padding: 8px;
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
-}
-
-.preview-card {
-  padding: 8px;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
-}
-
-.preview-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  border-bottom: 1px solid #e5e7eb;
-  margin-bottom: 10px;
-}
-
-.preview-heading h2 {
-  margin: 0 0 8px;
-  font-size: 14px;
-}
-
-.adv-preview {
-  max-height: calc(100vh - 260px);
-  overflow: auto;
-  line-height: 1.7;
-  word-break: break-word;
-}
-
-:deep(.adv-preview img) {
-  max-width: 100%;
 }
 
 :deep(.preview-error) {
@@ -883,19 +973,6 @@ setupTabObserver(expSentinelRef, expListRef, "Experiment");
 
   .editor-main.editor-full {
     margin: 0;
-  }
-
-  .editor-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .editor-card,
-  .preview-card {
-    padding: 6px;
-  }
-
-  .adv-preview {
-    max-height: 50vh;
   }
 
   .work-title {

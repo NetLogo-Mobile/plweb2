@@ -28,7 +28,7 @@ const API_LANGUAGE_BY_APP_LANGUAGE: Record<BrowserLanguage, string> = {
   "en-US": "English",
   "de-DE": "German",
   "ja-JP": "Japanese",
-  "fr-FR": "French"
+  "fr-FR": "French",
 };
 
 function normalizeLanguageTag(rawLanguage: string): string {

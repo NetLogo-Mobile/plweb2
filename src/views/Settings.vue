@@ -101,12 +101,15 @@ settingsConfig.forEach((section) => {
 
 // Restore language setting on component mount
 if (savedValues.language) {
-  i18n.global.locale.value = savedValues.language as typeof i18n.global.locale.value;
+  i18n.global.locale.value =
+    savedValues.language as typeof i18n.global.locale.value;
 }
 
 function saveSettings() {
   const currentConfig = storageManager.getObj("userConfig")?.value || {};
-  const saveData: Record<string, string | boolean | undefined> = { ...currentConfig };
+  const saveData: Record<string, string | boolean | undefined> = {
+    ...currentConfig,
+  };
   settingsConfig.forEach((section) => {
     section.items.forEach((item) => {
       if (item.type !== "button") {

@@ -134,8 +134,8 @@ export default {
       off: "オフ",
     },
   },
-  royterEditor: {
-    title: "Royter Markdown エディター",
+  mdEditor: {
+    title: "Markdown エディター",
     refreshWorks: "更新",
     workListAria: "作品リスト",
     searchPlaceholder: "作品を検索",
@@ -180,7 +180,8 @@ export default {
       copyFailed: "テキストのコピーに失敗しました",
       uploadSuccess: "カバーの変更に成功しました",
       uploadFailed: "ファイルのアップロードに失敗しました",
-      changeCoverFailed: "カバーの変更に失敗しました。しばらくしてから再試行してください",
+      changeCoverFailed:
+        "カバーの変更に失敗しました。しばらくしてから再試行してください",
       replyToUser: "に返信 ",
     },
     labels: {

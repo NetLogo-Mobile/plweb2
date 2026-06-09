@@ -256,7 +256,7 @@ let avatarUrl = ref(getUserUrl(data.value.User));
 const canEdit = computed(() => canEditSummary(data.value));
 
 function goToEditor() {
-  router.push(`/e/${route.params.category}/${route.params.id}`);
+  router.push(`/e/${route.params.category}/${route.params.id}?sidebar=0`);
 }
 
 async function fetchSummary() {
@@ -305,9 +305,12 @@ onMounted(() => {
   fetchSummary();
 });
 
-watch(() => route.params.id, () => {
-  fetchSummary();
-});
+watch(
+  () => route.params.id,
+  () => {
+    fetchSummary();
+  },
+);
 
 function handleMsgClick(item: CommentResult) {
   replyID.value = item.UserID;
@@ -730,7 +733,6 @@ onActivated(() => {
     width: 80%;
     bottom: calc(50px + env(safe-area-inset-bottom));
   }
-
 }
 
 @media (max-aspect-ratio: 1/1) {

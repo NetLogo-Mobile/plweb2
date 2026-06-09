@@ -6,11 +6,26 @@ type SupportedLocale = "English" | "Chinese" | "German" | "Japanese" | "French";
 
 function createLanguageOptions() {
   return [
-    { label: i18n.global.t("settings.languageOptions.chinese"), value: "Chinese" },
-    { label: i18n.global.t("settings.languageOptions.english"), value: "English" },
-    { label: i18n.global.t("settings.languageOptions.german"), value: "German" },
-    { label: i18n.global.t("settings.languageOptions.japanese"), value: "Japanese" },
-    { label: i18n.global.t("settings.languageOptions.french"), value: "French" },
+    {
+      label: i18n.global.t("settings.languageOptions.chinese"),
+      value: "Chinese",
+    },
+    {
+      label: i18n.global.t("settings.languageOptions.english"),
+      value: "English",
+    },
+    {
+      label: i18n.global.t("settings.languageOptions.german"),
+      value: "German",
+    },
+    {
+      label: i18n.global.t("settings.languageOptions.japanese"),
+      value: "Japanese",
+    },
+    {
+      label: i18n.global.t("settings.languageOptions.french"),
+      value: "French",
+    },
   ];
 }
 
@@ -34,8 +49,12 @@ export const settingsConfig = [
         callBack: (newValue: string) => {
           i18n.global.locale.value = newValue as SupportedLocale;
           const generalItems = settingsConfig[0]?.items || [];
-          const languageItem = generalItems.find((item) => item.key === "language");
-          const debuggerItem = generalItems.find((item) => item.key === "debugger");
+          const languageItem = generalItems.find(
+            (item) => item.key === "language",
+          );
+          const debuggerItem = generalItems.find(
+            (item) => item.key === "debugger",
+          );
           if (languageItem?.type === "link") {
             languageItem.options = createLanguageOptions();
           }

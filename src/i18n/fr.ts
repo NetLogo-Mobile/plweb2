@@ -135,8 +135,8 @@ export default {
       off: "Désactivé",
     },
   },
-  royterEditor: {
-    title: "Éditeur Markdown Royter",
+  mdEditor: {
+    title: "Éditeur Markdown",
     refreshWorks: "Actualiser",
     workListAria: "Liste des œuvres",
     searchPlaceholder: "Rechercher des œuvres",
@@ -181,7 +181,8 @@ export default {
       copyFailed: "Échec de la copie du texte",
       uploadSuccess: "Couverture modifiée avec succès",
       uploadFailed: "Échec du téléversement du fichier",
-      changeCoverFailed: "Échec du changement de couverture, veuillez réessayer plus tard",
+      changeCoverFailed:
+        "Échec du changement de couverture, veuillez réessayer plus tard",
       replyToUser: "Répondre à : ",
     },
     labels: {

@@ -22,7 +22,7 @@ export type EditorWork = {
   rawSummary?: Summary;
 };
 
-export type SaveEditorWorkResult = {
+export type publishEditorWorkResult = {
   requestBody: Record<string, unknown>;
   response: Result<unknown>;
   updatedWork: EditorWork;
@@ -57,7 +57,8 @@ export function canEditSummary(summary: Summary): boolean {
   const currentUser = getCurrentUser();
   if (!currentUser?.ID) return false;
   if (summary.User?.ID === currentUser.ID) return true;
-  if (summary.Coauthors?.some((user) => user.ID === currentUser.ID)) return true;
+  if (summary.Coauthors?.some((user) => user.ID === currentUser.ID))
+    return true;
   return EDITABLE_VERIFICATIONS.has(String(currentUser.Verification || ""));
 }
 
@@ -71,7 +72,7 @@ function toEditorWork(summary: Summary): EditorWork {
     id: summary.ID,
     contentId: summary.ContentID || summary.ID,
     category: summary.Category || "Discussion",
-    subject: summary.Subject || t("royterEditor.untitled"),
+    subject: summary.Subject || t("mdEditor.untitled"),
     markdown: normalizeDescription(summary.Description),
     language: summary.Language || "Chinese",
     tags: summary.Tags || [],
@@ -86,7 +87,7 @@ async function fetchSummary(category: Category, id: string): Promise<Summary> {
   });
   if (res.Status !== 200 || !res.Data) {
     throw new Error(
-      res.Message || t("royterEditor.readSummaryFailed", { status: res.Status }),
+      res.Message || t("mdEditor.readSummaryFailed", { status: res.Status }),
     );
   }
   return res.Data;
@@ -120,12 +121,13 @@ async function queryCategory(
   const res = await getData("/Contents/QueryExperiments", { Query: query });
   if (res.Status !== 200) {
     throw new Error(
-      res.Message || t("royterEditor.fetchWorksFailed", { status: res.Status }),
+      res.Message || t("mdEditor.fetchWorksFailed", { status: res.Status }),
     );
   }
 
   const summaries: Summary[] = res.Data?.$values || [];
-  const lastId = summaries.length > 0 ? summaries[summaries.length - 1].ID : (from || "");
+  const lastId =
+    summaries.length > 0 ? summaries[summaries.length - 1].ID : from || "";
   return { summaries, lastId };
 }
 
@@ -136,7 +138,9 @@ export async function fetchEditableWorks(
   const userId = getCurrentUserId();
   if (!userId) return { works: [], hasMore: false, cursors: [] };
 
-  const cats = cursors.length ? cursors : [{ category: "Discussion" as Category }];
+  const cats = cursors.length
+    ? cursors
+    : [{ category: "Discussion" as Category }];
 
   const results = await Promise.all(
     cats.map((c) => queryCategory(userId, c.category, c.from, take)),
@@ -154,10 +158,13 @@ export async function fetchEditableWorks(
   return { works, hasMore, cursors: nextCursors };
 }
 
-export async function fetchEditableWork(category: Category, id: string): Promise<EditorWork> {
+export async function fetchEditableWork(
+  category: Category,
+  id: string,
+): Promise<EditorWork> {
   const summary = await fetchSummary(category, id);
   if (!canEditSummary(summary)) {
-    throw new Error(t("royterEditor.noPermission"));
+    throw new Error(t("mdEditor.noPermission"));
   }
   return toEditorWork(summary);
 }
@@ -170,29 +177,31 @@ export async function loadWorkDetail(work: EditorWork): Promise<EditorWork> {
   };
 }
 
-export async function fetchWorkspace(work: EditorWork): Promise<Workspace | null> {
+export async function fetchWorkspace(
+  work: EditorWork,
+): Promise<Workspace | null> {
   const res = await getData("/Contents/GetWorkspace", {
     ContentID: work.contentId,
     Language: work.language || "Chinese",
   });
   if (res.Status !== 200) {
     throw new Error(
-      res.Message || t("royterEditor.readWorkspaceFailed", { status: res.Status }),
+      res.Message || t("mdEditor.readWorkspaceFailed", { status: res.Status }),
     );
   }
   return res.Data || null;
 }
 
-export async function saveEditorWork(
+export async function publishEditorWork(
   work: EditorWork,
   markdown: string,
   subject: string,
-): Promise<SaveEditorWorkResult> {
+): Promise<publishEditorWorkResult> {
   if (!work.rawSummary) {
-    throw new Error(t("royterEditor.noPermission"));
+    throw new Error(t("mdEditor.noPermission"));
   }
   if (!canEditSummary(work.rawSummary)) {
-    throw new Error(t("royterEditor.noPermission"));
+    throw new Error(t("mdEditor.noPermission"));
   }
 
   const workspace = await fetchWorkspace(work);
@@ -208,14 +217,14 @@ export async function saveEditorWork(
     Workspace: workspace ? { ...workspace, Summary: null } : null,
   };
 
-  const response = await getData(
+  const response = (await getData(
     "/Contents/SubmitExperiment",
     requestBody as any,
-  ) as unknown as Result<Summary>;
+  )) as unknown as Result<Summary>;
   if (response.Status !== 200) {
     throw new Error(
       response.Message ||
-        t("royterEditor.saveWorkFailed", { status: response.Status }),
+        t("mdEditor.saveWorkFailed", { status: response.Status }),
     );
   }
 

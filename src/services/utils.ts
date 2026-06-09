@@ -314,7 +314,6 @@ export function removeToken<T>(obj: T): T {
           key === "Token" ||
           key === "AuthCode"
         ) {
-           
           const value = record[key];
           if (typeof value === "string") {
             record[key] = `${value.slice(0, 6)}******`;

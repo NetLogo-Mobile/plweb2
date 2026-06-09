@@ -45,10 +45,7 @@
             :key="getBlockKey(block)"
           >
             <div class="block">
-              <TopicBlock
-                v-if="isTopicBlock(block)"
-                :block="block"
-              />
+              <TopicBlock v-if="isTopicBlock(block)" :block="block" />
               <Block
                 v-else
                 :block="block"
@@ -91,7 +88,9 @@ const isLoading = ref(true);
 const blocks = ref<Array<ListBlock | TopicBlockType>>([]);
 const { t } = useI18n();
 
-function isTopicBlock(block: ListBlock | TopicBlockType): block is TopicBlockType {
+function isTopicBlock(
+  block: ListBlock | TopicBlockType,
+): block is TopicBlockType {
   return block.$type === "Quantum.Models.Contents.TopicBlock, Quantum Models";
 }
 

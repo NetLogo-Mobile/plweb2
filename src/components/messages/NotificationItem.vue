@@ -1,6 +1,13 @@
 <template>
   <div class="notification_container">
-    <div class="img" @click.stop="()=>{ if(notification.Users[0]) showUserCard(notification.Users[0])}">
+    <div
+      class="img"
+      @click.stop="
+        () => {
+          if (notification.Users[0]) showUserCard(notification.Users[0]);
+        }
+      "
+    >
       <img id="avatar" :src="getPath(avatarUrl)" />
     </div>
     <div id="notification" class="notification" @click="showComment">
@@ -81,11 +88,13 @@ function showComment() {
   if (props.notification.msg_type === 3) {
     window.open(
       `${getPath("/@root")}/c/${
-        props.notification.Fields?.Discussion ? "Discussion" : props.notification.Fields?.Experiment
-          ? "Experiment"
-          : "User"
+        props.notification.Fields?.Discussion
+          ? "Discussion"
+          : props.notification.Fields?.Experiment
+            ? "Experiment"
+            : "User"
       }/${
-      props.notification.Fields?.ExperimentID ||
+        props.notification.Fields?.ExperimentID ||
         props.notification.Fields?.DiscussionID ||
         props.notification.Fields?.UserID
       }/${

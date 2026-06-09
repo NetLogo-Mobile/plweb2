@@ -33,7 +33,7 @@ async function renderMermaidDiagrams(container: HTMLElement) {
 
   await Promise.all(
     mermaidBlocks.map(async (block, index) => {
-      const source = block.textContent?.trim();
+      const source = block.textContent?.trim().replace(/\u00a0/g, " ");
       if (!source) return;
 
       const pre = block.closest("pre");
@@ -46,8 +46,8 @@ async function renderMermaidDiagrams(container: HTMLElement) {
         wrapper.className = "mermaid-diagram";
         wrapper.innerHTML = svg;
         pre.replaceWith(wrapper);
-      } catch {
-        // Keep original code block if Mermaid rendering fails.
+      } catch (e) {
+        console.warn("mermaid render failed:", e);
       }
     }),
   );
@@ -64,14 +64,11 @@ async function advancedParser(
   const wasmInstance = await getWasmInstance();
   const instanceAny: any = wasmInstance;
   if (!instanceAny.__advanced_parser_fn) {
-    instanceAny.__advanced_parser_fn = wasmInstance.cwrap("fixedadv_parser", "number", [
-      "string",
-      "string",
-      "string",
-      "string",
-      "string",
-      "string",
-    ]);
+    instanceAny.__advanced_parser_fn = wasmInstance.cwrap(
+      "fixedadv_parser",
+      "number",
+      ["string", "string", "string", "string", "string", "string"],
+    );
   }
 
   const deallocate = await getDeallocator();
@@ -122,8 +119,8 @@ async function parse(source: string, context: ParseContext = {}) {
   tempDiv
     .querySelectorAll("pre code:not(.language-mermaid)")
     .forEach((block) => {
-    hljs.highlightElement(block as HTMLElement);
-  });
+      hljs.highlightElement(block as HTMLElement);
+    });
 
   return tempDiv.innerHTML;
 }

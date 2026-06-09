@@ -42,7 +42,11 @@ import parse from "@services/pltxt2htm/advancedParser";
 import showUserCard from "@popup/userProfileDialog.ts";
 import { getAvatarUrl } from "@services/getUserCurentAvatarByID";
 import storageManager from "@storage/index.ts";
-import { formatDate, getPath, getAnonymousAvatarByNickname } from "@services/utils";
+import {
+  formatDate,
+  getPath,
+  getAnonymousAvatarByNickname,
+} from "@services/utils";
 import type { CommentResult } from "@services/../pl-serve-type-main/type/main";
 
 const props = defineProps<{
@@ -94,7 +98,7 @@ function deleteMsg() {
   flex-direction: row;
   gap: 10px;
   background: white;
-    /* white-space: nowrap; */
+  /* white-space: nowrap; */
   overflow: hidden;
   word-break: break-all;
 }

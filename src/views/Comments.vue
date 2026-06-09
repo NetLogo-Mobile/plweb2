@@ -18,7 +18,9 @@
   <div class="content">
     <div class="list">
       <MessagesList
-        :Category="route.params.category as 'Discussion' | 'Experiment' | 'User'"
+        :Category="
+          route.params.category as 'Discussion' | 'Experiment' | 'User'
+        "
         :ID="route.params.id as string"
         :upDate="upDate"
         @msgClick="handleMsgClick"
@@ -26,15 +28,14 @@
     </div>
 
     <CommentComposer
-        v-model="comment"
-        class="comments-page__composer"
-        :maxlength="300"
-        :loading="isLoading"
-        :disabled="!comment.trim()"
-        :placeholder="t('comments.placeholder')"
-        @submit="handleEnter"
-      />
-
+      v-model="comment"
+      class="comments-page__composer"
+      :maxlength="300"
+      :loading="isLoading"
+      :disabled="!comment.trim()"
+      :placeholder="t('comments.placeholder')"
+      @submit="handleEnter"
+    />
   </div>
 </template>
 
@@ -59,7 +60,6 @@ let replyID = ref("");
 let upDate = ref(0);
 const title = ref("");
 let comment = ref(""); // 输入的内容 Input content
-
 
 onMounted(async () => {
   const parsedName = await parse(route.params.name as string);

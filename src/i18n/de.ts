@@ -136,8 +136,8 @@ export default {
       off: "Aus",
     },
   },
-  royterEditor: {
-    title: "Royter Markdown-Editor",
+  mdEditor: {
+    title: "Markdown-Editor",
     refreshWorks: "Aktualisieren",
     workListAria: "Werkliste",
     searchPlaceholder: "Werke suchen",
@@ -154,7 +154,8 @@ export default {
     emptyPreview: "Kein Inhalt",
     untitled: "Ohne Titel",
     noPermission: "Dieses Konto kann dieses Werk nicht bearbeiten.",
-    readSummaryFailed: "Werkzusammenfassung konnte nicht gelesen werden: {status}",
+    readSummaryFailed:
+      "Werkzusammenfassung konnte nicht gelesen werden: {status}",
     fetchWorksFailed: "Werke konnten nicht geladen werden: {status}",
     readWorkspaceFailed: "Arbeitsbereich konnte nicht gelesen werden: {status}",
     saveWorkFailed: "Werk konnte nicht gespeichert werden: {status}",
@@ -182,7 +183,8 @@ export default {
       copyFailed: "Text konnte nicht kopiert werden",
       uploadSuccess: "Cover erfolgreich geändert",
       uploadFailed: "Datei-Upload fehlgeschlagen",
-      changeCoverFailed: "Cover konnte nicht geändert werden, bitte später erneut versuchen",
+      changeCoverFailed:
+        "Cover konnte nicht geändert werden, bitte später erneut versuchen",
       replyToUser: "Antwort an ",
     },
     labels: {
