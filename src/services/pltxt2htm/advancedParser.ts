@@ -38,16 +38,6 @@ function getMermaidSvgWidth(svg: SVGSVGElement) {
   return viewBox?.[2] ? Number(viewBox[2]) : undefined
 }
 
-function keepMermaidSvgIntrinsicWidth(wrapper: HTMLElement) {
-  const svg = wrapper.querySelector('svg')
-  if (!(svg instanceof SVGSVGElement)) return
-
-  const width = getMermaidSvgWidth(svg)
-  if (width && Number.isFinite(width)) {
-    svg.style.setProperty('width', `${width}px`)
-  }
-  svg.style.setProperty('max-width', 'none')
-}
 
 async function renderMermaidDiagrams(container: HTMLElement) {
   ensureMermaidInitialized()

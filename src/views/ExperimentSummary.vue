@@ -237,6 +237,7 @@ const data = ref<Summary>({
   },
 })
 
+const defaultCoverUrl = getPath('/@base/assets/messages/Experiment-Default.png')
 let coverUrl = ref(defaultCoverUrl)
 let avatarUrl = ref(getUserUrl(data.value.User))
 let avatarLoaded = ref(false)

@@ -52,9 +52,6 @@ export const settingsConfig = [
           const languageItem = generalItems.find(
             (item) => item.key === "language",
           );
-          const debuggerItem = generalItems.find(
-            (item) => item.key === "debugger",
-          );
           if (languageItem?.type === "link") {
             languageItem.options = createLanguageOptions();
           }
