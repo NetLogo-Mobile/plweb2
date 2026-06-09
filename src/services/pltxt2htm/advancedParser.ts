@@ -27,17 +27,6 @@ function ensureMermaidInitialized() {
   mermaidInitialized = true
 }
 
-function getMermaidSvgWidth(svg: SVGSVGElement) {
-  const maxWidth = svg.style.maxWidth.match(/^([0-9.]+)px$/)?.[1]
-  if (maxWidth) return Number(maxWidth)
-
-  const width = svg.getAttribute('width')?.match(/^([0-9.]+)(?:px)?$/)?.[1]
-  if (width) return Number(width)
-
-  const viewBox = svg.getAttribute('viewBox')?.trim().split(/\s+/)
-  return viewBox?.[2] ? Number(viewBox[2]) : undefined
-}
-
 
 async function renderMermaidDiagrams(container: HTMLElement) {
   ensureMermaidInitialized()
