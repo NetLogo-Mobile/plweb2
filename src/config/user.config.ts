@@ -29,7 +29,7 @@ function createLanguageOptions() {
   ]
 }
 
-function createDebuggerOptions() {
+function createBinaryOptions() {
   return [
     { label: i18n.global.t('settings.debuggerOptions.on'), value: 'on' },
     { label: i18n.global.t('settings.debuggerOptions.off'), value: 'off' },
@@ -50,14 +50,9 @@ export const settingsConfig = [
           i18n.global.locale.value = newValue as SupportedLocale
           const generalItems = settingsConfig[0]?.items || []
           const languageItem = generalItems.find((item) => item.key === 'language')
-          const debuggerItem = generalItems.find((item) => item.key === 'debugger')
           if (languageItem?.type === 'link') {
             languageItem.options = createLanguageOptions()
           }
-          if (debuggerItem?.type === 'link') {
-            debuggerItem.options = createDebuggerOptions()
-          }
-          // Save language setting to localStorage
           const userConfig = storageManager.getObj('userConfig')?.value || {}
           userConfig.language = newValue
           userConfig.languageManuallySelected = true
@@ -72,25 +67,46 @@ export const settingsConfig = [
             title: i18n.global.t('settings.languageChangeTitle'),
             content: i18n.global.t('settings.languageChangeContent'),
             positiveText: i18n.global.t('login.confirm'),
-            onPositiveClick: () => {
+            onPositiveClick: () =>
               showNotification({
                 type: 'success',
                 title: i18n.global.t('settings.languageChangeTitle'),
-              })
-            },
+              }),
           })
         },
+      },
+      {
+        key: 'mermaid',
+        label: i18n.global.t('settings.mermaid'),
+        type: 'link',
+        value: 'on',
+        options: createBinaryOptions(),
+      },
+    ],
+  },
+  {
+    title: 'developer',
+    items: [
+      {
+        key: 'apiBaseUrl',
+        label: i18n.global.t('settings.apiBaseUrl'),
+        type: 'input',
+        value: '',
+      },
+      {
+        key: 'staticBaseUrl',
+        label: i18n.global.t('settings.staticBaseUrl'),
+        type: 'input',
+        value: '',
       },
       {
         key: 'debugger',
         label: i18n.global.t('settings.debugger'),
         type: 'link',
         value: 'on',
-        options: createDebuggerOptions(),
+        options: createBinaryOptions(),
         callBack: (newValue: string) => {
-          if (newValue === 'off') {
-            localStorage.removeItem('error_logs')
-          }
+          if (newValue === 'off') localStorage.removeItem('error_logs')
           showDialog('warning', {
             title: i18n.global.t('login.reLogin'),
             content: i18n.global.t('login.reLoginContent'),
@@ -109,6 +125,12 @@ export const settingsConfig = [
         },
       },
       {
+        key: 'autoOpenCopiedLink',
+        label: i18n.global.t('settings.autoOpenCopiedLink'),
+        type: 'toggle',
+        value: 'off',
+      },
+      {
         key: 'exportLogs',
         label: i18n.global.t('settings.exportLogs'),
         type: 'button',
@@ -121,12 +143,6 @@ export const settingsConfig = [
           })
         },
       },
-      // {
-      //   key: "",
-      //   label: "如题",
-      //   type: "toggle",
-      //   value: false,
-      // },
     ],
   },
 ]

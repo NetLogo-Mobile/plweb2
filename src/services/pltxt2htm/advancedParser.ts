@@ -4,6 +4,8 @@ import hljs from 'highlight.js'
 import mermaid from 'mermaid'
 import renderMathInElement from 'katex/contrib/auto-render/auto-render.js'
 import 'katex/dist/katex.min.css'
+import storageManager from '@storage/index'
+import { getPath } from '@services/utils'
 
 interface ParseContext {
   host?: string
@@ -25,27 +27,28 @@ function ensureMermaidInitialized() {
   mermaidInitialized = true
 }
 
+
 async function renderMermaidDiagrams(container: HTMLElement) {
   ensureMermaidInitialized()
   const mermaidBlocks = Array.from(container.querySelectorAll('pre code.language-mermaid'))
 
   await Promise.all(
     mermaidBlocks.map(async (block, index) => {
-      const source = block.textContent?.trim()
-      if (!source) return
+      const source = block.textContent?.trim().replace(/\u00a0/g, " ");
+      if (!source) return;
 
       const pre = block.closest('pre')
       if (!pre) return
 
       try {
-        const renderId = `mermaid-${Date.now()}-${index}`
-        const { svg } = await mermaid.render(renderId, source)
-        const wrapper = document.createElement('div')
-        wrapper.className = 'mermaid-diagram'
-        wrapper.innerHTML = svg
-        pre.replaceWith(wrapper)
-      } catch {
-        console.warn("Mermaid render failed")
+        const renderId = `mermaid-${Date.now()}-${index}`;
+        const { svg } = await mermaid.render(renderId, source);
+        const wrapper = document.createElement("div");
+        wrapper.className = "mermaid-diagram";
+        wrapper.innerHTML = svg;
+        pre.replaceWith(wrapper);
+      } catch (e) {
+        console.warn("mermaid render failed:", e);
       }
     }),
   )
@@ -62,14 +65,11 @@ async function advancedParser(
   const wasmInstance = await getWasmInstance()
   const instanceAny: any = wasmInstance
   if (!instanceAny.__advanced_parser_fn) {
-    instanceAny.__advanced_parser_fn = wasmInstance.cwrap('fixedadv_parser', 'number', [
-      'string',
-      'string',
-      'string',
-      'string',
-      'string',
-      'string',
-    ])
+    instanceAny.__advanced_parser_fn = wasmInstance.cwrap(
+      "fixedadv_parser",
+      "number",
+      ["string", "string", "string", "string", "string", "string"],
+    );
   }
 
   const deallocate = await getDeallocator()
@@ -92,7 +92,7 @@ async function parse(source: string, context: ParseContext = {}) {
   if (!source) return ''
   const rawHtml = await advancedParser(
     source,
-    context.host ?? import.meta.env.VITE_ROOT_URL ?? '',
+    context.host ?? getPath('/@root'),
     context.project ?? '',
     context.visitorId ?? '',
     context.authorId ?? '',
@@ -115,11 +115,16 @@ async function parse(source: string, context: ParseContext = {}) {
     })
   }
 
-  await renderMermaidDiagrams(tempDiv)
+  const enableMermaid = (storageManager.getObj('userConfig')?.value?.mermaid ?? 'on') === 'on'
+  if (enableMermaid) {
+    await renderMermaidDiagrams(tempDiv)
+  }
 
-  tempDiv.querySelectorAll('pre code:not(.language-mermaid)').forEach((block) => {
-    hljs.highlightElement(block as HTMLElement)
-  })
+  tempDiv
+    .querySelectorAll("pre code:not(.language-mermaid)")
+    .forEach((block) => {
+      hljs.highlightElement(block as HTMLElement);
+    });
 
   return tempDiv.innerHTML
 }

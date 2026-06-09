@@ -55,15 +55,31 @@
                 "
                 @click="showUserCard(data.User.ID)"
               >
-                <div style="margin: auto 10px; height: 90%; aspect-ratio: 1; border-radius: 50%; overflow: hidden; background: #e8e8e8; flex-shrink: 0;">
-    <img
-      :src="avatarUrl"
-      style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; transition: opacity 0.25s;"
-      :style="{ opacity: avatarLoaded ? 1 : 0 }"
-      @load="avatarLoaded = true"
-      @error="avatarLoaded = true"
-    />
-  </div>
+                <div
+                  style="
+                    margin: auto 10px;
+                    height: 90%;
+                    aspect-ratio: 1;
+                    border-radius: 50%;
+                    overflow: hidden;
+                    background: #e8e8e8;
+                    flex-shrink: 0;
+                  "
+                >
+                  <img
+                    :src="avatarUrl"
+                    style="
+                      width: 100%;
+                      height: 100%;
+                      border-radius: 50%;
+                      object-fit: cover;
+                      transition: opacity 0.25s;
+                    "
+                    :style="{ opacity: avatarLoaded ? 1 : 0 }"
+                    @load="avatarLoaded = true"
+                    @error="avatarLoaded = true"
+                  />
+                </div>
                 <div style="text-align: left">
                   <p style="color: #007bff; margin: 2% 0 2% 0; width: 100%; font-size: 16px">
                     {{ data.User.Nickname }}
@@ -104,8 +120,8 @@
                   "
                   class="intro"
                 ></div>
-                <div>
-                  {{ t('expeSummary.wordCount') }}
+                <div class="word-count">
+                  {{ t('expeSummary.wordCount') }}：{{ descriptionWordCount }}
                 </div>
               </div>
             </div>
@@ -114,6 +130,7 @@
             <div class="right-bottom-container">
               <div class="message-wrapper">
                 <MessageList
+                  v-if="route.params.id"
                   :ID="route.params.id as string"
                   :Category="route.params.category as 'Experiment' | 'User' | 'Discussion'"
                   :upDate="upDate"
@@ -142,8 +159,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onActivated } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, computed, watch, onMounted, onActivated } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { canEditSummary } from '@services/editor/cloudWorks'
 import { getData } from '@services/api/getData.ts'
 import { showAPiError } from '@popup/index.ts'
 import { removeToken } from '@services/utils.ts'
@@ -170,9 +188,9 @@ const upDate = ref(1)
 const replyID = ref('')
 const selectedTab = ref('Intro')
 const route = useRoute()
+const router = useRouter()
 const { t } = useI18n()
 const returnImagePath = ref(getPath('/@base/assets/library/Navigation-Return.png'))
-const defaultCoverUrl = getPath('/@base/assets/messages/Experiment-Default.png')
 
 const data = ref<Summary>({
   $type: 'Quantum.Models.Contents.Summary, Quantum Models',
@@ -213,9 +231,38 @@ const data = ref<Summary>({
   },
 })
 
+const defaultCoverUrl = getPath('/@base/assets/messages/Experiment-Default.png')
 let coverUrl = ref(defaultCoverUrl)
 let avatarUrl = ref(getUserUrl(data.value.User))
 let avatarLoaded = ref(false)
+
+const descriptionSource = computed(() => {
+  const description = data.value.Description
+  return Array.isArray(description) ? description.join('\n') : description || ''
+})
+
+const descriptionWordCount = computed(() => countReadableWords(descriptionSource.value))
+
+function countReadableWords(source: string) {
+  const plainText = source
+    .replace(/```[\s\S]*?```/gu, ' ')
+    .replace(/!\[[^\]]*\]\([^)]*\)/gu, ' ')
+    .replace(/\[([^\]]*)\]\([^)]*\)/gu, ' $1 ')
+    .replace(/<[^>]+>/gu, ' ')
+    .replace(/`([^`]*)`/gu, ' $1 ')
+    .replace(/[#>*_~|=\-]+/gu, ' ')
+  const readableUnits = plainText.match(
+    /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]|[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*/gu,
+  )
+  return readableUnits?.reduce((count) => count + 1, 0) ?? 0
+}
+
+const canEdit = computed(() => canEditSummary(data.value))
+
+function goToEditor() {
+  router.push(`/e/${route.params.category}/${route.params.id}?sidebar=0`)
+}
+
 async function fetchSummary() {
   const res = await getData('/Contents/GetSummary', {
     ContentID: route.params.id as string,
@@ -257,6 +304,13 @@ onMounted(() => {
   fetchSummary()
 })
 
+watch(
+  () => route.params.id,
+  () => {
+    fetchSummary()
+  },
+)
+
 function handleMsgClick(item: CommentResult) {
   replyID.value = item.UserID
   comment.value = `${t('ui.messages.replyToUser')}@${item.Nickname}: `
@@ -294,7 +348,7 @@ async function copy(text: string) {
 }
 // eslint-disable-next-line max-lines-per-function
 function copySubject() {
-  let list = [
+  const list: { label: string }[] = [
     { label: t('expeSummary.copyID') },
     { label: t('expeSummary.copyInternalLink') },
     { label: t('expeSummary.copyExternalLink') },
@@ -302,17 +356,21 @@ function copySubject() {
   if (data.value.User.ID === storageManager.getObj('userInfo')?.value?.ID) {
     list.push({ label: t('expeSummary.changeCover') })
   }
+  if (canEdit.value) {
+    list.push({ label: t('expeSummary.editWork') })
+  }
   // eslint-disable-next-line max-lines-per-function
   showActionSheet(list, (idx) => {
-    if (idx === 0) {
+    const action = list[idx]?.label
+    if (action === t('expeSummary.copyID')) {
       copy(data.value.ID)
-    } else if (idx === 1) {
+    } else if (action === t('expeSummary.copyInternalLink')) {
       copy(
         `<${(route.params.category as string).toLowerCase()}=${route.params.id}>${data.value.Subject}</${(route.params.category as string).toLowerCase()}>`,
       )
-    } else if (idx === 2) {
+    } else if (action === t('expeSummary.copyExternalLink')) {
       copy(`<external=${window.location.href}>${data.value.Subject}[web]</external>`)
-    } else if (idx === 3) {
+    } else if (action === t('expeSummary.changeCover')) {
       try {
         // ask user to select an image
         const input = document.createElement('input')
@@ -551,6 +609,8 @@ function copySubject() {
           duration: 2000,
         })
       }
+    } else if (action === t('expeSummary.editWork')) {
+      goToEditor()
     }
   })
 }
@@ -602,9 +662,36 @@ onActivated(() => {
   min-height: 0;
 }
 
-.intro :deep(img) {
+.intro {
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.intro :deep(img),
+.intro :deep(svg) {
   max-width: 100%;
   height: auto;
+}
+
+.intro :deep(.mermaid-diagram) {
+  display: block;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.intro :deep(.mermaid-diagram svg) {
+  display: block;
+  max-width: none;
+}
+
+.word-count {
+  color: #666;
+  font-size: 14px;
+  margin-top: 12px;
+  text-align: right;
 }
 
 .context .n-tabs {

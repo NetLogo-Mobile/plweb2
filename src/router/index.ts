@@ -75,6 +75,12 @@ const routes: RouteRecordRaw[] = [
   { path: '/messages', redirect: '/m' },
 
   {
+    path: '/e/:category?/:id?',
+    name: 'Editor',
+    component: () => import('../views/Editor.vue'),
+    meta: { keepAlive: false },
+  },
+  {
     path: '/ExperimentSummary/:category/:id',
     redirect: (to) => ({
       name: 'ExperimentSummary',
@@ -109,8 +115,12 @@ const routes: RouteRecordRaw[] = [
   },
 
   { path: '/settings', redirect: '/s' },
-  { path: '/about', redirect: '/s' },
-
+  {
+    path: '/about',
+    name: 'about',
+    component: () => import('../views/About.vue'),
+    meta: { keepAlive: true },
+  },
   {
     path: '/:catchAll(.*)',
     component: () => import('../views/NotFound.vue'),
@@ -121,6 +131,12 @@ const routes: RouteRecordRaw[] = [
 const router = createRouter({
   history: createWebHashHistory('/plweb2/'),
   routes,
+})
+
+router.onError((error, to) => {
+  if (error.message?.includes('Failed to fetch dynamically imported module')) {
+    window.location.href = to.fullPath
+  }
 })
 
 export default router

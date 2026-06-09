@@ -6,7 +6,7 @@ import { showMessage } from '@popup/naiveui.ts'
 import { getPath } from '../utils.ts'
 import { normalizePath } from './types.ts'
 import { readApiCache, writeApiCache } from './cache.ts'
-import { updateNotificationUnread } from '../notificationUnread.ts'
+import { updateNotificationUnread } from '@services/notificationUnread.ts'
 
 import type { ApiPath, APIParam, APIResult } from './types.ts'
 import type { Device, Result, ResultOf, Users } from '../../pl-serve-type-main/type/main'

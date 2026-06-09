@@ -8,7 +8,7 @@
         <div class="name">{{ message.Nickname }}</div>
         <div class="time">{{ formatDate(message.ID, true) }}</div>
         <div v-if="currentUserId === message.UserID" class="delete" @click.stop="deleteMsg">
-          delete
+          {{ t('messagesI18n.delete') }}
         </div>
       </div>
       <div id="notification_message" class="notification_message">
@@ -36,6 +36,8 @@ import { getAvatarUrl } from '@services/getUserCurentAvatarByID'
 import storageManager from '@storage/index.ts'
 import { formatDate, getPath, getAnonymousAvatarByNickname } from '@services/utils'
 import type { CommentResult } from '@services/../pl-serve-type-main/type/main'
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 
 const props = defineProps<{
   message: CommentResult

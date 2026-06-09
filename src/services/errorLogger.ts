@@ -42,12 +42,14 @@ export interface ErrorLog extends ErrorContext {
 
 class ErrorLogger {
   private logs = ref<ErrorLog[]>([])
-  private maxLogs = 1000
+  private maxLogs = 100
   private breadcrumbs: Breadcrumb[] = []
-  private maxBreadcrumbs = 50
+  private maxBreadcrumbs = 20
   private sessionId: string
   private debugMode = true
   private maxJsonDepth = 4
+  private isDev = false
+  private logTextBuffer = ''
   // For deduplication and reducing notification spam
   private lastErrorSignature?: string
   private lastErrorTime = 0
@@ -56,12 +58,24 @@ class ErrorLogger {
 
   constructor(app: any) {
     this.sessionId = this.generateSessionId()
+    this.isDev = import.meta.env.DEV
     this.initDebugMode()
 
     // Always load logs from storage so they survive refreshes (sanitization performed on save)
     this.loadLogsFromStorage()
 
     this.setupGlobalHandlers(app)
+  }
+
+  private appendToLogBuffer(log: ErrorLog) {
+    this.logTextBuffer += `[${new Date(log.timestamp).toISOString()}] ${log.type.toUpperCase()}\n`
+    this.logTextBuffer += `Message: ${log.message}\n`
+    if (log.url) this.logTextBuffer += `URL: ${log.url}\n`
+    if (log.stack) this.logTextBuffer += `Stack: ${log.stack}\n`
+    if (log.statusCode) this.logTextBuffer += `Status: ${log.statusCode}\n`
+    if (log.requestData) this.logTextBuffer += `Request: ${JSON.stringify(log.requestData)}\n`
+    if (log.responseData) this.logTextBuffer += `Response: ${JSON.stringify(log.responseData)}\n`
+    this.logTextBuffer += `${'='.repeat(50)}\n\n`
   }
 
   private initDebugMode() {
@@ -244,6 +258,10 @@ class ErrorLogger {
     this.logs.value.push(errorLog)
     this.saveLogsToStorage()
 
+    if (this.isDev) {
+      this.appendToLogBuffer(errorLog)
+    }
+
     if (isDuplicate) {
       this.lastErrorCount++
       // skip console and notification for duplicates to avoid spam
@@ -267,10 +285,11 @@ class ErrorLogger {
 
     // Console output: be concise to avoid double noise (browser already prints native errors)
     const rawContext = { ...context }
-    console.groupCollapsed(
-      `%c[${context.type.toUpperCase()}] ${context.message}`,
-      'color: red; font-weight: bold',
-    )
+    // console.groupCollapsed(
+    //   `%c[${context.type.toUpperCase()}] ${context.message}`,
+    //   'color: red; font-weight: bold',
+    // )
+    console.info(context.message)
     if (rawContext.error) {
       // print the original Error object so it can be expanded when needed
       console.error('Error object:', rawContext.error)

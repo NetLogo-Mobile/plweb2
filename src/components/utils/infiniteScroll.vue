@@ -61,8 +61,8 @@ const initObserver = () => {
     },
     {
       root: props.scrollTarget ? document.querySelector(props.scrollTarget) : null,
-      rootMargin: '200px',
-      threshold: 0.1,
+      rootMargin: '30%',
+      threshold: 0,
     },
   )
 

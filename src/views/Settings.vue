@@ -29,6 +29,16 @@
                 />
               </div>
 
+              <!-- Input Type -->
+              <div v-else-if="item.type === 'input'" class="item-control">
+                <n-input
+                  :value="(item.value as string) || ''"
+                  size="small"
+                  clearable
+                  style="width: 250px"
+                  @update:value="handleInputChange(item, $event)"
+                />
+              </div>
               <!-- Toggle Type -->
               <label v-else-if="item.type === 'toggle'" class="toggle-wrapper">
                 <input
@@ -61,14 +71,14 @@
 <script setup lang="ts">
 import { reactive, onActivated } from 'vue'
 import { settingsConfig as s } from '../config/user.config'
-import { NSelect } from 'naive-ui'
+import { NInput, NSelect } from 'naive-ui'
 import storageManager from '../services/storage'
 import sysConfig from '../config/system.config'
 import i18n from '@i18n/index'
 
 type SettingsItem = {
   key: string
-  type: 'link' | 'toggle' | 'button'
+  type: 'link' | 'toggle' | 'button' | 'input'
   value?: string
   options?: Array<{ label: string; value: string }>
   callBack?: (value?: string) => void
@@ -128,6 +138,14 @@ function handleToggleChange(item: SettingsItem, event: Event) {
   }
 }
 
+function handleInputChange(item: SettingsItem, newValue: string) {
+  item.value = newValue
+  saveSettings()
+  if (item.callBack) {
+    item.callBack(newValue)
+  }
+}
+
 function handleButtonClick(item: SettingsItem) {
   if (item.callBack) {
     item.callBack()
@@ -151,9 +169,13 @@ onActivated(() => {
 <style scoped>
 .settings-wrapper {
   width: 100%;
-  min-height: 100vh;
+  height: 100dvh;
+  box-sizing: border-box;
+  overflow-y: auto;
   background-color: #f5f5f5;
   padding: 20px 0;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
 }
 
 .settings-container {

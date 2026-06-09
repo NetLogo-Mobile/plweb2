@@ -24,10 +24,60 @@ type PProjects = {
   Image?: number
 }
 
-const apiUrl = import.meta.env.VITE_API_URL
-const staticUrl = import.meta.env.VITE_STATIC_URL
+const defaultApiUrl = import.meta.env.VITE_API_URL
+const defaultStaticUrl = import.meta.env.VITE_STATIC_URL
 const rootUrl = import.meta.env.VITE_ROOT_URL
 const baseUrl = import.meta.env.VITE_BASE_URL
+let coverImgSuffix = getCoverImgSuffix()
+let avatarImgSuffix = getAvatarImgSuffix()
+
+function getCoverImgSuffix() {
+  const connection =
+    (navigator as any).connection ||
+    (navigator as any).mozConnection ||
+    (navigator as any).webkitConnection
+  if (connection) {
+    if (connection.saveData) {
+      return '!block'
+    }
+    if (['2g', '3g'].includes(connection.effectiveType)) {
+      return '!block'
+    }
+  }
+  return ''
+}
+
+function getAvatarImgSuffix() {
+  const connection =
+    (navigator as any).connection ||
+    (navigator as any).mozConnection ||
+    (navigator as any).webkitConnection
+  if (connection) {
+    if (connection.saveData) {
+      return '!tiny.round'
+    }
+    if (connection.effectiveType === '2g') {
+      return '!tiny.round'
+    }
+    if (connection.effectiveType === '3g') {
+      return '!small.round'
+    }
+  }
+  return ''
+}
+
+export function registerNetworkListener() {
+  const connection =
+    (navigator as any).connection ||
+    (navigator as any).mozConnection ||
+    (navigator as any).webkitConnection
+  if (connection) {
+    connection.addEventListener('change', () => {
+      coverImgSuffix = getCoverImgSuffix()
+      avatarImgSuffix = getAvatarImgSuffix()
+    })
+  }
+}
 
 /**
  * 替换路径中的预设标记为配置的URL地址,静态资源走@/base，路由走@/root
@@ -40,6 +90,10 @@ const baseUrl = import.meta.env.VITE_BASE_URL
  */
 
 export function getPath(path: string): string {
+  const userConfig = storageManager.getObj('userConfig')?.value || {}
+  const apiUrl = (userConfig.apiBaseUrl as string) || defaultApiUrl
+  const staticUrl = (userConfig.staticBaseUrl as string) || defaultStaticUrl
+
   const a = path
     .replace(/\/@api/g, apiUrl)
     .replace(/\/@static/g, staticUrl)
@@ -58,7 +112,7 @@ export function getUserUrl(user: PUser): string {
       : `/@static/users/avatars/${user.ID.slice(0, 4)}/${user.ID.slice(4, 6)}/${user.ID.slice(
           6,
           8,
-        )}/${user.ID.slice(8, 24)}/${user.Avatar}.jpg`
+        )}/${user.ID.slice(8, 24)}/${user.Avatar}.jpg${avatarImgSuffix}`
 
   return getPath(url)
 }
@@ -76,11 +130,10 @@ export function getAnonymousAvatarByNickname(nickname: string): string {
   const b = nickname[1]
   const c = nickname[2]
   const d = nickname[3]
-  const seed = ((Number.parseInt(nickname, 10) % 1000) + Number.parseInt(a, 10))
+  const seed = (Number.parseInt(nickname, 10) % 1000) + Number.parseInt(a, 10)
   const hue = seed % 360
   const bg = `hsl(${hue} 70% 55%)`
   const fg = `hsl(${(hue + 210) % 360} 85% 98%)`
-
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="anonymous-avatar-${nickname}"><defs><clipPath id="clip"><circle cx="50" cy="50" r="50"/></clipPath></defs><g clip-path="url(#clip)"><rect width="100" height="100" fill="${bg}"/><circle cx="28" cy="32" r="${10 + Number(a)}" fill="${fg}" opacity="0.35"/><rect x="${8 + Number(b) * 2}" y="${56 - Number(c)}" width="${52 + Number(d) * 3}" height="${22 + Number(a)}" rx="12" fill="${fg}" opacity="0.4"/><path d="M18 ${76 - Number(c)} Q50 ${32 + Number(d)} 82 ${76 - Number(b)}" stroke="${fg}" stroke-width="${5 + (seed % 4)}" fill="none" opacity="0.85"/></g></svg>`
 
@@ -91,7 +144,7 @@ export function getCoverUrl(data: PProjects): string {
   const url = `/@static/experiments/images/${data.ID.slice(0, 4)}/${data.ID.slice(
     4,
     6,
-  )}/${data.ID.slice(6, 8)}/${data.ID.slice(8, 24)}/${data.Image || 0}.jpg`
+  )}/${data.ID.slice(6, 8)}/${data.ID.slice(8, 24)}/${data.Image || 0}.jpg${coverImgSuffix}`
   return getPath(url)
 }
 
