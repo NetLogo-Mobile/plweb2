@@ -17,8 +17,8 @@
           ></div>
           <div class="tagContainer">
             <Tag
-              v-if="route.params.category"
-              :tag="('C-' + route.params.category) as string"
+              v-if="routeCategory"
+              :tag="('C-' + routeCategory) as string"
               style="color: aquamarine; font-weight: bold"
               :category="data.Category"
             />
@@ -132,7 +132,7 @@
                 <MessageList
                   v-if="route.params.id"
                   :ID="route.params.id as string"
-                  :Category="route.params.category as 'Experiment' | 'User' | 'Discussion'"
+                  :Category="routeCategory"
                   :upDate="upDate"
                   @msgClick="handleMsgClick"
                 />
@@ -161,6 +161,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onActivated } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { getRouteCategory } from '../router/category'
 import { canEditSummary } from '@services/editor/cloudWorks'
 import { getData } from '@services/api/getData.ts'
 import { showAPiError } from '@popup/index.ts'
@@ -191,6 +192,7 @@ const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
 const returnImagePath = ref(getPath('/@base/assets/library/Navigation-Return.png'))
+const routeCategory = computed(() => getRouteCategory(route, 'Experiment'))
 
 const data = ref<Summary>({
   $type: 'Quantum.Models.Contents.Summary, Quantum Models',
@@ -260,13 +262,13 @@ function countReadableWords(source: string) {
 const canEdit = computed(() => canEditSummary(data.value))
 
 function goToEditor() {
-  router.push(`/e/${route.params.category}/${route.params.id}?sidebar=0`)
+  router.push(`/e/${routeCategory.value}/${route.params.id}?sidebar=0`)
 }
 
 async function fetchSummary() {
   const res = await getData('/Contents/GetSummary', {
     ContentID: route.params.id as string,
-    Category: route.params.category as string,
+    Category: routeCategory.value,
   })
   if (res.Status !== 200) {
     showAPiError(
@@ -280,7 +282,7 @@ async function fetchSummary() {
     )
     const _req = removeToken({
       ContentID: route.params.id as string,
-      Category: route.params.category as string,
+      Category: routeCategory.value,
     })
     const _res = removeToken(res)
     window.$ErrorLogger.captureApiError('POST', '/Contents/GetSummary', res.Status, _res, _req)
@@ -305,7 +307,7 @@ onMounted(() => {
 })
 
 watch(
-  () => route.params.id,
+  () => [route.params.id, routeCategory.value],
   () => {
     fetchSummary()
   },
@@ -320,7 +322,7 @@ async function handleEnter() {
   await postComment(
     comment,
     isLoading,
-    route.params.category as Category,
+    routeCategory.value as Category,
     route.params.id as string,
     replyID,
     upDate,
@@ -332,7 +334,7 @@ function goBack() {
 }
 
 function goToExperiment() {
-  const category = (route.params.category as string).toLowerCase()
+  const category = routeCategory.value.toLowerCase()
   const contentType = category === 'experiment' ? 'experiment' : 'discussion'
   const target = `physics://chinese/${contentType}/${route.params.id as string}`
   window.location.href = target
@@ -366,7 +368,7 @@ function copySubject() {
       copy(data.value.ID)
     } else if (action === t('expeSummary.copyInternalLink')) {
       copy(
-        `<${(route.params.category as string).toLowerCase()}=${route.params.id}>${data.value.Subject}</${(route.params.category as string).toLowerCase()}>`,
+        `<${routeCategory.value.toLowerCase()}=${route.params.id}>${data.value.Subject}</${routeCategory.value.toLowerCase()}>`,
       )
     } else if (action === t('expeSummary.copyExternalLink')) {
       copy(`<external=${window.location.href}>${data.value.Subject}[web]</external>`)
@@ -384,7 +386,7 @@ function copySubject() {
             if (!file) return
             const summaryRes = await getData('/Contents/GetSummary', {
               ContentID: route.params.id as string,
-              Category: route.params.category as string,
+              Category: routeCategory.value,
             })
             if (summaryRes.Status !== 200) {
               showAPiError(
@@ -397,13 +399,13 @@ function copySubject() {
                 async () => {
                   return getData('/Contents/GetSummary', {
                     ContentID: route.params.id as string,
-                    Category: route.params.category as string,
+                    Category: routeCategory.value,
                   })
                 },
               )
               const _req = removeToken({
                 ContentID: route.params.id,
-                Category: route.params.category,
+                Category: routeCategory.value,
               })
               const _res = removeToken(summaryRes)
               window.$ErrorLogger.captureApiError(
@@ -419,7 +421,7 @@ function copySubject() {
             if (!summaryRes.Data) return
             const imageIndex = (summaryRes.Data.Image || 0) + 1
             const confirmRes = await getData('/Contents/ConfirmExperiment', {
-              Category: route.params.category as string,
+              Category: routeCategory.value,
               SummaryID: route.params.id as string,
               Image: imageIndex,
               Extension: '.png',
@@ -434,7 +436,7 @@ function copySubject() {
                 }),
                 async () => {
                   return getData('/Contents/ConfirmExperiment', {
-                    Category: route.params.category as string,
+                    Category: routeCategory.value,
                     SummaryID: route.params.id as string,
                     Image: imageIndex,
                     Extension: '.png',
@@ -442,7 +444,7 @@ function copySubject() {
                 },
               )
               const _req = removeToken({
-                Category: route.params.category,
+                Category: routeCategory.value,
                 SummaryID: route.params.id,
                 Image: imageIndex,
                 Extension: '.png',
@@ -511,7 +513,7 @@ function copySubject() {
                 body: form,
               })
               const confirmRes2 = await getData('/Contents/ConfirmExperiment', {
-                Category: route.params.category as string,
+                Category: routeCategory.value,
                 SummaryID: route.params.id as string,
                 Image: imageIndex,
                 Extension: '.png',
@@ -526,7 +528,7 @@ function copySubject() {
                   }),
                   async () => {
                     return getData('/Contents/ConfirmExperiment', {
-                      Category: route.params.category as string,
+                      Category: routeCategory.value,
                       SummaryID: route.params.id as string,
                       Image: imageIndex,
                       Extension: '.png',
@@ -534,7 +536,7 @@ function copySubject() {
                   },
                 )
                 const _req = removeToken({
-                  Category: route.params.category,
+                  Category: routeCategory.value,
                   SummaryID: route.params.id,
                   Image: imageIndex,
                   Extension: '.png',
@@ -563,7 +565,7 @@ function copySubject() {
             setTimeout(async () => {
               const refreshed = await getData('/Contents/GetSummary', {
                 ContentID: route.params.id as string,
-                Category: route.params.category as string,
+                Category: routeCategory.value,
               })
               if (refreshed.Status !== 200) {
                 showAPiError(
@@ -576,13 +578,13 @@ function copySubject() {
                   async () => {
                     return getData('/Contents/GetSummary', {
                       ContentID: route.params.id as string,
-                      Category: route.params.category as string,
+                      Category: routeCategory.value,
                     })
                   },
                 )
                 const _req = removeToken({
                   ContentID: route.params.id,
-                  Category: route.params.category,
+                  Category: routeCategory.value,
                 })
                 const _res = removeToken(refreshed)
                 window.$ErrorLogger.captureApiError(
@@ -617,7 +619,7 @@ function copySubject() {
 
 onActivated(() => {
   window.$Logger.logPageView({
-    pageLink: `/${route.params.category}/${route.params.id}/`,
+    pageLink: `/${routeCategory.value}/${route.params.id}/`,
     timeStamp: Date.now(),
   })
 })

@@ -189,6 +189,7 @@ import {
 } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
+import { getRouteCategory } from '../router/category'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import { NButton, NInput, NModal, NSpin, NTag } from 'naive-ui'
@@ -563,10 +564,10 @@ onMounted(() => {
   window.addEventListener('resize', updateViewState)
 
   if (isLoggedIn.value) {
-    const category = route.params.category as string
+    const category = getRouteCategory(route, 'Discussion')
     const id = route.params.id as string
     if (id) {
-      loadWorkById(category || 'Discussion', id)
+      loadWorkById(category, id)
     } else {
       loadWorks()
     }

@@ -11,7 +11,7 @@
   <div class="content">
     <div class="list">
       <MessagesList
-        :Category="route.params.category as 'Discussion' | 'Experiment' | 'User'"
+        :Category="routeCategory"
         :ID="route.params.id as string"
         :upDate="upDate"
         @msgClick="handleMsgClick"
@@ -31,9 +31,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import MessagesList from '../components/messages/MessageList.vue'
 import { useRoute } from 'vue-router'
+import { getRouteCategory } from '../router/category'
 import Header from '../components/utils/Header.vue'
 import parse from '@services/pltxt2htm/commonParser'
 import postComment from '@services/postComment.ts'
@@ -43,6 +44,7 @@ import type { Category, CommentResult } from '@services/../pl-serve-type-main/ty
 
 const { t } = useI18n()
 const route = useRoute()
+const routeCategory = computed(() => getRouteCategory(route, 'Discussion'))
 let isLoading = ref(false)
 let replyID = ref('')
 let upDate = ref(0)
@@ -52,7 +54,7 @@ let comment = ref('') // 输入的内容 Input content
 onMounted(async () => {
   const parsedName = await parse(route.params.name as string)
   title.value = `${parsedName} 的 ${
-    route.params.category === 'User' ? t('comments.home') : t('comments.area')
+    routeCategory.value === 'User' ? t('comments.home') : t('comments.area')
   }`
 })
 
@@ -69,7 +71,7 @@ const handleEnter = async () => {
   await postComment(
     comment,
     isLoading,
-    route.params.category as Category,
+    routeCategory.value as Category,
     route.params.id as string,
     replyID,
     upDate,
