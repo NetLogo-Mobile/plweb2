@@ -1,5 +1,5 @@
 prompt: |
-  项目内多次出现报错，/Contents/GetSummary 返回 400：Input.Field.Missing
-  日志显示缺失contentID
-  同时这个错误短时间内大量触发也不正常，请修复
-  修复前阅读文档，提交前进行测试，使用英文完成代码
+  Pages were directly reading route.params.category (which can be aliased or missing), causing inconsistent behavior when the router allows multiple category aliases.
+  The goal is to normalize category input to a stable set (Experiment/Discussion/User) so API calls, comment posting, editor deep links, tags and logging all use the canonical category.
+  pls avoid reading route，using interface getRouteCategory instead(already exit)
+  also sometimes plweb trigger too many /Contents/GetSummary .figure out why and fix it
