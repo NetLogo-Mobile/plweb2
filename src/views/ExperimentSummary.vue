@@ -185,6 +185,7 @@ import type { Category, CommentResult, Summary } from '@services/../pl-serve-typ
 const comment = ref('')
 const isLoading = ref(false)
 const upDate = ref(1)
+const isFetching = ref(false)
 // 用于使用watch触发刷新 To trigger a refresh using watch
 const replyID = ref('')
 const selectedTab = ref('Intro')
@@ -266,40 +267,46 @@ function goToEditor() {
 }
 
 async function fetchSummary() {
-  const res = await getData('/Contents/GetSummary', {
-    ContentID: route.params.id as string,
-    Category: routeCategory.value,
-  })
-  if (res.Status !== 200) {
-    showAPiError(
-      t('errors.apiErrorTitle'),
-      t('errors.apiErrorMessage', {
-        path: '/Contents/GetSummary',
-        status: res.Status,
-        message: res?.Message || '',
-      }),
-      fetchSummary,
-    )
-    const _req = removeToken({
+  if (isFetching.value) return
+  isFetching.value = true
+  try {
+    const res = await getData('/Contents/GetSummary', {
       ContentID: route.params.id as string,
       Category: routeCategory.value,
     })
-    const _res = removeToken(res)
-    window.$ErrorLogger.captureApiError('POST', '/Contents/GetSummary', res.Status, _res, _req)
-    console.error(`/Contents/GetSummary returned ${res.Status}`, _res)
-    return
+    if (res.Status !== 200) {
+      showAPiError(
+        t('errors.apiErrorTitle'),
+        t('errors.apiErrorMessage', {
+          path: '/Contents/GetSummary',
+          status: res.Status,
+          message: res?.Message || '',
+        }),
+        fetchSummary,
+      )
+      const _req = removeToken({
+        ContentID: route.params.id as string,
+        Category: routeCategory.value,
+      })
+      const _res = removeToken(res)
+      window.$ErrorLogger.captureApiError('POST', '/Contents/GetSummary', res.Status, _res, _req)
+      console.error(`/Contents/GetSummary returned ${res.Status}`, _res)
+      return
+    }
+    if (!res.Data) return
+    data.value = res.Data
+    avatarUrl.value = getUserUrl(data.value.User)
+    avatarLoaded.value = false
+    // Civitas-john always procrastinate on addressing the request to solve the anti-leeching issue.
+    // That's why the below occurs
+    await fetch(getCoverUrl(res.Data), {
+      referrerPolicy: 'no-referrer',
+      mode: 'no-cors',
+    })
+    coverUrl.value = getCoverUrl(res.Data)
+  } finally {
+    isFetching.value = false
   }
-  if (!res.Data) return
-  data.value = res.Data
-  avatarUrl.value = getUserUrl(data.value.User)
-  avatarLoaded.value = false
-  // Civitas-john always procrastinate on addressing the request to solve the anti-leeching issue.
-  // That's why the below occurs
-  await fetch(getCoverUrl(res.Data), {
-    referrerPolicy: 'no-referrer',
-    mode: 'no-cors',
-  })
-  coverUrl.value = getCoverUrl(res.Data)
 }
 
 onMounted(() => {
@@ -307,7 +314,7 @@ onMounted(() => {
 })
 
 watch(
-  () => [route.params.id, routeCategory.value],
+  () => route.fullPath,
   () => {
     fetchSummary()
   },
@@ -562,42 +569,13 @@ function copySubject() {
               duration: 2000,
             })
             // refresh current cover (using existing utility function)
+            const newCoverUrl = getCoverUrl({ ...data.value, Image: imageIndex })
             setTimeout(async () => {
-              const refreshed = await getData('/Contents/GetSummary', {
-                ContentID: route.params.id as string,
-                Category: routeCategory.value,
+              await fetch(newCoverUrl, {
+                referrerPolicy: 'no-referrer',
+                mode: 'no-cors',
               })
-              if (refreshed.Status !== 200) {
-                showAPiError(
-                  t('errors.apiErrorTitle'),
-                  t('errors.apiErrorMessage', {
-                    path: '/Contents/GetSummary',
-                    status: refreshed.Status,
-                    message: refreshed?.Message || '',
-                  }),
-                  async () => {
-                    return getData('/Contents/GetSummary', {
-                      ContentID: route.params.id as string,
-                      Category: routeCategory.value,
-                    })
-                  },
-                )
-                const _req = removeToken({
-                  ContentID: route.params.id,
-                  Category: routeCategory.value,
-                })
-                const _res = removeToken(refreshed)
-                window.$ErrorLogger.captureApiError(
-                  'POST',
-                  '/Contents/GetSummary',
-                  refreshed.Status,
-                  _res,
-                  _req,
-                )
-                console.error(`/Contents/GetSummary returned ${refreshed.Status}`, _res)
-                return
-              }
-              coverUrl.value = getCoverUrl(refreshed.Data)
+              coverUrl.value = newCoverUrl
             }, 800)
           } catch (_err) {
             showMessage('error', t('ui.messages.changeCoverFailed'), {
