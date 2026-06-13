@@ -1,0 +1,5 @@
+prompt: |
+  项目内多次出现报错，/Contents/GetSummary 返回 400：Input.Field.Missing
+  日志显示缺失contentID
+  同时这个错误短时间内大量触发也不正常，请修复
+  修复前阅读文档，提交前进行测试，使用英文完成代码
