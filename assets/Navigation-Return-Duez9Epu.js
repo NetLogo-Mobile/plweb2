@@ -1,0 +1,1 @@
+var e=``+new URL(`library/Navigation-Return.png`,import.meta.url).href;export{e as t};

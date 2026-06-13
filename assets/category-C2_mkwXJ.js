@@ -1,0 +1,1 @@
+var e={e:`Experiment`,exp:`Experiment`,experiment:`Experiment`,p:`Experiment`,project:`Experiment`,d:`Discussion`,disc:`Discussion`,discussion:`Discussion`,c:`Discussion`,comment:`Discussion`,u:`User`,user:`User`};function t(t,n){let r=Array.isArray(t)?t[0]:t;return r?e[r.toLowerCase()]??n:n}function n(e,n){return t(e.params.category,n)}export{n as t};

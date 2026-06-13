@@ -1,1 +1,0 @@
-const i={e:"Experiment",exp:"Experiment",experiment:"Experiment",p:"Experiment",project:"Experiment",d:"Discussion",disc:"Discussion",discussion:"Discussion",c:"Discussion",comment:"Discussion",u:"User",user:"User"};function n(e,s){const r=Array.isArray(e)?e[0]:e;return r?i[r.toLowerCase()]??s:s}function t(e,s){return n(e.params.category,s)}export{t as g};
