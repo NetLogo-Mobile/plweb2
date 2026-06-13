@@ -202,6 +202,7 @@ export default {
       uploadFailed: 'Failed to upload file',
       changeCoverFailed: 'Failed to change cover, please try again later',
       replyToUser: 'Reply ',
+      invalidContentId: 'Invalid content ID',
     },
     labels: {
       my: 'My',

@@ -266,8 +266,13 @@ function goToEditor() {
 }
 
 async function fetchSummary() {
+  const id = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id
+  if (!id) {
+    console.warn('[ExperimentSummary] fetchSummary skipped: missing route.params.id')
+    return
+  }
   const res = await getData('/Contents/GetSummary', {
-    ContentID: route.params.id as string,
+    ContentID: id,
     Category: routeCategory.value,
   })
   if (res.Status !== 200) {
@@ -281,7 +286,7 @@ async function fetchSummary() {
       fetchSummary,
     )
     const _req = removeToken({
-      ContentID: route.params.id as string,
+      ContentID: id,
       Category: routeCategory.value,
     })
     const _res = removeToken(res)
@@ -384,8 +389,13 @@ function copySubject() {
             const target = e.target as HTMLInputElement | null
             const file = target?.files?.[0]
             if (!file) return
+            const coverChangeId = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id
+            if (!coverChangeId) {
+              showMessage('error', t('ui.messages.invalidContentId'), { duration: 3000 })
+              return
+            }
             const summaryRes = await getData('/Contents/GetSummary', {
-              ContentID: route.params.id as string,
+              ContentID: coverChangeId,
               Category: routeCategory.value,
             })
             if (summaryRes.Status !== 200) {
@@ -398,13 +408,13 @@ function copySubject() {
                 }),
                 async () => {
                   return getData('/Contents/GetSummary', {
-                    ContentID: route.params.id as string,
+                    ContentID: coverChangeId,
                     Category: routeCategory.value,
                   })
                 },
               )
               const _req = removeToken({
-                ContentID: route.params.id,
+                ContentID: coverChangeId,
                 Category: routeCategory.value,
               })
               const _res = removeToken(summaryRes)
@@ -563,8 +573,9 @@ function copySubject() {
             })
             // refresh current cover (using existing utility function)
             setTimeout(async () => {
+              if (!coverChangeId) return
               const refreshed = await getData('/Contents/GetSummary', {
-                ContentID: route.params.id as string,
+                ContentID: coverChangeId,
                 Category: routeCategory.value,
               })
               if (refreshed.Status !== 200) {
@@ -577,13 +588,13 @@ function copySubject() {
                   }),
                   async () => {
                     return getData('/Contents/GetSummary', {
-                      ContentID: route.params.id as string,
+                      ContentID: coverChangeId,
                       Category: routeCategory.value,
                     })
                   },
                 )
                 const _req = removeToken({
-                  ContentID: route.params.id,
+                  ContentID: coverChangeId,
                   Category: routeCategory.value,
                 })
                 const _res = removeToken(refreshed)

@@ -203,6 +203,7 @@ export default {
       uploadFailed: 'ファイルのアップロードに失敗しました',
       changeCoverFailed: 'カバーの変更に失敗しました。しばらくしてから再試行してください',
       replyToUser: 'に返信 ',
+      invalidContentId: '無効なコンテンツID',
     },
     labels: {
       my: 'マイ',

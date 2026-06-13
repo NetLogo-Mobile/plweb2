@@ -203,6 +203,7 @@ export default {
       uploadFailed: 'Datei-Upload fehlgeschlagen',
       changeCoverFailed: 'Cover konnte nicht geändert werden, bitte später erneut versuchen',
       replyToUser: 'Antwort an ',
+      invalidContentId: 'Ungültige Inhalts-ID',
     },
     labels: {
       my: 'Mein',

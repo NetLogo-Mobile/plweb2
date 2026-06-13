@@ -203,6 +203,7 @@ export default {
       uploadFailed: 'Échec du téléversement du fichier',
       changeCoverFailed: 'Échec du changement de couverture, veuillez réessayer plus tard',
       replyToUser: 'Répondre à : ',
+      invalidContentId: 'ID de contenu invalide',
     },
     labels: {
       my: 'Mon',

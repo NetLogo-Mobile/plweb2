@@ -199,6 +199,7 @@ export default {
       uploadFailed: '上传失败',
       changeCoverFailed: '更换封面失败，请稍后再试',
       replyToUser: '回复 ',
+      invalidContentId: '内容ID无效',
     },
     labels: {
       my: '我的',

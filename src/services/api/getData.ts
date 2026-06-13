@@ -39,6 +39,15 @@ async function getDataImpl(path: string, body?: unknown): Promise<any> {
     return (beforeRes.data ?? {}) as Result
   }
 
+  if (body && typeof body === 'object' && !Array.isArray(body)) {
+    const undefinedKeys = Object.entries(body as Record<string, unknown>)
+      .filter(([, v]) => v === undefined)
+      .map(([k]) => k)
+    if (undefinedKeys.length > 0) {
+      console.warn(`[getData] Request body has undefined keys for ${npath}:`, undefinedKeys)
+    }
+  }
+
   const userInfo = sm.getObj('userAuthInfo')
   const token = userInfo.value?.token?.trim()
   const authCode = userInfo.value?.authCode

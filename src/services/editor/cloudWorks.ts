@@ -80,6 +80,9 @@ function toEditorWork(summary: Summary): EditorWork {
 }
 
 async function fetchSummary(category: Category, id: string): Promise<Summary> {
+  if (!id) {
+    throw new Error(t('mdEditor.readSummaryFailed', { status: 'ContentID is missing' }))
+  }
   const res = await getData('/Contents/GetSummary', {
     ContentID: id,
     Category: category,
