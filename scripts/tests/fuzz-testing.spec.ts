@@ -81,6 +81,22 @@ test.describe('Fuzz Testing', () => {
       })
     })
 
+    // API 速率限制: 最多 5 请求/秒 → 每次请求后至少等 250ms
+    let lastApiTime = 0
+    page.on('request', (req) => {
+      if (req.url().includes('/api/')) {
+        const now = Date.now()
+        lastApiTime = now
+      }
+    })
+
+    async function respectRateLimit() {
+      const elapsed = Date.now() - lastApiTime
+      if (elapsed < 250 && lastApiTime > 0) {
+        await new Promise((r) => setTimeout(r, 250 - elapsed))
+      }
+    }
+
     let currentIteration = 0
     const totalIterations = 1000
     let screenshotCount = 0
@@ -100,21 +116,23 @@ test.describe('Fuzz Testing', () => {
 
       const roll = Math.random()
 
-      if (roll < 0.3) {
+      if (roll < 0.25) {
         // 跳转到随机路由，等待真实 API 数据加载
+        await respectRateLimit()
         const route = ROUTES[Math.floor(faker.number.int({ min: 0, max: ROUTES.length - 1 }))]
         await page.goto(`/#${route.path}`).catch(() => {})
-        await page.waitForTimeout(faker.number.int({ min: 2000, max: 4000 }))
+        await page.waitForTimeout(faker.number.int({ min: 3000, max: 5000 }))
         continue
       }
 
-      if (roll < 0.7) {
+      if (roll < 0.65) {
         // 点击真实渲染的元素
+        await respectRateLimit()
         const targets: any[] = []
         for (const sel of CLICKABLE_SELECTORS) {
           const loc = page.locator(sel)
           const count = await loc.count().catch(() => 0)
-          for (let j = 0; j < Math.min(count, 5); j++) {
+          for (let j = 0; j < Math.min(count, 3); j++) {
             targets.push(loc.nth(j))
           }
         }
@@ -132,6 +150,7 @@ test.describe('Fuzz Testing', () => {
 
       if (roll < 0.85) {
         // 在真实输入框填入文字
+        await respectRateLimit()
         for (const sel of INPUT_SELECTORS) {
           const inputs = page.locator(sel)
           const count = await inputs.count().catch(() => 0)
@@ -151,6 +170,7 @@ test.describe('Fuzz Testing', () => {
 
       {
         // 点 checkbox
+        await respectRateLimit()
         const checkboxes = page.locator('input[type="checkbox"]')
         const cc = await checkboxes.count().catch(() => 0)
         if (cc > 0) {
