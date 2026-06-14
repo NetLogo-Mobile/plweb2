@@ -47,6 +47,7 @@ const INPUT_SELECTORS = [
 
 test.describe('Fuzz Testing', () => {
   test('随机交互 1000 次 — 基于真实 API 响应 @fuzz', async ({ page }, testInfo) => {
+    test.setTimeout(3600000)
     const screenshotsDir = join(process.cwd(), 'scripts', 'tests', 'reports', 'fuzz', testInfo.project.name)
     mkdirSync(screenshotsDir, { recursive: true })
 
@@ -82,7 +83,7 @@ test.describe('Fuzz Testing', () => {
     })
 
     // API 速率限制: 最多 5 请求/秒 → 每次请求后至少等 250ms
-    let lastApiTime = 0
+    let lastApiTime = Date.now()
     page.on('request', (req) => {
       if (req.url().includes('/api/')) {
         const now = Date.now()

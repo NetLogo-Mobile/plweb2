@@ -27,7 +27,7 @@ export default defineConfig({
     actionTimeout: 15000,
     navigationTimeout: 30000,
   },
-  outputDir: 'scripts/tests/reports/test-results',
+  outputDir: 'reports/test-results',
   projects: [
     {
       name: 'chromium',
