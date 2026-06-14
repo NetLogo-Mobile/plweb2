@@ -7,7 +7,6 @@ on:
 permissions:
   contents: read          # Required to checkout code and compute diff
   pull-requests: write   # Required to post review comments on the PR
-  workflows: write       # Required to allow worktree updates
 
 jobs:
   code-review:

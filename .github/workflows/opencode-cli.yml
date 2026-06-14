@@ -7,7 +7,6 @@ permissions:
   contents: write       # Required to create new branches and push code
   pull-requests: write  # Required to create PRs
   issues: write         # Required to link/manage issues
-  workflows: write      # Required to modify CI/CD workflows if necessary
 
 jobs:
   issue-agent-coding:
