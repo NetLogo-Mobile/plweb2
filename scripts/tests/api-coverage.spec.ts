@@ -114,7 +114,7 @@ test.describe('API 覆盖率验证', () => {
 
     await injectLoginStateWithoutNavigation(page)
 
-    await page.goto('/#/u/test-user-001')
+    await page.goto('/#/u/6666ff550b5f97d6e49d12d7')
     await waitForPageReady(page)
     await page.waitForTimeout(5000)
 

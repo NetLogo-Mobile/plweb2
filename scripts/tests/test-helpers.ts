@@ -65,7 +65,7 @@ export async function injectLoginState(page: Page) {
       value: {
         token: 'mock-token-12345',
         authCode: 'mock-auth-code-12345',
-        userId: 'test-user-001',
+        userId: '6666ff550b5f97d6e49d12d7',
       },
       time: Date.now(),
       maxAgeMs: 30 * 24 * 60 * 60 * 1000,
@@ -74,7 +74,7 @@ export async function injectLoginState(page: Page) {
 
     const userInfo = {
       value: {
-        ID: 'test-user-001',
+        ID: '6666ff550b5f97d6e49d12d7',
         Nickname: 'TestUser',
         Avatar: 1,
         AvatarRegion: 1,
@@ -125,7 +125,7 @@ export async function injectLoginStateWithoutNavigation(page: Page) {
       value: {
         token: 'mock-token-12345',
         authCode: 'mock-auth-code-12345',
-        userId: 'test-user-001',
+        userId: '6666ff550b5f97d6e49d12d7',
       },
       time: Date.now(),
       maxAgeMs: 30 * 24 * 60 * 60 * 1000,
@@ -134,7 +134,7 @@ export async function injectLoginStateWithoutNavigation(page: Page) {
 
     const userInfo = {
       value: {
-        ID: 'test-user-001',
+        ID: '6666ff550b5f97d6e49d12d7',
         Nickname: 'TestUser',
         Avatar: 1,
         AvatarRegion: 1,

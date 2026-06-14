@@ -54,7 +54,7 @@ test.describe('登录流程', () => {
           Message: 'OK',
           Data: {
             User: {
-              ID: 'test-user-001',
+              ID: '6666ff550b5f97d6e49d12d7',
               Nickname: 'TestUser',
               Avatar: 1,
               AvatarRegion: 1,

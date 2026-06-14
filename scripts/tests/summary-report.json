@@ -1128,7 +1128,7 @@
                 "column": 5
               },
               {
-                "title": "路由 用户资料 (/u/test-user-001) 应正常加载且不白屏",
+                "title": "路由 用户资料 (/u/6666ff550b5f97d6e49d12d7) 应正常加载且不白屏",
                 "ok": true,
                 "tags": [],
                 "tests": [

@@ -6,7 +6,7 @@ import { join } from 'path'
 const ROUTES = [
   '/', '/b', '/n', '/m', '/f', '/s', '/about',
   '/p/Discussion/66a84559744ed757b46f8917',
-  '/u/test-user-001',
+  '/u/6666ff550b5f97d6e49d12d7',
   '/nonexistent-page',
 ]
 

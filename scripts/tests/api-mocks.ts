@@ -57,7 +57,7 @@ interface MockComment {
 
 // ==================== 测试数据 ====================
 
-export const TEST_USER_ID = 'test-user-001'
+export const TEST_USER_ID = '6666ff550b5f97d6e49d12d7'
 export const TEST_EXPERIMENT_ID = '66a84559744ed757b46f8917'
 export const TEST_CATEGORY = 'Discussion'
 

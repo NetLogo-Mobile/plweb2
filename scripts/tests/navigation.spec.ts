@@ -25,7 +25,7 @@ test.describe('路由与导航', () => {
     { path: '/m', name: '消息' },
     { path: '/p/Discussion/66a84559744ed757b46f8917', name: '作品详情' },
     { path: '/c/Discussion/66a84559744ed757b46f8917/test', name: '评论' },
-    { path: '/u/test-user-001', name: '用户资料' },
+    { path: '/u/6666ff550b5f97d6e49d12d7', name: '用户资料' },
     { path: '/f', name: '好友' },
     { path: '/s', name: '设置' },
     { path: '/about', name: '关于' },
