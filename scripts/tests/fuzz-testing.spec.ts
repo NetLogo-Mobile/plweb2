@@ -2,11 +2,11 @@ import { test, expect } from '@playwright/test'
 import { faker } from '@faker-js/faker'
 import { mkdirSync } from 'fs'
 import { join } from 'path'
+import { injectLoginStateWithoutNavigation } from './test-helpers'
 
+// 只有 Footer 那几个页面可以直接打开，其他靠点击自然跳转
 const ROUTES = [
-  '/', '/b', '/n', '/m', '/f', '/s', '/about',
-  '/p/Discussion/66a84559744ed757b46f8917',
-  '/u/6666ff550b5f97d6e49d12d7',
+  '/', '/b', '/n', '/f', '/s', '/about',
   '/nonexistent-page',
 ]
 
@@ -91,6 +91,7 @@ test.describe('Fuzz Testing', () => {
     let currentIteration = 0
     const totalIterations = 1000
 
+    await injectLoginStateWithoutNavigation(page)
     await page.goto('/')
     await page.waitForTimeout(5000)
 
