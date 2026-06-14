@@ -200,6 +200,7 @@ import type { Category } from '@services/../pl-serve-type-main/type/main'
 import { checkLogin, getCoverUrl, getPath } from '@services/utils'
 import parse from '@services/pltxt2htm/advancedParser'
 import storageManager from '@storage/index'
+import DOMPurify from 'dompurify'
 import {
   fetchEditableWork,
   fetchEditableWorks,
@@ -451,7 +452,7 @@ const PreviewRenderer = defineComponent({
       { immediate: true },
     )
 
-    return () => h('div', { id: props.id, class: props.class, innerHTML: html.value })
+    return () => h('div', { id: props.id, class: props.class, innerHTML: DOMPurify.sanitize(html.value) })
   },
 })
 

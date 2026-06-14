@@ -6,6 +6,7 @@ import renderMathInElement from 'katex/contrib/auto-render/auto-render.js'
 import 'katex/dist/katex.min.css'
 import storageManager from '@storage/index'
 import { getPath } from '@services/utils'
+import DOMPurify from 'dompurify'
 
 interface ParseContext {
   host?: string
@@ -126,7 +127,7 @@ async function parse(source: string, context: ParseContext = {}) {
       hljs.highlightElement(block as HTMLElement);
     });
 
-  return tempDiv.innerHTML
+  return DOMPurify.sanitize(tempDiv.innerHTML)
 }
 
 export default parse

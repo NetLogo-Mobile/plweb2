@@ -10,6 +10,7 @@ import { showMessage } from '@popup/naiveui'
 import type { DirectiveBinding } from 'vue'
 import 'highlight.js/styles/github.css'
 import { registerSW } from 'virtual:pwa-register'
+import DOMPurify from 'dompurify'
 
 const PWA_UPDATE_CHECK_INTERVAL = 60 * 60 * 1000
 
@@ -51,12 +52,12 @@ app.directive('richText', {
   mounted(el, binding: DirectiveBinding<() => Promise<string>>) {
     el.innerHTML = 'rendering...'
     Promise.resolve(binding.value()).then((html) => {
-      el.innerHTML = html
+      el.innerHTML = DOMPurify.sanitize(html)
     })
   },
   updated(el: HTMLElement, binding: DirectiveBinding<() => Promise<string> | string>) {
     Promise.resolve(binding.value()).then((html) => {
-      el.innerHTML = html
+      el.innerHTML = DOMPurify.sanitize(html)
     })
   },
 })

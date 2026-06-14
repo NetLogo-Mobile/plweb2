@@ -1,5 +1,6 @@
 import { getWasmInstance } from './wasmLoader'
 import { getDeallocator } from './deallocator'
+import DOMPurify from 'dompurify'
 
 async function commonParser(text: string): Promise<string> {
   const wasmInstance = await getWasmInstance()
@@ -16,7 +17,8 @@ async function commonParser(text: string): Promise<string> {
 }
 
 async function parse(source: string) {
-  return commonParser(source)
+  const html = await commonParser(source)
+  return DOMPurify.sanitize(html)
 }
 
 export default parse
