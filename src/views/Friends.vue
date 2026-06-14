@@ -47,14 +47,19 @@ import Footer from '../components/utils/Footer.vue'
 import { NTabs, NTabPane } from 'naive-ui'
 import { useResponsive } from '../layout/useResponsive'
 import storageManager from '@services/storage'
-import { onActivated } from 'vue'
+import { nextTick, onActivated } from 'vue'
 import { checkLogin } from '@services/utils.ts'
 
 const userID = storageManager.getObj('userInfo').value?.ID
 const { friendItemsPerRow } = useResponsive()
 const { t } = useI18n()
 
-onActivated(checkLogin)
+onActivated(async () => {
+  await nextTick()
+  const nickname = storageManager.getObj('userInfo').value?.Nickname
+  if (nickname) return
+  checkLogin()
+})
 // onMounted(checkLogin);
 </script>
 
