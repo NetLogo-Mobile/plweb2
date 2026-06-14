@@ -190,7 +190,7 @@ const replyID = ref('')
 const selectedTab = ref('Intro')
 const route = useRoute()
 const router = useRouter()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const returnImagePath = ref(getPath('/@base/assets/library/Navigation-Return.png'))
 const routeCategory = computed(() => getRouteCategory(route, 'Experiment'))
 
@@ -337,6 +337,36 @@ function goToExperiment() {
   const category = routeCategory.value.toLowerCase()
   const contentType = category === 'experiment' ? 'experiment' : 'discussion'
   const target = `physics://chinese/${contentType}/${route.params.id as string}`
+  const installUrl = locale.value === 'Chinese'
+    ? 'http://pl.turtlesim.com/app/cn'
+    : 'http://pl.turtlesim.com/app'
+
+  let appOpened = false
+  const fallbackTimer = setTimeout(() => {
+    if (!appOpened) {
+      window.location.href = installUrl
+    }
+  }, 800)
+
+  const cleanUp = () => {
+    appOpened = true
+    clearTimeout(fallbackTimer)
+    document.removeEventListener('visibilitychange', onVisibility)
+    window.removeEventListener('blur', onBlur)
+  }
+
+  const onVisibility = () => {
+    if (document.hidden) {
+      cleanUp()
+    }
+  }
+
+  const onBlur = () => {
+    cleanUp()
+  }
+
+  document.addEventListener('visibilitychange', onVisibility)
+  window.addEventListener('blur', onBlur)
   window.location.href = target
 }
 
