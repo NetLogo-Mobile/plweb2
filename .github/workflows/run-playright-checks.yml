@@ -51,58 +51,12 @@ jobs:
         env:
           CI: true
 
-      - name: Upload Playwright report
+      - name: Upload all test artifacts
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report
-          path: scripts/tests/reports/
-          retention-days: 30
-
-      - name: Upload static analysis report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: static-analysis-report
-          path: scripts/tests/reports/static-analysis-report.json
-          retention-days: 30
-
-  fuzz-test:
-    name: 🎲 Fuzz Testing
-    runs-on: ubuntu-latest
-    needs: test 
-    strategy:
-      fail-fast: false
-      max-parallel: 1 
-      matrix:
-        browser: [chromium, firefox, webkit]
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps ${{ matrix.browser }}
-
-      - name: Run fuzz tests (${{ matrix.browser }})
-        run: npx playwright test --config scripts/tests/playwright.config.ts --project=${{ matrix.browser }} --grep @fuzz
-        env:
-          CI: true
-        timeout-minutes: 30
-
-      - name: Upload fuzz artifacts (${{ matrix.browser }})
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: fuzz-report-${{ matrix.browser }}
-          path: scripts/tests/reports/fuzz/
+          name: test-results
+          path: |
+            scripts/tests/reports/
+            scripts/tests/reports/test-results/
           retention-days: 30

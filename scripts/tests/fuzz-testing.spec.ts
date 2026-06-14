@@ -185,6 +185,26 @@ test.describe('Fuzz Testing', () => {
       }
     }
 
+    // 导出 error_logs (app 内 ErrorLogger 存入 localStorage)
+    const errorLogsRaw = await page.evaluate(() => localStorage.getItem('error_logs')).catch(() => null)
+    const { writeFileSync } = await import('fs')
+    if (errorLogsRaw) {
+      const errorLogsPath = join(screenshotsDir, 'app-error-logs.json')
+      writeFileSync(errorLogsPath, errorLogsRaw)
+
+      // 同时生成可读的 txt 版本
+      try {
+        const parsed = JSON.parse(errorLogsRaw)
+        const lines = parsed.map((log: any) =>
+          `[${new Date(log.timestamp).toISOString()}] ${log.type.toUpperCase()}: ${log.message}` +
+          (log.url ? `\n  URL: ${log.url}` : '') +
+          (log.stack ? `\n  Stack: ${log.stack}` : '') +
+          (log.statusCode ? `\n  Status: ${log.statusCode}` : '')
+        )
+        writeFileSync(join(screenshotsDir, 'app-error-logs.txt'), lines.join('\n\n'))
+      } catch {}
+    }
+
     if (errors.length > screenshotCount) {
       const screenshotPath = join(screenshotsDir, `error-final-${errors.length}.png`)
       await page.screenshot({ path: screenshotPath, fullPage: true }).catch(() => {})
@@ -192,7 +212,6 @@ test.describe('Fuzz Testing', () => {
 
     if (errors.length > 0) {
       const reportPath = join(screenshotsDir, 'fuzz-errors.json')
-      const { writeFileSync } = await import('fs')
       writeFileSync(reportPath, JSON.stringify(errors, null, 2))
 
       console.log(`\n❌ Fuzz 测试发现 ${errors.length} 个错误 (${testInfo.project.name})`)

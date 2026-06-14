@@ -159,7 +159,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onActivated } from 'vue'
+import { ref, computed, onActivated } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getRouteCategory } from '../router/category'
 import { canEditSummary } from '@services/editor/cloudWorks'
