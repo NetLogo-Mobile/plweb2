@@ -52,12 +52,12 @@ app.directive('richText', {
     el.innerHTML = 'rendering...'
     Promise.resolve(binding.value()).then((html) => {
       el.innerHTML = html
-    })
+    }).catch(() => {})
   },
   updated(el: HTMLElement, binding: DirectiveBinding<() => Promise<string> | string>) {
     Promise.resolve(binding.value()).then((html) => {
       el.innerHTML = html
-    })
+    }).catch(() => {})
   },
 })
 

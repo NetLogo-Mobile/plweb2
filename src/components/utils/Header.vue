@@ -57,7 +57,7 @@ function logout() {
   // This is not merely to clear the storage, mabye an error happened in our storage system so the user try to logout
   router.push({ name: 'Home' }).then(() => {
     window.location.reload()
-  })
+  }).catch(() => {})
 }
 </script>
 

@@ -40,7 +40,7 @@
                 />
               </n-form-item-row>
             </n-form>
-            <p style="margin-bottom: 20px" v-html="$t('login.terms')"></p>
+            <p style="margin-bottom: 20px" v-html="sanitizedTerms"></p>
             <n-button type="primary" class="loginButton" @click="handlePasswordLogin">
               {{ $t('login.confirm') }}
             </n-button>
@@ -92,16 +92,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { login } from '@api/getData.ts'
 import sm from '@storage/index'
-import { getPath } from '@services/utils'
+import { getPath, sanitizeHtml } from '@services/utils'
 import { NInput, NTabPane, NButton, NForm, NTabs, NFormItemRow, NCard } from 'naive-ui'
 import Emitter from '@services/eventEmitter'
 import { showMessage } from '@popup/naiveui'
+import { useI18n } from 'vue-i18n'
 
 const emailOrPhone = ref('')
 const loginPassword = ref('')
+const { t } = useI18n()
+const sanitizedTerms = computed(() => sanitizeHtml(t('login.terms')))
 interface LoginModelProps {
   close: () => void
 }
@@ -110,7 +113,7 @@ const { close } = defineProps<LoginModelProps>()
 
 async function handlePasswordLogin() {
   let res = await login(emailOrPhone.value, loginPassword.value, false)
-  if (res.Status === 200) {
+  if (res.Status === 200 && res.Data?.User) {
     sm.setObj('userInfo', res.Data.User)
     Emitter.emit('userLogin', res)
     close()

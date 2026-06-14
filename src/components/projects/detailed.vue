@@ -8,7 +8,7 @@
         <p v-richText="() => parse(data.Subject || '')" class="title"></p>
         <p class="subtitle">{{ data.User.Nickname }}</p>
         <div class="subtitle">
-          <Tag v-for="i in data.Tags" :category="data.Category || 'Experiment'" :tag="i" />
+          <Tag v-for="(i, idx) in data.Tags" :key="idx" :category="data.Category || 'Experiment'" :tag="i" />
         </div>
       </div>
     </div>

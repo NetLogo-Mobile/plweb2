@@ -373,13 +373,6 @@ class ErrorLogger {
     })
 
     // Only print the full sanitized details when debug mode is enabled to avoid noise
-    if (this.debugMode) {
-      console.group(`Error details: ${errorLog.id}`)
-      console.log('Sanitized context:', errorLog)
-      const raw = (errorLog as any).error
-      if (raw) console.log('Original error:', raw)
-      console.groupEnd()
-    }
   }
 
   /**

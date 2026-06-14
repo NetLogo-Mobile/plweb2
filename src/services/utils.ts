@@ -385,3 +385,26 @@ export function checkLogin(showLoginLeader = true): boolean {
   }
   return true
 }
+
+export function sanitizeHtml(html: string): string {
+  const template = document.createElement('template')
+  template.innerHTML = html
+  const walker = document.createTreeWalker(template.content, NodeFilter.SHOW_ELEMENT, null)
+  const elementsToRemove: Element[] = []
+  while (walker.nextNode()) {
+    const el = walker.currentNode as Element
+    if (el.tagName === 'SCRIPT' || el.tagName === 'STYLE' || el.tagName === 'IFRAME') {
+      elementsToRemove.push(el)
+      continue
+    }
+    for (const attr of Array.from(el.attributes)) {
+      if (attr.name.startsWith('on')) {
+        el.removeAttribute(attr.name)
+      }
+    }
+  }
+  for (const el of elementsToRemove) {
+    el.remove()
+  }
+  return template.innerHTML
+}
