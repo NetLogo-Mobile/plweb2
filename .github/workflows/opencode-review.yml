@@ -1,0 +1,81 @@
+name: OpenCode Codex-Style PR Reviewer
+
+on:
+  pull_request:
+    types: [opened, synchronize] # Runs automatically on all PRs and updates
+
+permissions:
+  contents: read          # Required to checkout code and compute diff
+  pull-requests: write   # Required to post review comments on the PR
+  workflows: write       # Required to allow worktree updates
+
+jobs:
+  code-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full git history is required to compute diff accurately
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install OpenCode CLI
+        run: |
+          npm install -g opencode-ai
+
+      - name: Generate PR Diff
+        id: pr_diff
+        run: |
+          # Fetch the target base branch of the PR
+          git fetch origin ${{ github.base_ref }}:${{ github.base_ref }}
+          
+          # Compute the diff between the base branch and current HEAD (PR state)
+          git diff origin/${{ github.base_ref }}...HEAD > pr.diff
+          
+          if [ ! -s pr.diff ]; then
+            echo "No changes found."
+            echo "has_changes=false" >> $GITHUB_ENV
+          else
+            echo "has_changes=true" >> $GITHUB_ENV
+          fi
+
+      - name: Execute OpenCode with pr-review Skill
+        if: env.has_changes == 'true'
+        run: |
+          # Construct the review instructions. 
+          # OpenCode automatically detects '.opencode/skills/pr-review/SKILL.md' and loads it.
+          cat << 'EOF' > review_prompt.txt
+          Please perform an expert-level PR code review on the following git diff using your "pr-review" skill. 
+          Your analysis must be highly technical, objective, and constructive.
+          
+          ---
+          DIFF START:
+          EOF
+          
+          cat pr.diff >> review_prompt.txt
+          echo "DIFF END" >> review_prompt.txt
+          
+          # Run OpenCode using the free DeepSeek V4 Flash model
+          opencode run \
+            --model opencode/deepseek-v4-flash-free \
+            --variant high \
+            --dangerously-skip-permissions \
+            "$(cat review_prompt.txt)" > review_report.md
+
+      - name: Post PR Review Comment
+        if: env.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Format the comment header
+          echo "### 🤖 Codex-Style Code Review by OpenCode" > final_comment.md
+          echo "> 💡 This is an automated advisory review. It is non-blocking and does not affect merge requirements." >> final_comment.md
+          echo "" >> final_comment.md
+          cat review_report.md >> final_comment.md
+          
+          # Comment on the PR using GitHub CLI
+          gh pr comment ${{ github.event.pull_request.number }} --body-file final_comment.md
