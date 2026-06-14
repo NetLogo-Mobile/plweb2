@@ -159,7 +159,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onActivated } from 'vue'
+import { ref, computed, watch, onActivated } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getRouteCategory } from '../router/category'
 import { canEditSummary } from '@services/editor/cloudWorks'
@@ -302,15 +302,12 @@ async function fetchSummary() {
   coverUrl.value = getCoverUrl(res.Data)
 }
 
-onMounted(() => {
-  fetchSummary()
-})
-
 watch(
   () => [route.params.id, routeCategory.value],
   () => {
     fetchSummary()
   },
+  { immediate: true },
 )
 
 function handleMsgClick(item: CommentResult) {
@@ -384,42 +381,7 @@ function copySubject() {
             const target = e.target as HTMLInputElement | null
             const file = target?.files?.[0]
             if (!file) return
-            const summaryRes = await getData('/Contents/GetSummary', {
-              ContentID: route.params.id as string,
-              Category: routeCategory.value,
-            })
-            if (summaryRes.Status !== 200) {
-              showAPiError(
-                t('errors.apiErrorTitle'),
-                t('errors.apiErrorMessage', {
-                  path: '/Contents/GetSummary',
-                  status: summaryRes.Status,
-                  message: summaryRes?.Message || '',
-                }),
-                async () => {
-                  return getData('/Contents/GetSummary', {
-                    ContentID: route.params.id as string,
-                    Category: routeCategory.value,
-                  })
-                },
-              )
-              const _req = removeToken({
-                ContentID: route.params.id,
-                Category: routeCategory.value,
-              })
-              const _res = removeToken(summaryRes)
-              window.$ErrorLogger.captureApiError(
-                'POST',
-                '/Contents/GetSummary',
-                summaryRes.Status,
-                _res,
-                _req,
-              )
-              console.error(`/Contents/GetSummary returned ${summaryRes.Status}`, _res)
-              return
-            }
-            if (!summaryRes.Data) return
-            const imageIndex = (summaryRes.Data.Image || 0) + 1
+            const imageIndex = (data.value.Image || 0) + 1
             const confirmRes = await getData('/Contents/ConfirmExperiment', {
               Category: routeCategory.value,
               SummaryID: route.params.id as string,
@@ -465,7 +427,7 @@ function copySubject() {
                 FileSize: 0 - Math.abs(file.size),
                 Extension: '.jpg',
               },
-              Summary: summaryRes.Data,
+              Summary: data.value,
             })
             if (submitRes.Status !== 200) {
               showAPiError(
@@ -481,7 +443,7 @@ function copySubject() {
                       FileSize: 0 - Math.abs(file.size),
                       Extension: '.jpg',
                     },
-                    Summary: summaryRes.Data,
+                    Summary: data.value,
                   })
                 },
               )
@@ -490,7 +452,7 @@ function copySubject() {
                   FileSize: 0 - Math.abs(file.size),
                   Extension: '.jpg',
                 },
-                Summary: summaryRes.Data,
+                Summary: data.value,
               })
               const _res = removeToken(submitRes)
               window.$ErrorLogger.captureApiError(
@@ -561,44 +523,9 @@ function copySubject() {
             showMessage('success', t('ui.messages.uploadSuccess'), {
               duration: 2000,
             })
-            // refresh current cover (using existing utility function)
-            setTimeout(async () => {
-              const refreshed = await getData('/Contents/GetSummary', {
-                ContentID: route.params.id as string,
-                Category: routeCategory.value,
-              })
-              if (refreshed.Status !== 200) {
-                showAPiError(
-                  t('errors.apiErrorTitle'),
-                  t('errors.apiErrorMessage', {
-                    path: '/Contents/GetSummary',
-                    status: refreshed.Status,
-                    message: refreshed?.Message || '',
-                  }),
-                  async () => {
-                    return getData('/Contents/GetSummary', {
-                      ContentID: route.params.id as string,
-                      Category: routeCategory.value,
-                    })
-                  },
-                )
-                const _req = removeToken({
-                  ContentID: route.params.id,
-                  Category: routeCategory.value,
-                })
-                const _res = removeToken(refreshed)
-                window.$ErrorLogger.captureApiError(
-                  'POST',
-                  '/Contents/GetSummary',
-                  refreshed.Status,
-                  _res,
-                  _req,
-                )
-                console.error(`/Contents/GetSummary returned ${refreshed.Status}`, _res)
-                return
-              }
-              coverUrl.value = getCoverUrl(refreshed.Data)
-            }, 800)
+            // refresh cover locally instead of making another API call
+            data.value.Image = imageIndex
+            coverUrl.value = getCoverUrl(data.value)
           } catch (_err) {
             showMessage('error', t('ui.messages.changeCoverFailed'), {
               duration: 2000,
