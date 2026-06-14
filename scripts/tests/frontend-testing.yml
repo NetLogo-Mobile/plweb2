@@ -1,0 +1,236 @@
+name: Frontend Testing Pipeline
+
+on:
+  push:
+    branches: [main, dev, feature/**]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+  checks: write
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  # ==================== Job 1: 静态分析 ====================
+  static-analysis:
+    name: 📋 静态代码分析
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run eslint -- --format json --output-file tests/reports/eslint-report.json || true
+        continue-on-error: true
+
+      - name: Run ESLint (console output)
+        run: npm run eslint
+
+      - name: Run TypeScript type check
+        run: npx vue-tsc --noEmit 2>&1 | tee tests/reports/typescript-check.log || true
+
+      - name: Run custom static analysis
+        run: node tests/static/static-analysis.mjs
+        continue-on-error: true
+
+      - name: Upload static analysis reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: static-analysis-reports
+          path: tests/reports/
+          retention-days: 30
+
+  # ==================== Job 2: 构建验证 ====================
+  build-verification:
+    name: 🔨 构建验证
+    runs-on: ubuntu-latest
+    needs: static-analysis
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build -- --mode production
+
+      - name: Validate HTML
+        run: npx html-validate "dist/**/*.html" || true
+        continue-on-error: true
+
+      - name: Check for broken links in dist
+        run: npx linkinator dist/ --recurse --skip "^(?!https?://)" || true
+        continue-on-error: true
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-dist
+          path: dist/
+          retention-days: 7
+
+  # ==================== Job 3: Playwright E2E 测试 ====================
+  e2e-tests:
+    name: 🎭 Playwright E2E 测试
+    runs-on: ubuntu-latest
+    needs: build-verification
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright tests
+        run: npx playwright test --shard=${{ matrix.shard }}/2
+        env:
+          CI: true
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-shard-${{ matrix.shard }}
+          path: |
+            tests/reports/playwright-report/
+            tests/reports/playwright-results.json
+          retention-days: 30
+
+  # ==================== Job 4: 合并测试报告 ====================
+  merge-reports:
+    name: 📊 合并测试报告
+    runs-on: ubuntu-latest
+    needs: [e2e-tests, static-analysis]
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: all-reports/
+
+      - name: Merge Playwright reports
+        run: npx playwright merge-reports --reporter=html all-reports/ 2>/dev/null || true
+        continue-on-error: true
+
+      - name: Generate summary report
+        run: |
+          node tests/static/generate-summary-report.mjs
+        continue-on-error: true
+
+      - name: Upload final reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: final-test-reports
+          path: tests/reports/
+          retention-days: 30
+
+      - name: Comment PR with test summary
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let summary = '## 🧪 测试报告摘要\n\n';
+            
+            try {
+              const staticReport = JSON.parse(fs.readFileSync('tests/reports/static-analysis-report.json', 'utf-8'));
+              summary += `### 📋 静态分析\n`;
+              summary += `- ❌ 错误: ${staticReport.summary.errors}\n`;
+              summary += `- ⚠️ 警告: ${staticReport.summary.warnings}\n`;
+              summary += `- ℹ️ 信息: ${staticReport.summary.infos}\n\n`;
+            } catch (e) {
+              summary += '### 📋 静态分析\n报告未生成\n\n';
+            }
+            
+            try {
+              const pwReport = JSON.parse(fs.readFileSync('tests/reports/playwright-results.json', 'utf-8'));
+              summary += `### 🎭 E2E 测试\n`;
+              summary += `- ✅ 通过: ${pwReport.stats?.passed || 'N/A'}\n`;
+              summary += `- ❌ 失败: ${pwReport.stats?.failed || 'N/A'}\n`;
+              summary += `- ⏭️ 跳过: ${pwReport.stats?.skipped || 'N/A'}\n`;
+            } catch (e) {
+              summary += '### 🎭 E2E 测试\n报告未生成\n';
+            }
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
+
+  # ==================== Job 5: 部署（仅 main 分支） ====================
+  deploy:
+    name: 🚀 部署到 gh-pages
+    runs-on: ubuntu-latest
+    needs: [e2e-tests, build-verification]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build -- --mode production
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist

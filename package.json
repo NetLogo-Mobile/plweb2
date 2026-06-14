@@ -7,7 +7,7 @@
     "dev": "vite --host 0.0.0.0",
     "build": "vue-tsc --build  --force && vite build",
     "preview": "vite preview",
-    "eslint": "npx eslint src/**/*.{ts,vue,js,css} --fix",
+    "eslint": "npx eslint src/**/*.{ts,vue,js,css} --fix && node scripts/check-i18n.mjs",
     "format": "npx prettier --write ./**/*.{ts,vue,js,css} ",
     "lint:i18n": "node scripts/check-i18n.mjs"
   },

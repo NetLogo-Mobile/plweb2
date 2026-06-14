@@ -1,0 +1,746 @@
+{
+  "timestamp": "2026-06-11T14:46:12.547Z",
+  "summary": {
+    "total": 91,
+    "errors": 0,
+    "warnings": 4,
+    "infos": 87
+  },
+  "byCategory": {
+    "broken-asset-path": 7,
+    "white-screen-risk": 73,
+    "vue-issue": 2,
+    "empty-catch": 7,
+    "console-log": 2
+  },
+  "results": [
+    {
+      "category": "broken-asset-path",
+      "severity": "info",
+      "file": "src/components/blocks/TopicBlock.vue",
+      "line": 9,
+      "message": "CSS 中引用的资源可能不存在: ${getCoverUrl(block.Summaries[0]!",
+      "code": "? `url(${getCoverUrl(block.Summaries[0]!)}), url(${defaultCoverUrl})`"
+    },
+    {
+      "category": "broken-asset-path",
+      "severity": "info",
+      "file": "src/components/blocks/TopicBlock.vue",
+      "line": 9,
+      "message": "CSS 中引用的资源可能不存在: ${defaultCoverUrl}",
+      "code": "? `url(${getCoverUrl(block.Summaries[0]!)}), url(${defaultCoverUrl})`"
+    },
+    {
+      "category": "broken-asset-path",
+      "severity": "info",
+      "file": "src/components/blocks/TopicBlock.vue",
+      "line": 10,
+      "message": "CSS 中引用的资源可能不存在: ${defaultCoverUrl}",
+      "code": ": `url(${defaultCoverUrl})`,"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/components/blocks/TopicBlock.vue",
+      "line": 21,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "<!-- activity的内容和APP端不一致，但是我们不在这里处理，将会在API层面修改服务器端响应在渲染，参见getData.ts -->"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/components/blocks/TopicBlock.vue",
+      "line": 22,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "<!-- The content of activity is different from the app version, but we won't handle it here. Instead, we will modify the server response at the API level, see getData.ts -->"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/components/friends/item.vue",
+      "line": 34,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "return getIcon(Number(re.Data.Relation))"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/components/friends/list.vue",
+      "line": 18,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "import { getData } from '@services/api/getData.ts'"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/components/friends/list.vue",
+      "line": 85,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "items.value = [...items.value, ...getRelationsRes.Data.$values]"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/components/messages/MessageList.vue",
+      "line": 15,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "import { getData } from '@services/api/getData.ts'"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/components/messages/MessageList.vue",
+      "line": 142,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "const messages = getMessagesResponse.Data.Comments"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/components/messages/MessageList.vue",
+      "line": 168,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "const latestComments = latestResponse.Data.Comments"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/components/messages/NotificationList.vue",
+      "line": 15,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "import { getData } from '@services/api/getData.ts'"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/components/messages/NotificationList.vue",
+      "line": 169,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "templates = getMessagesResponse.Data.Templates"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/components/messages/NotificationList.vue",
+      "line": 172,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "const messages = getMessagesResponse.Data.Messages"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/components/popup/loginModel.vue",
+      "line": 96,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "import { login } from '@api/getData.ts'"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/components/popup/loginModel.vue",
+      "line": 114,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "sm.setObj('userInfo', res.Data.User)"
+    },
+    {
+      "category": "vue-issue",
+      "severity": "info",
+      "file": "src/components/popup/loginModel.vue",
+      "line": 43,
+      "message": "v-html 使用存在 XSS 风险，确保内容已消毒",
+      "code": "<p style=\"margin-bottom: 20px\" v-html=\"$t('login.terms')\"></p>"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/components/popup/userProfileDialog.vue",
+      "line": 63,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "import { getData } from '@services/api/getData.ts'"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/components/popup/userProfileDialog.vue",
+      "line": 136,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "if (!re.Data || !re.Data.User) return"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/components/popup/userProfileDialog.vue",
+      "line": 137,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "const data = re.Data.User"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/components/popup/userProfileDialog.vue",
+      "line": 141,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "if (re.Data.Statistic) {"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/components/popup/userProfileDialog.vue",
+      "line": 142,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "followingCount.value = re.Data.Statistic.FollowingCount"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/components/popup/userProfileDialog.vue",
+      "line": 143,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "followerCount.value = re.Data.Statistic.FollowerCount"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/components/popup/userProfileDialog.vue",
+      "line": 144,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "postCount.value = re.Data.Statistic.ExperimentCount"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/components/popup/userProfileDialog.vue",
+      "line": 145,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "starCount.value = re.Data.Statistic.StarCount"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/components/popup/userProfileDialog.vue",
+      "line": 147,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "ID = re.Data.User.ID"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/components/popup/userProfileDialog.vue",
+      "line": 148,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "if (re.Data.Relation === 1 || re.Data.Relation === 3) {"
+    },
+    {
+      "category": "vue-issue",
+      "severity": "warning",
+      "file": "src/components/projects/detailed.vue",
+      "line": 11,
+      "message": "v-for 缺少 :key，可能导致渲染异常",
+      "code": "<Tag v-for=\"i in data.Tags\" :category=\"data.Category || 'Experiment'\" :tag=\"i\" />"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/components/projects/wortList.vue",
+      "line": 17,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "import { getData } from '@services/api/getData.ts'"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/components/projects/wortList.vue",
+      "line": 45,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "if (isGettingData.value === true) return // Lock"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/components/projects/wortList.vue",
+      "line": 46,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "isGettingData.value = true"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/components/projects/wortList.vue",
+      "line": 109,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "isGettingData.value = false"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/components/projects/wortList.vue",
+      "line": 116,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "if (getProjectsRes.Data.$values.length < 24) {"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/components/projects/wortList.vue",
+      "line": 121,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "items.value.push(...getProjectsRes.Data.$values)"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/components/projects/wortList.vue",
+      "line": 123,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "isGettingData.value = false"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "warning",
+      "file": "src/components/utils/Header.vue",
+      "line": 58,
+      "message": ".then() 调用缺少 .catch()，未处理的 Promise 拒绝可能导致白屏",
+      "code": "router.push({ name: 'Home' }).then(() => {"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/i18n/translateErrorMessage.ts",
+      "line": 2,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "* 将服务器响应Data.Message字段翻译为中文，是一个暂未实现的中间层"
+    },
+    {
+      "category": "empty-catch",
+      "severity": "info",
+      "file": "src/main.ts",
+      "line": 172,
+      "message": "空 catch 块（有注释说明: \"// Permission denied or unavailable - expected if user denies the prompt\"）",
+      "code": "} catch {"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "warning",
+      "file": "src/main.ts",
+      "line": 53,
+      "message": ".then() 调用缺少 .catch()，未处理的 Promise 拒绝可能导致白屏",
+      "code": "Promise.resolve(binding.value()).then((html) => {"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "warning",
+      "file": "src/main.ts",
+      "line": 58,
+      "message": ".then() 调用缺少 .catch()，未处理的 Promise 拒绝可能导致白屏",
+      "code": "Promise.resolve(binding.value()).then((html) => {"
+    },
+    {
+      "category": "empty-catch",
+      "severity": "info",
+      "file": "src/services/api/getData.ts",
+      "line": 70,
+      "message": "空 catch 块（有注释说明: \"// Ignore malformed error payloads.\"）",
+      "code": "} catch {"
+    },
+    {
+      "category": "empty-catch",
+      "severity": "info",
+      "file": "src/services/api/getData.ts",
+      "line": 163,
+      "message": "空 catch 块（有注释说明: \"// Ignore malformed error payloads.\"）",
+      "code": "} catch {"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/services/editor/cloudWorks.ts",
+      "line": 2,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "import { getData } from '@services/api/getData.ts'"
+    },
+    {
+      "category": "console-log",
+      "severity": "info",
+      "file": "src/services/errorLogger.ts",
+      "line": 378,
+      "message": "console.log 残留，建议在生产构建前移除",
+      "code": "console.log('Sanitized context:', errorLog)"
+    },
+    {
+      "category": "console-log",
+      "severity": "info",
+      "file": "src/services/errorLogger.ts",
+      "line": 380,
+      "message": "console.log 残留，建议在生产构建前移除",
+      "code": "if (raw) console.log('Original error:', raw)"
+    },
+    {
+      "category": "empty-catch",
+      "severity": "info",
+      "file": "src/services/popup/apiError.ts",
+      "line": 71,
+      "message": "空 catch 块（有注释说明: \"// ignore\"）",
+      "code": "} catch (_e) {"
+    },
+    {
+      "category": "empty-catch",
+      "severity": "info",
+      "file": "src/services/utils.ts",
+      "line": 165,
+      "message": "空 catch 块（有注释说明: \"// fallback below\"）",
+      "code": "} catch {"
+    },
+    {
+      "category": "empty-catch",
+      "severity": "info",
+      "file": "src/sw.ts",
+      "line": 46,
+      "message": "空 catch 块（有注释说明: \"// Ignore cache put failures for opaque or transient responses.\"）",
+      "code": "} catch {"
+    },
+    {
+      "category": "empty-catch",
+      "severity": "info",
+      "file": "src/sw.ts",
+      "line": 79,
+      "message": "空 catch 块（有注释说明: \"// Fall back to the original request mode below.\"）",
+      "code": "} catch {"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/BlackHole.vue",
+      "line": 42,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "import { getData } from '@services/api/getData.ts'"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/BlackHole.vue",
+      "line": 140,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "blocks.value = getLibraryResponse.Data.Blocks"
+    },
+    {
+      "category": "broken-asset-path",
+      "severity": "info",
+      "file": "src/views/ExperimentSummary.vue",
+      "line": 8,
+      "message": "CSS 中引用的资源可能不存在: ${coverUrl}",
+      "code": "backgroundImage: `url(${coverUrl}), url(${defaultCoverUrl})`,"
+    },
+    {
+      "category": "broken-asset-path",
+      "severity": "info",
+      "file": "src/views/ExperimentSummary.vue",
+      "line": 8,
+      "message": "CSS 中引用的资源可能不存在: ${defaultCoverUrl}",
+      "code": "backgroundImage: `url(${coverUrl}), url(${defaultCoverUrl})`,"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/ExperimentSummary.vue",
+      "line": 166,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "import { getData } from '@services/api/getData.ts'"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/ExperimentSummary.vue",
+      "line": 422,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "const imageIndex = (summaryRes.Data.Image || 0) + 1"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Home.vue",
+      "line": 115,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "coins: res.Data.User.Gold,"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Home.vue",
+      "line": 116,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "gems: res.Data.User.Diamond,"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Home.vue",
+      "line": 117,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "level: res.Data.User.Level,"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Home.vue",
+      "line": 118,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "username: res.Data.User.Nickname,"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Home.vue",
+      "line": 119,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "avatarUrl: getUserUrl(res.Data.User),"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Home.vue",
+      "line": 120,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "ID: res.Data.User.ID,"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Home.vue",
+      "line": 141,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "coins: res.Data.User.Gold,"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Home.vue",
+      "line": 142,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "gems: res.Data.User.Diamond,"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Home.vue",
+      "line": 143,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "level: res.Data.User.Level,"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Home.vue",
+      "line": 144,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "username: res.Data.User.Nickname,"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Home.vue",
+      "line": 145,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "avatarUrl: getUserUrl(res.Data.User),"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Home.vue",
+      "line": 146,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "ID: res.Data.User.ID,"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Home.vue",
+      "line": 155,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "if (response.Data.ContentTags) {"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Home.vue",
+      "line": 156,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "Emitter.emit('updateTagConfig', response.Data.ContentTags)"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Home.vue",
+      "line": 159,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "const userData = response.Data.User"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Home.vue",
+      "line": 165,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "coins: userData.Gold,"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Home.vue",
+      "line": 166,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "gems: userData.Diamond,"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Home.vue",
+      "line": 167,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "level: userData.Level,"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Home.vue",
+      "line": 168,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "username: userData.Nickname || t('user.clickToLogin'),"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Home.vue",
+      "line": 170,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "ID: userData.ID,"
+    },
+    {
+      "category": "broken-asset-path",
+      "severity": "info",
+      "file": "src/views/Profile.vue",
+      "line": 8,
+      "message": "CSS 中引用的资源可能不存在: ${coverUrl}",
+      "code": "backgroundImage: `url(${coverUrl}), url(${defaultCoverUrl})`,"
+    },
+    {
+      "category": "broken-asset-path",
+      "severity": "info",
+      "file": "src/views/Profile.vue",
+      "line": 8,
+      "message": "CSS 中引用的资源可能不存在: ${defaultCoverUrl}",
+      "code": "backgroundImage: `url(${coverUrl}), url(${defaultCoverUrl})`,"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Profile.vue",
+      "line": 52,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "{{ userData.User.Nickname }}"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Profile.vue",
+      "line": 84,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": ":tag=\"t('profile.fans', { count: userData.Statistic.FollowerCount })\""
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Profile.vue",
+      "line": 88,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": ":tag=\"t('profile.follows', { count: userData.Statistic.FollowingCount })\""
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Profile.vue",
+      "line": 144,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": ":tab=\"t('profile.comments', { count: userData.Statistic.CommentCount })\""
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Profile.vue",
+      "line": 180,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "import { getData } from '@services/api/getData.ts'"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Profile.vue",
+      "line": 264,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "const expEntries = computed<[string, Summary[]][]>(() => Object.entries(expData.value))"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Profile.vue",
+      "line": 288,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "expData.value = expRes.Data.Experiments"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Profile.vue",
+      "line": 295,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "userData.value = userRes.Data as ProfileUserData"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Profile.vue",
+      "line": 303,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "const _url = userData.value.Statistic.Cover"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Profile.vue",
+      "line": 304,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "? getCoverUrl(userData.value.Statistic.Cover)"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Profile.vue",
+      "line": 305,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": ": getUserUrl(userRes.Data.User)"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Profile.vue",
+      "line": 374,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "copy(userData.value.User.ID)"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Profile.vue",
+      "line": 376,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "copy(`<user=${userData.value.User.ID}>${userData.value.User.Nickname}</user>`)"
+    },
+    {
+      "category": "white-screen-risk",
+      "severity": "info",
+      "file": "src/views/Profile.vue",
+      "line": 378,
+      "message": "直接访问 Data 属性未使用可选链，如果 Data 为 null 可能导致白屏",
+      "code": "copy(`<external=${window.location.href}>${userData.value.User.Nickname}[web]</external>`)"
+    }
+  ]
+}
