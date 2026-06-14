@@ -159,7 +159,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onActivated } from 'vue'
+import { ref, computed, watch, onMounted, onActivated, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getRouteCategory } from '../router/category'
 import { canEditSummary } from '@services/editor/cloudWorks'
@@ -333,27 +333,28 @@ function goBack() {
   window.history.back()
 }
 
+let fallbackTimer: ReturnType<typeof setTimeout> | null = null
+let cleanedUp = false
+
+onUnmounted(() => {
+  if (fallbackTimer !== null) {
+    clearTimeout(fallbackTimer)
+    fallbackTimer = null
+  }
+})
+
 function goToExperiment() {
+  if (fallbackTimer !== null) return
+
   const category = routeCategory.value.toLowerCase()
   const contentType = category === 'experiment' ? 'experiment' : 'discussion'
   const target = `physics://chinese/${contentType}/${route.params.id as string}`
-  const installUrl = locale.value === 'Chinese'
-    ? 'http://pl.turtlesim.com/app/cn'
-    : 'http://pl.turtlesim.com/app'
+  const installUrl = (locale.value.startsWith('zh') || locale.value === 'Chinese')
+    ? 'https://pl.turtlesim.com/app/cn'
+    : 'https://pl.turtlesim.com/app'
 
   let appOpened = false
-  const fallbackTimer = setTimeout(() => {
-    if (!appOpened) {
-      window.location.href = installUrl
-    }
-  }, 800)
-
-  const cleanUp = () => {
-    appOpened = true
-    clearTimeout(fallbackTimer)
-    document.removeEventListener('visibilitychange', onVisibility)
-    window.removeEventListener('blur', onBlur)
-  }
+  cleanedUp = false
 
   const onVisibility = () => {
     if (document.hidden) {
@@ -364,6 +365,24 @@ function goToExperiment() {
   const onBlur = () => {
     cleanUp()
   }
+
+  const cleanUp = () => {
+    if (cleanedUp) return
+    cleanedUp = true
+    appOpened = true
+    if (fallbackTimer !== null) {
+      clearTimeout(fallbackTimer)
+      fallbackTimer = null
+    }
+    document.removeEventListener('visibilitychange', onVisibility)
+    window.removeEventListener('blur', onBlur)
+  }
+
+  fallbackTimer = setTimeout(() => {
+    if (!appOpened) {
+      window.location.href = installUrl
+    }
+  }, 800)
 
   document.addEventListener('visibilitychange', onVisibility)
   window.addEventListener('blur', onBlur)
