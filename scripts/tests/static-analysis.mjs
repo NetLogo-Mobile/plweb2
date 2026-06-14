@@ -10,7 +10,7 @@
  * 5. Vue 组件常见问题
  */
 
-import { readFileSync, readdirSync, statSync, existsSync, writeFileSync } from 'fs'
+import { readFileSync, readdirSync, statSync, existsSync, writeFileSync, mkdirSync } from 'fs'
 import { join, extname, relative } from 'path'
 
 // ==================== 配置 ====================
@@ -318,7 +318,9 @@ if (infos.length > 0) {
 }
 
 // 输出 JSON 报告
-const reportPath = join(process.cwd(), 'scripts', 'tests', 'reports', 'static-analysis-report.json')
+const reportDir = join(process.cwd(), 'scripts', 'tests', 'reports')
+mkdirSync(reportDir, { recursive: true })
+const reportPath = join(reportDir, 'static-analysis-report.json')
 writeFileSync(
   reportPath,
   JSON.stringify(

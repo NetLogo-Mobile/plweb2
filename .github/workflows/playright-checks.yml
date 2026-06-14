@@ -1,9 +1,11 @@
-name: PR CI
+name: playwright-checks
 
 on:
   pull_request:
     branches: [main, dev, feature/**]
   workflow_dispatch:
+  push:
+    branches: [main, dev, feature/**]
 
 permissions:
   contents: read
@@ -16,7 +18,7 @@ env:
 
 jobs:
   test:
-    name: 🧪 Lint & TypeScript & Playwright
+    name: run playwright checks
     runs-on: ubuntu-latest
 
     steps:
