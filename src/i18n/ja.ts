@@ -188,6 +188,11 @@ export default {
     friends: '友人',
     notifications: '通知',
   },
+  network: {
+    offline: '現在オフラインです',
+    poorConnection: 'ネットワーク接続が不安定です',
+    usingCache: 'キャッシュからデータを読み取っています',
+  },
   ui: {
     messages: {
       loading: '読み込み中...',
