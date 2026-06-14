@@ -1,16 +1,23 @@
 <template>
   <infiniteScroll :hasMore="!noMore" :initialItems="items" @load="handleLoad">
     <template #default="slotProps: { items: any[] }">
-      <div v-for="item in slotProps.items" :key="item.ID || item.id || Math.random()">
-        <Notification :notification="item" />
-        <n-divider style="margin: 0" />
+      <div ref="containerRef">
+        <div
+          v-for="item in slotProps.items"
+          :key="item.ID || item.id || Math.random()"
+          :data-message-id="item.ID || item.id"
+        >
+          <Notification :notification="item" />
+          <n-divider style="margin: 0" />
+        </div>
       </div>
     </template>
   </infiniteScroll>
 </template>
 
 <script setup lang="ts">
-import { ref, onActivated } from 'vue'
+import { ref, onActivated, watch, nextTick } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import Notification from './NotificationItem.vue'
 import { getData } from '@services/api/getData.ts'
 import { showAPiError } from '@popup/index.ts'
@@ -21,6 +28,9 @@ import { NDivider } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 import storageManager from '@storage/index.ts'
 import type { Message, MessageTemplate } from '@services/../pl-serve-type-main/type/main'
+
+const route = useRoute()
+const router = useRouter()
 
 onActivated(() => {
   window.$Logger.logPageView({
@@ -39,8 +49,10 @@ type NotificationMessage = Message & {
 
 const items = ref<NotificationMessage[]>([])
 const loading = ref(false)
-let skip = ref(0) // 获取消息API的必要参数 A necessary parameter for the GetMessages API
+const containerRef = ref<HTMLElement | null>(null)
+let skip = ref(props.initialSkip ?? (route.query.skip ? parseInt(route.query.skip as string) : 0))
 const noMore = ref(false)
+const scrolledToTarget = ref(false)
 let templates: MessageTemplate[] = [
   {
     ID: '5c90f172a2409b51dc5cb945',
@@ -83,9 +95,15 @@ let templates: MessageTemplate[] = [
   },
 ]
 
-const { CategoryID } = defineProps<{
+const props = withDefaults(defineProps<{
   CategoryID: number
-}>()
+  fromID?: string
+  initialSkip?: number
+}>(), {
+  fromID: undefined,
+  initialSkip: undefined,
+})
+const { CategoryID } = props
 
 function fillInTemplate(data: string | null, message: Message) {
   const re = (data ?? '')
@@ -210,11 +228,50 @@ const handleLoad = async (noTemplates = true) => {
     })
 
     items.value = [...items.value, ...defaultItems]
+
+    await nextTick()
+    scrollToTarget()
+
     loading.value = false
     skip.value += 20
+    updateRouteQuery()
   } catch (error) {
     showMessage('error', String(error), { duration: 5000 })
   }
+}
+
+function scrollToTarget() {
+  const targetID = props.fromID || (route.query.from as string | undefined)
+  if (!targetID || scrolledToTarget.value) return
+
+  const index = items.value.findIndex((item) => item.ID === targetID)
+  if (index === -1) return
+
+  scrolledToTarget.value = true
+  if (!containerRef.value) return
+
+  const targetEl = containerRef.value.querySelector(`[data-message-id="${targetID}"]`)
+  if (targetEl) {
+    targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
+}
+
+function isActiveTab(): boolean {
+  const categoryParam = route.query.category as string | undefined
+  if (categoryParam) {
+    return String(CategoryID) === categoryParam
+  }
+  return CategoryID === 0
+}
+
+function updateRouteQuery() {
+  if (!isActiveTab() || skip.value <= 0) return
+  router.replace({
+    query: {
+      ...route.query,
+      skip: String(skip.value),
+    },
+  })
 }
 
 handleLoad(false)

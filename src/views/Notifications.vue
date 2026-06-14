@@ -4,37 +4,35 @@
   </Header>
   <main>
     <div class="outer">
-      <n-tabs type="line" animated justify-content="space-evenly">
-        <!-- :CategoryID 是糟糕的，不建议改动 @see NotificationList.vue -->
-        <!-- The parameter `:CategoryID` is poorly designed, do not modify it. @see NotificationList.vue -->
-        <n-tab-pane name="全部" :tab="t('notifications.all')">
+      <n-tabs v-model:value="activeTab" type="line" animated justify-content="space-evenly">
+        <n-tab-pane name="0" :tab="t('notifications.all')">
           <div class="item">
-            <NotificationList :CategoryID="0"></NotificationList>
+            <NotificationList :CategoryID="0" :fromID="targetFromID" :initialSkip="targetSkip"></NotificationList>
           </div>
         </n-tab-pane>
-        <n-tab-pane name="系统消息" :tab="t('notifications.system')">
+        <n-tab-pane name="1" :tab="t('notifications.system')">
           <div class="item">
-            <NotificationList :CategoryID="1"></NotificationList>
+            <NotificationList :CategoryID="1" :fromID="targetFromID" :initialSkip="targetSkip"></NotificationList>
           </div>
         </n-tab-pane>
-        <n-tab-pane name="回复和评论" :tab="t('notifications.comments')">
+        <n-tab-pane name="3" :tab="t('notifications.comments')">
           <div class="item">
-            <NotificationList :CategoryID="3"></NotificationList>
+            <NotificationList :CategoryID="3" :fromID="targetFromID" :initialSkip="targetSkip"></NotificationList>
           </div>
         </n-tab-pane>
-        <n-tab-pane name="关注和粉丝" :tab="t('notifications.friends')">
+        <n-tab-pane name="2" :tab="t('notifications.friends')">
           <div class="item">
-            <NotificationList :CategoryID="2"></NotificationList>
+            <NotificationList :CategoryID="2" :fromID="targetFromID" :initialSkip="targetSkip"></NotificationList>
           </div>
         </n-tab-pane>
-        <n-tab-pane name="作品" :tab="t('notifications.works')">
+        <n-tab-pane name="4" :tab="t('notifications.works')">
           <div class="item">
-            <NotificationList :CategoryID="4"></NotificationList>
+            <NotificationList :CategoryID="4" :fromID="targetFromID" :initialSkip="targetSkip"></NotificationList>
           </div>
         </n-tab-pane>
-        <n-tab-pane name="管理通知" :tab="t('notifications.admin')">
+        <n-tab-pane name="5" :tab="t('notifications.admin')">
           <div class="item">
-            <NotificationList :CategoryID="5"></NotificationList>
+            <NotificationList :CategoryID="5" :fromID="targetFromID" :initialSkip="targetSkip"></NotificationList>
           </div>
         </n-tab-pane>
       </n-tabs>
@@ -44,6 +42,8 @@
 </template>
 
 <script setup lang="ts">
+import { computed, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 import NotificationList from '../components/messages/NotificationList.vue'
@@ -54,11 +54,19 @@ import { onActivated } from 'vue'
 import { checkLogin } from '@services/utils'
 import { clearNotificationUnread } from '@services/notificationUnread'
 
+const route = useRoute()
+const activeTab = ref(route.query.category as string || '0')
+
+const targetFromID = computed(() => route.query.from as string | undefined)
+const targetSkip = computed(() => {
+  const skip = route.query.skip
+  return skip ? parseInt(skip as string) : undefined
+})
+
 onActivated(() => {
   clearNotificationUnread()
   checkLogin()
 })
-// onMounted(checkLogin);
 </script>
 
 <style scoped>
