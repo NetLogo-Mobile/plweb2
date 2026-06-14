@@ -32,7 +32,7 @@ body {
 
 #app {
   height: 100dvh !important;
-  touch-action: none;
+  touch-action: manipulation;
   overflow: hidden;
 }
 </style>

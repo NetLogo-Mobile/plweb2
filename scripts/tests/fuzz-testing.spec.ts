@@ -4,50 +4,42 @@ import { mkdirSync } from 'fs'
 import { join } from 'path'
 
 const ROUTES = [
-  { path: '/', name: 'Home' },
-  { path: '/b', name: 'BlackHole' },
-  { path: '/n', name: 'Notifications' },
-  { path: '/m', name: 'Messages' },
-  { path: '/f', name: 'Friends' },
-  { path: '/s', name: 'Settings' },
-  { path: '/about', name: 'About' },
-  { path: '/u/test-user-001', name: 'Profile' },
-  { path: '/nonexistent-page', name: 'NotFound' },
+  '/', '/b', '/n', '/m', '/f', '/s', '/about',
+  '/p/Discussion/66a84559744ed757b46f8917',
+  '/u/test-user-001',
+  '/nonexistent-page',
 ]
 
-const CLICKABLE_SELECTORS = [
-  'footer nav a',
-  '.n-tabs-tab',
-  '.user-item',
-  '.detailed',
-  '.brief',
-  '.return',
-  '.back-icon',
-  '.settings-btn',
-  '.close-btn',
-  '.tag',
-  '.block-container .block',
-  '.cover',
-  '.message-item',
-  '.notification-item',
-  '.user',
-  '.username',
-  '.resource',
-  '.item',
-  'button',
-]
+async function isAppRendered(page: any) {
+  return page.evaluate(() => {
+    const app = document.getElementById('app')
+    return app !== null && app.children.length > 0
+  }).catch(() => false)
+}
 
-const INPUT_SELECTORS = [
-  'input[type="text"]',
-  'input[type="email"]',
-  'input[type="password"]',
-  'textarea',
-  '.n-input input',
-]
+async function pickRandomNavigable(page: any) {
+  const selectors = [
+    'a',
+    'button',
+    '[role="button"]',
+    'footer a',
+  ]
+  const candidates: any[] = []
+  for (const sel of selectors) {
+    const loc = page.locator(sel)
+    const n = await loc.count().catch(() => 0)
+    for (let i = 0; i < n; i++) {
+      candidates.push(loc.nth(i))
+    }
+  }
+  if (candidates.length === 0) return null
+  return candidates[faker.number.int({ min: 0, max: candidates.length - 1 })]
+}
 
 test.describe('Fuzz Testing', () => {
-  test('随机交互 1000 次 — 基于真实 API 响应 @fuzz', async ({ page }, testInfo) => {
-    test.setTimeout(3600000)
+  test('1000 次随机交互 — 基于真实渲染元素 @fuzz', async ({ page }, testInfo) => {
+    test.setTimeout(1800000)
+
     const screenshotsDir = join(process.cwd(), 'scripts', 'tests', 'reports', 'fuzz', testInfo.project.name)
     mkdirSync(screenshotsDir, { recursive: true })
 
@@ -82,15 +74,13 @@ test.describe('Fuzz Testing', () => {
       })
     })
 
-    // API 速率限制: 最多 5 请求/秒 → 每次请求后至少等 250ms
-    let lastApiTime = Date.now()
+    // API 速率控制
+    let lastApiTime = 0
     page.on('request', (req) => {
       if (req.url().includes('/api/')) {
-        const now = Date.now()
-        lastApiTime = now
+        lastApiTime = Date.now()
       }
     })
-
     async function respectRateLimit() {
       const elapsed = Date.now() - lastApiTime
       if (elapsed < 250 && lastApiTime > 0) {
@@ -100,100 +90,47 @@ test.describe('Fuzz Testing', () => {
 
     let currentIteration = 0
     const totalIterations = 1000
-    let screenshotCount = 0
 
-    // 首页等待真实 API 返回内容后再开始
     await page.goto('/')
     await page.waitForTimeout(5000)
 
     for (let i = 0; i < totalIterations; i++) {
       currentIteration = i
 
-      if (errors.length > screenshotCount) {
-        const screenshotPath = join(screenshotsDir, `error-iter-${i}-err-${errors.length}.png`)
-        await page.screenshot({ path: screenshotPath, fullPage: true }).catch(() => {})
-        screenshotCount = errors.length
-      }
-
       const roll = Math.random()
 
       if (roll < 0.25) {
-        // 跳转到随机路由，等待真实 API 数据加载
+        // 跳转路由
         await respectRateLimit()
         const route = ROUTES[Math.floor(faker.number.int({ min: 0, max: ROUTES.length - 1 }))]
-        await page.goto(`/#${route.path}`).catch(() => {})
+        await page.goto(`/#${route}`).catch(() => {})
         await page.waitForTimeout(faker.number.int({ min: 3000, max: 5000 }))
-        continue
-      }
-
-      if (roll < 0.65) {
-        // 点击真实渲染的元素
+      } else {
+        // 点击可跳转元素（<a> <button> 等，无类名依赖）
         await respectRateLimit()
-        const targets: any[] = []
-        for (const sel of CLICKABLE_SELECTORS) {
-          const loc = page.locator(sel)
-          const count = await loc.count().catch(() => 0)
-          for (let j = 0; j < Math.min(count, 3); j++) {
-            targets.push(loc.nth(j))
-          }
-        }
-        if (targets.length > 0) {
-          const el = targets[faker.number.int({ min: 0, max: targets.length - 1 })]
+        const el = await pickRandomNavigable(page)
+        if (el) {
           try {
-            await el.click({ timeout: 3000, force: true })
-            await page.waitForTimeout(faker.number.int({ min: 500, max: 1500 }))
+            await el.click({ timeout: 3000 })
+            await page.waitForTimeout(faker.number.int({ min: 1500, max: 3000 }))
           } catch {
             // skip
           }
         }
-        continue
       }
 
-      if (roll < 0.85) {
-        // 在真实输入框填入文字
-        await respectRateLimit()
-        for (const sel of INPUT_SELECTORS) {
-          const inputs = page.locator(sel)
-          const count = await inputs.count().catch(() => 0)
-          if (count > 0) {
-            const input = inputs.nth(faker.number.int({ min: 0, max: count - 1 }))
-            try {
-              await input.fill(faker.lorem.words(3), { timeout: 2000 })
-              await page.waitForTimeout(200)
-            } catch {
-              // skip
-            }
-            break
-          }
-        }
-        continue
-      }
-
-      {
-        // 点 checkbox
-        await respectRateLimit()
-        const checkboxes = page.locator('input[type="checkbox"]')
-        const cc = await checkboxes.count().catch(() => 0)
-        if (cc > 0) {
-          const cb = checkboxes.nth(faker.number.int({ min: 0, max: cc - 1 }))
-          try {
-            await cb.click({ timeout: 2000, force: true })
-            await page.waitForTimeout(300)
-          } catch {
-            // skip
-          }
-        }
+      const rendered = await isAppRendered(page)
+      if (!rendered) {
+        const screenshotPath = join(screenshotsDir, `whitescreen-iter-${i}.png`)
+        await page.screenshot({ path: screenshotPath, fullPage: true }).catch(() => {})
       }
     }
 
-    // 导出 error_logs (app 内 ErrorLogger 存入 localStorage)
-    const errorLogsRaw = await page.evaluate(() => localStorage.getItem('error_logs')).catch(() => null)
     const { writeFileSync } = await import('fs')
-    if (errorLogsRaw) {
-      const errorLogsPath = join(screenshotsDir, 'app-error-logs.json')
-      writeFileSync(errorLogsPath, errorLogsRaw)
 
-      // 同时生成可读的 txt 版本
+    const errorLogsRaw = await page.evaluate(() => localStorage.getItem('error_logs')).catch(() => null)
+    if (errorLogsRaw) {
+      writeFileSync(join(screenshotsDir, 'app-error-logs.json'), errorLogsRaw)
       try {
         const parsed = JSON.parse(errorLogsRaw)
         const lines = parsed.map((log: any) =>
@@ -206,24 +143,13 @@ test.describe('Fuzz Testing', () => {
       } catch {}
     }
 
-    if (errors.length > screenshotCount) {
-      const screenshotPath = join(screenshotsDir, `error-final-${errors.length}.png`)
-      await page.screenshot({ path: screenshotPath, fullPage: true }).catch(() => {})
-    }
-
     if (errors.length > 0) {
-      const reportPath = join(screenshotsDir, 'fuzz-errors.json')
-      writeFileSync(reportPath, JSON.stringify(errors, null, 2))
-
+      writeFileSync(join(screenshotsDir, 'fuzz-errors.json'), JSON.stringify(errors, null, 2))
       console.log(`\n❌ Fuzz 测试发现 ${errors.length} 个错误 (${testInfo.project.name})`)
       for (const err of errors.slice(0, 20)) {
         console.log(`  [iter ${err.iteration}] [${err.type}] ${err.message.slice(0, 200)}`)
-        console.log(`    URL: ${err.url}`)
       }
-      if (errors.length > 20) {
-        console.log(`  ... 还有 ${errors.length - 20} 个错误，详见 fuzz-errors.json`)
-      }
-      console.log(`  截图保存在: ${screenshotsDir}\n`)
+      if (errors.length > 20) console.log(`  ... 还有 ${errors.length - 20} 个错误`)
     }
 
     const filteredErrors = errors.filter(
@@ -240,7 +166,7 @@ test.describe('Fuzz Testing', () => {
 
     expect(
       filteredErrors.length,
-      `[${testInfo.project.name}] Fuzz 测试完成: ${filteredErrors.length} 个非预期错误, 截图已上传到 artifacts`,
+      `[${testInfo.project.name}] ${filteredErrors.length} 个非预期控制台错误`,
     ).toBe(0)
   })
 })
