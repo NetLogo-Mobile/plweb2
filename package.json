@@ -24,6 +24,8 @@
     "vue-router": "^4.6.3"
   },
   "devDependencies": {
+    "@faker-js/faker": "^10.4.0",
+    "@playwright/test": "^1.60.0",
     "@types/katex": "^0.16.8",
     "@types/node": "^24.10.0",
     "@typescript-eslint/eslint-plugin": "^8.37.0",

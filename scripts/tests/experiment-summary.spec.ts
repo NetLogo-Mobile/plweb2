@@ -105,7 +105,7 @@ test.describe('作品详情页 (ExperimentSummary)', () => {
               Category: TEST_CATEGORY,
               Tags: ['physics', 'test'],
               Image: 1,
-              UserID: 'test-user-001',
+              UserID: '6666ff550b5f97d6e49d12d7',
               Nickname: 'TestUser',
               Avatar: 1,
               Date: new Date().toISOString(),

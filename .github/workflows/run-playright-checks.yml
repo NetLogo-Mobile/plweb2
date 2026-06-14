@@ -1,9 +1,11 @@
-name: PR CI
+name: playwright-checks
 
 on:
   pull_request:
     branches: [main, dev, feature/**]
   workflow_dispatch:
+  push:
+    branches: [main, dev, feature/**]
 
 permissions:
   contents: read
@@ -16,9 +18,8 @@ env:
 
 jobs:
   test:
-    name: 🧪 Lint & TypeScript & Playwright
+    name: run playwright checks
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -45,23 +46,27 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
+      - name: Start dev server
+        run: |
+          npm run dev > /dev/null 2>&1 &
+          for i in $(seq 1 60); do
+            curl -s http://localhost:5173 > /dev/null 2>&1 && break
+            sleep 1
+          done
+
       - name: Run Playwright tests
-        run: npx playwright test --config scripts/tests/playwright.config.ts
+        run: npx playwright test --config scripts/tests/playwright.config.ts --project=chromium
         env:
           CI: true
 
-      - name: Upload Playwright report
-        uses: actions/upload-artifact@v4
+      - name: Kill dev server
         if: always()
-        with:
-          name: playwright-report
-          path: scripts/tests/reports/
-          retention-days: 30
+        run: pkill -f "vite" || true
 
-      - name: Upload static analysis report
+      - name: Upload all test artifacts
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: static-analysis-report
-          path: scripts/tests/reports/static-analysis-report.json
+          name: test-results
+          path: scripts/tests/reports/
           retention-days: 30

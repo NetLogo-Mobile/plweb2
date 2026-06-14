@@ -79,7 +79,7 @@ test.describe('API 覆盖率验证', () => {
     await emailInput.fill('xiegushi2022@outlook.com')
 
     const passwordInput = page.locator('.inputArea input[type="password"]').first()
-    await passwordInput.fill('hh090108')
+    await passwordInput.fill('123456')
 
     await page.locator('.loginButton').first().click()
     await page.waitForTimeout(2000)
@@ -114,7 +114,7 @@ test.describe('API 覆盖率验证', () => {
 
     await injectLoginStateWithoutNavigation(page)
 
-    await page.goto('/#/u/test-user-001')
+    await page.goto('/#/u/6666ff550b5f97d6e49d12d7')
     await waitForPageReady(page)
     await page.waitForTimeout(5000)
 
