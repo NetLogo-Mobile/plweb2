@@ -11,6 +11,7 @@ type localStorages =
   | 'apiResponseCache'
   | 'userIDAndAvatarIDMap'
   | 'userAuthInfo'
+  | 'quickSwitchAccounts'
   | 'cookieConsent'
 
 interface StorageResult<T> {
