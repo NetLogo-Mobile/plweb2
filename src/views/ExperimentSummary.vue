@@ -190,7 +190,7 @@ const replyID = ref('')
 const selectedTab = ref('Intro')
 const route = useRoute()
 const router = useRouter()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const returnImagePath = ref(getPath('/@base/assets/library/Navigation-Return.png'))
 const routeCategory = computed(() => getRouteCategory(route, 'Experiment'))
 
@@ -327,10 +327,59 @@ function goBack() {
   window.history.back()
 }
 
+let fallbackTimer: ReturnType<typeof setTimeout> | null = null
+let cleanedUp = false
+
+onUnmounted(() => {
+  if (fallbackTimer !== null) {
+    clearTimeout(fallbackTimer)
+    fallbackTimer = null
+  }
+})
+
 function goToExperiment() {
+  if (fallbackTimer !== null) return
+
   const category = routeCategory.value.toLowerCase()
   const contentType = category === 'experiment' ? 'experiment' : 'discussion'
   const target = `physics://chinese/${contentType}/${route.params.id as string}`
+  const installUrl = (locale.value.startsWith('zh') || locale.value === 'Chinese')
+    ? 'https://pl.turtlesim.com/app/cn'
+    : 'https://pl.turtlesim.com/app'
+
+  let appOpened = false
+  cleanedUp = false
+
+  const onVisibility = () => {
+    if (document.hidden) {
+      cleanUp()
+    }
+  }
+
+  const onBlur = () => {
+    cleanUp()
+  }
+
+  const cleanUp = () => {
+    if (cleanedUp) return
+    cleanedUp = true
+    appOpened = true
+    if (fallbackTimer !== null) {
+      clearTimeout(fallbackTimer)
+      fallbackTimer = null
+    }
+    document.removeEventListener('visibilitychange', onVisibility)
+    window.removeEventListener('blur', onBlur)
+  }
+
+  fallbackTimer = setTimeout(() => {
+    if (!appOpened) {
+      window.location.href = installUrl
+    }
+  }, 800)
+
+  document.addEventListener('visibilitychange', onVisibility)
+  window.addEventListener('blur', onBlur)
   window.location.href = target
 }
 
