@@ -187,6 +187,16 @@ export default {
     blackHole: 'Trou noir',
     friends: 'Amis',
     notifications: 'Notifications',
+    my: 'Moi',
+  },
+
+  myPage: {
+    publishedExperiment: 'Expériences publiées',
+    publishedDiscussion: 'Discussions publiées',
+    favoriteExperiment: 'Expériences favorites',
+    favoriteDiscussion: 'Discussions favorites',
+    supportedExperiment: 'Expériences soutenues',
+    supportedDiscussion: 'Discussions soutenues',
   },
   ui: {
     messages: {

@@ -40,6 +40,12 @@
         </svg>
         <span>我的</span>
       </router-link> -->
+      <router-link to="/my">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 12a5 5 0 100-10 5 5 0 000 10zm-7 9a7 7 0 0114 0" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+        </svg>
+        <span>{{ $t('footer.my') }}</span>
+      </router-link>
       <router-link to="/f">
         <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path
