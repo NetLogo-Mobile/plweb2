@@ -1,5 +1,6 @@
 <template>
   <div id="app" @click="handleClick">
+    <NetworkStatusBanner :is-online="isOnline" :is-poor-connection="isPoorConnection" />
     <CookieNotice />
     <router-view v-slot="{ Component }">
       <!-- keep alive源自于vue-router的缓存 -->
@@ -15,6 +16,9 @@
 <script setup lang="ts">
 import showUserCard from '@popup/userProfileDialog.ts'
 import CookieNotice from './components/utils/CookieNotice.vue'
+import NetworkStatusBanner from './components/utils/NetworkStatusBanner.vue'
+import { useNetworkStatus } from './services/useNetworkStatus'
+const { isOnline, isPoorConnection } = useNetworkStatus()
 function handleClick(event: MouseEvent) {
   const target = event.target as HTMLElement
   if (target.classList.contains('RUser')) {

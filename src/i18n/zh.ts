@@ -184,6 +184,11 @@ export default {
     friends: '好友',
     notifications: '通知',
   },
+  network: {
+    offline: '您当前处于离线状态',
+    poorConnection: '您的网络连接不稳定',
+    usingCache: '正在从缓存读取数据',
+  },
   ui: {
     messages: {
       loading: '加载中...',

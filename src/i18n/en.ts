@@ -187,6 +187,11 @@ export default {
     friends: 'Friends',
     notifications: 'Notifications',
   },
+  network: {
+    offline: 'You are currently offline',
+    poorConnection: 'Your network connection is unstable',
+    usingCache: 'Reading data from cache',
+  },
   ui: {
     messages: {
       loading: 'Loading...',

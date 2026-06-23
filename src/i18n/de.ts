@@ -188,6 +188,11 @@ export default {
     friends: 'Freunde',
     notifications: 'Benachrichtigungen',
   },
+  network: {
+    offline: 'Sie sind derzeit offline',
+    poorConnection: 'Ihre Netzwerkverbindung ist instabil',
+    usingCache: 'Daten werden aus dem Cache gelesen',
+  },
   ui: {
     messages: {
       loading: 'Wird geladen...',
