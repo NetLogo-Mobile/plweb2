@@ -24,6 +24,23 @@ function canCache(path: string): boolean {
   return CACHEABLE_PATHS.has(path)
 }
 
+/**
+ * Snapshot mode: when __snapshotData is set on window, return data
+ * directly without making network requests. This is used by the
+ * screenshot pipeline to inject historical data.
+ */
+function getSnapshotData(npath: string): Result | null {
+  try {
+    const win = window as any
+    if (win.__snapshotMode && win.__snapshotData?.[npath]) {
+      return win.__snapshotData[npath] as Result
+    }
+  } catch {
+    // Not in browser environment
+  }
+  return null
+}
+
 function applyAfterRequest<T extends Result>(data: T): T {
   const afterRes = afterRequest(data)
   if (afterRes.continue === false) {
@@ -34,6 +51,13 @@ function applyAfterRequest<T extends Result>(data: T): T {
 
 async function getDataImpl(path: string, body?: unknown): Promise<any> {
   const npath = normalizePath(String(path))
+
+  // Snapshot mode: return cached data without network request
+  const snapshotData = getSnapshotData(npath)
+  if (snapshotData) {
+    return applyAfterRequest(snapshotData)
+  }
+
   const beforeRes = beforeRequest(npath)
   if (beforeRes.continue === false) {
     return (beforeRes.data ?? {}) as Result

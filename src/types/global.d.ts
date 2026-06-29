@@ -9,7 +9,10 @@ declare global {
     new (message?: string | unknown): Error
     (message?: string | unknown): Error
   }
+
+  // Snapshot mode types for screenshot pipeline
+  var __snapshotMode: boolean | undefined
+  var __snapshotData: Record<string, any> | undefined
 }
 
-// 重新导出 Error 以确保类型系统正确识别
 export {}
