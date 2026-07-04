@@ -15,6 +15,7 @@ permissions:
 
 env:
   NODE_VERSION: '22'
+  VITE_API_URL: https://physics-api.turtlesim.com
 
 jobs:
   test:
