@@ -1,12 +1,19 @@
 /**
  * API 覆盖率测试
- * 
+ *
  * 确保所有已知 API 路径在浏览器测试中都能被正确拦截和响应
  * 验证 mock 数据结构与实际 API 契约一致
  */
 
 import { test, expect } from '@playwright/test'
-import { interceptAllAPIs, injectLoginState, injectLoginStateWithoutNavigation, waitForPageReady, trackApiRequests, assertNoWhiteScreen } from './test-helpers'
+import {
+  interceptAllAPIs,
+  injectLoginState,
+  injectLoginStateWithoutNavigation,
+  waitForPageReady,
+  trackApiRequests,
+  assertNoWhiteScreen,
+} from './test-helpers'
 import { getAllApiPaths } from './api-mocks'
 
 test.describe('API 覆盖率验证', () => {
@@ -119,8 +126,10 @@ test.describe('API 覆盖率验证', () => {
     await page.waitForTimeout(5000)
 
     // 验证 API 被调用
-    expect(calledApis.length > 0,
-      `应触发 API 调用，实际调用: ${calledApis.join(', ')}`).toBeTruthy()
+    expect(
+      calledApis.length > 0,
+      `应触发 API 调用，实际调用: ${calledApis.join(', ')}`,
+    ).toBeTruthy()
   })
 
   test('未 mock 的 API 路径应返回通用成功响应', async ({ page }) => {

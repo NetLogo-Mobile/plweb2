@@ -1,6 +1,6 @@
 /**
  * 导航与路由测试
- * 
+ *
  * 测试内容：
  * - 所有路由页面可访问性
  * - 路由切换不白屏
@@ -10,7 +10,12 @@
  */
 
 import { test, expect } from '@playwright/test'
-import { interceptAllAPIs, injectLoginState, waitForPageReady, assertNoWhiteScreen } from './test-helpers'
+import {
+  interceptAllAPIs,
+  injectLoginState,
+  waitForPageReady,
+  assertNoWhiteScreen,
+} from './test-helpers'
 
 test.describe('路由与导航', () => {
   test.beforeEach(async ({ page }) => {

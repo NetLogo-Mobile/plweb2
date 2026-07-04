@@ -159,7 +159,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onActivated ,onMounted } from 'vue'
+import { ref, computed, onActivated, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getRouteCategory } from '../router/category'
 import { canEditSummary } from '@services/editor/cloudWorks'
@@ -305,7 +305,6 @@ async function fetchSummary() {
 onMounted(() => {
   fetchSummary()
 })
-
 
 function handleMsgClick(item: CommentResult) {
   replyID.value = item.UserID

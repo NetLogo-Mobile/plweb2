@@ -1,6 +1,6 @@
 /**
  * API Mock 数据工厂
- * 
+ *
  * 覆盖 plweb2 所有已知 API 路径（来自 src/services/api/types.ts PathMap）
  * 确保每个 API 端点都有对应的 mock 响应
  */
@@ -175,7 +175,13 @@ export const apiMocks: Record<string, (body?: unknown) => unknown> = {
     // 匿名访问（null, null）
     return successResponse({
       User: { ...mockUser, Nickname: null },
-      Statistic: { FollowerCount: 0, FollowingCount: 0, CommentCount: 0, ExperimentCount: 0, Cover: null },
+      Statistic: {
+        FollowerCount: 0,
+        FollowingCount: 0,
+        CommentCount: 0,
+        ExperimentCount: 0,
+        Cover: null,
+      },
       Library: {
         Blocks: [
           {

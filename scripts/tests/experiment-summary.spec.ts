@@ -1,13 +1,13 @@
 /**
  * 作品详情页测试 - ExperimentSummary.vue
- * 
+ *
  * 测试内容：
  * - 作品详情页加载
  * - 作品信息展示（标题、标签、描述）
  * - 评论标签页
  * - 导航返回
  * - API 覆盖（/Contents/GetSummary, /Messages/GetComments）
- * 
+ *
  * 测试路径: /p/Discussion/66a84559744ed757b46f8917
  */
 

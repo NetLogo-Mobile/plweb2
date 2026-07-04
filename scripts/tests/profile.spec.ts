@@ -1,6 +1,6 @@
 /**
  * 用户资料页测试 - Profile.vue
- * 
+ *
  * 测试内容：
  * - 用户资料页加载
  * - 用户信息展示
@@ -11,7 +11,14 @@
  */
 
 import { test, expect } from '@playwright/test'
-import { interceptAllAPIs, injectLoginState, injectLoginStateWithoutNavigation, waitForPageReady, assertNoWhiteScreen, TEST_USER_ID } from './test-helpers'
+import {
+  interceptAllAPIs,
+  injectLoginState,
+  injectLoginStateWithoutNavigation,
+  waitForPageReady,
+  assertNoWhiteScreen,
+  TEST_USER_ID,
+} from './test-helpers'
 
 test.describe('用户资料页 (Profile)', () => {
   test.beforeEach(async ({ page }) => {
@@ -103,7 +110,9 @@ test.describe('用户资料页 (Profile)', () => {
     await page.waitForTimeout(5000)
 
     // 验证 API 被调用
-    expect(calledApis.length > 0,
-      `应触发 API 调用，实际调用: ${calledApis.join(', ')}`).toBeTruthy()
+    expect(
+      calledApis.length > 0,
+      `应触发 API 调用，实际调用: ${calledApis.join(', ')}`,
+    ).toBeTruthy()
   })
 })

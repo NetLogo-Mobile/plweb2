@@ -1,6 +1,6 @@
 /**
  * 登录流程测试 - loginModel.vue
- * 
+ *
  * 测试内容：
  * - 登录弹窗显示
  * - 邮箱/密码输入
@@ -27,14 +27,19 @@ test.describe('登录流程', () => {
 
     // 验证登录弹窗出现 - 使用更精确的选择器
     // loginModel 的 .container 是 fixed 定位的遮罩层
-    const loginOverlay = page.locator('.container[style*="position: fixed"], .container[style*="position:fixed"]').first()
+    const loginOverlay = page
+      .locator('.container[style*="position: fixed"], .container[style*="position:fixed"]')
+      .first()
     if (await loginOverlay.isVisible()) {
       // 找到了 fixed 定位的登录弹窗
       const loginCard = loginOverlay.locator('.card')
       await expect(loginCard).toBeVisible({ timeout: 5000 })
     } else {
       // 回退：查找包含 n-tabs 的 card（登录弹窗特征）
-      const loginCard = page.locator('.card').filter({ has: page.locator('.card-tabs') }).first()
+      const loginCard = page
+        .locator('.card')
+        .filter({ has: page.locator('.card-tabs') })
+        .first()
       await expect(loginCard).toBeVisible({ timeout: 5000 })
     }
   })
@@ -134,7 +139,10 @@ test.describe('登录流程', () => {
     await page.waitForTimeout(2000)
 
     // 登录弹窗不应关闭（因为登录失败）
-    const loginCard = page.locator('.card').filter({ has: page.locator('.card-tabs') }).first()
+    const loginCard = page
+      .locator('.card')
+      .filter({ has: page.locator('.card-tabs') })
+      .first()
     await expect(loginCard).toBeVisible({ timeout: 3000 })
   })
 
@@ -144,16 +152,24 @@ test.describe('登录流程', () => {
 
     // 打开登录弹窗
     await page.locator('.user').click()
-    const loginCard = page.locator('.card').filter({ has: page.locator('.card-tabs') }).first()
+    const loginCard = page
+      .locator('.card')
+      .filter({ has: page.locator('.card-tabs') })
+      .first()
     await expect(loginCard).toBeVisible({ timeout: 5000 })
 
     // 查找关闭按钮 - loginModel 中有 .close-btn 或 n-icon 类的关闭按钮
-    const closeBtn = page.locator('.close-btn, .container .n-icon, .container button[title]').first()
+    const closeBtn = page
+      .locator('.close-btn, .container .n-icon, .container button[title]')
+      .first()
     if (await closeBtn.isVisible()) {
       await closeBtn.click()
     } else {
       // 回退：点击遮罩层区域
-      const overlay = page.locator('.container').filter({ has: page.locator('.card-tabs') }).first()
+      const overlay = page
+        .locator('.container')
+        .filter({ has: page.locator('.card-tabs') })
+        .first()
       await overlay.click({ position: { x: 5, y: 5 }, force: true })
     }
 

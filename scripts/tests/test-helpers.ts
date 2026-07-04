@@ -1,11 +1,17 @@
 /**
  * Playwright 测试辅助工具
- * 
+ *
  * 提供 API 拦截、登录状态注入、通用断言等工具函数
  */
 
 import { type Page, type Route, expect } from '@playwright/test'
-import { getMockResponse, getAllApiPaths, TEST_USER_ID, TEST_EXPERIMENT_ID, TEST_CATEGORY } from './api-mocks'
+import {
+  getMockResponse,
+  getAllApiPaths,
+  TEST_USER_ID,
+  TEST_EXPERIMENT_ID,
+  TEST_CATEGORY,
+} from './api-mocks'
 
 // Re-export constants for convenience
 export { TEST_USER_ID, TEST_EXPERIMENT_ID, TEST_CATEGORY }
@@ -180,10 +186,13 @@ export async function injectLoginStateWithoutNavigation(page: Page) {
 export async function waitForPageReady(page: Page, options?: { timeout?: number }) {
   const timeout = options?.timeout || 30000
   // 等待 Vue 应用挂载 - #app 存在且有子内容
-  await page.waitForFunction(() => {
-    const app = document.getElementById('app')
-    return app && app.children.length > 0
-  }, { timeout })
+  await page.waitForFunction(
+    () => {
+      const app = document.getElementById('app')
+      return app && app.children.length > 0
+    },
+    { timeout },
+  )
   // 等待网络空闲
   await page.waitForLoadState('networkidle', { timeout }).catch(() => {
     // networkidle 可能超时，不阻塞测试

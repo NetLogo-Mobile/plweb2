@@ -5,25 +5,19 @@ import { join } from 'path'
 import { injectLoginStateWithoutNavigation } from './test-helpers'
 
 // 只有 Footer 那几个页面可以直接打开，其他靠点击自然跳转
-const ROUTES = [
-  '/', '/b', '/n', '/f', '/s', '/about',
-  '/nonexistent-page',
-]
+const ROUTES = ['/', '/b', '/n', '/f', '/s', '/about', '/nonexistent-page']
 
 async function isAppRendered(page: any) {
-  return page.evaluate(() => {
-    const app = document.getElementById('app')
-    return app !== null && app.children.length > 0
-  }).catch(() => false)
+  return page
+    .evaluate(() => {
+      const app = document.getElementById('app')
+      return app !== null && app.children.length > 0
+    })
+    .catch(() => false)
 }
 
 async function pickRandomNavigable(page: any) {
-  const selectors = [
-    'a',
-    'button',
-    '[role="button"]',
-    'footer a',
-  ]
+  const selectors = ['a', 'button', '[role="button"]', 'footer a']
   const candidates: any[] = []
   for (const sel of selectors) {
     const loc = page.locator(sel)
@@ -40,7 +34,14 @@ test.describe('Fuzz Testing', () => {
   test('1000 次随机交互 — 基于真实渲染元素 @fuzz', async ({ page }, testInfo) => {
     test.setTimeout(1800000)
 
-    const screenshotsDir = join(process.cwd(), 'scripts', 'tests', 'reports', 'fuzz', testInfo.project.name)
+    const screenshotsDir = join(
+      process.cwd(),
+      'scripts',
+      'tests',
+      'reports',
+      'fuzz',
+      testInfo.project.name,
+    )
     mkdirSync(screenshotsDir, { recursive: true })
 
     interface FuzzError {
@@ -129,16 +130,19 @@ test.describe('Fuzz Testing', () => {
 
     const { writeFileSync } = await import('fs')
 
-    const errorLogsRaw = await page.evaluate(() => localStorage.getItem('error_logs')).catch(() => null)
+    const errorLogsRaw = await page
+      .evaluate(() => localStorage.getItem('error_logs'))
+      .catch(() => null)
     if (errorLogsRaw) {
       writeFileSync(join(screenshotsDir, 'app-error-logs.json'), errorLogsRaw)
       try {
         const parsed = JSON.parse(errorLogsRaw)
-        const lines = parsed.map((log: any) =>
-          `[${new Date(log.timestamp).toISOString()}] ${log.type.toUpperCase()}: ${log.message}` +
-          (log.url ? `\n  URL: ${log.url}` : '') +
-          (log.stack ? `\n  Stack: ${log.stack}` : '') +
-          (log.statusCode ? `\n  Status: ${log.statusCode}` : '')
+        const lines = parsed.map(
+          (log: any) =>
+            `[${new Date(log.timestamp).toISOString()}] ${log.type.toUpperCase()}: ${log.message}` +
+            (log.url ? `\n  URL: ${log.url}` : '') +
+            (log.stack ? `\n  Stack: ${log.stack}` : '') +
+            (log.statusCode ? `\n  Status: ${log.statusCode}` : ''),
         )
         writeFileSync(join(screenshotsDir, 'app-error-logs.txt'), lines.join('\n\n'))
       } catch {}

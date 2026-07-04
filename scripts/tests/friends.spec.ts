@@ -28,7 +28,9 @@ test.describe('好友/社交页 (Friends)', () => {
     const tabLabels = ['follower', 'volunteers', 'editors', 'en', 'baned']
 
     for (const name of tabLabels) {
-      const tab = page.locator(`.n-tabs-tab[data-name="${name}"], .n-tabs-tab`).filter({ hasText: new RegExp(name, 'i') })
+      const tab = page
+        .locator(`.n-tabs-tab[data-name="${name}"], .n-tabs-tab`)
+        .filter({ hasText: new RegExp(name, 'i') })
       if (await tab.isVisible().catch(() => false)) {
         await tab.click()
         await page.waitForTimeout(1500)

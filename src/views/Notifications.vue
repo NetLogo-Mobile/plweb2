@@ -53,6 +53,7 @@ import Footer from '../components/utils/Footer.vue'
 import { nextTick, onActivated } from 'vue'
 import { checkLogin } from '@services/utils'
 import { clearNotificationUnread } from '@services/notificationUnread'
+import storageManager from '@storage/index.ts'
 
 onActivated(async () => {
   clearNotificationUnread()

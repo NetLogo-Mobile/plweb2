@@ -1,6 +1,6 @@
 /**
  * 首页测试 - Home.vue
- * 
+ *
  * 测试内容：
  * - 首页加载与渲染
  * - 匿名用户访问
@@ -11,7 +11,13 @@
  */
 
 import { test, expect } from '@playwright/test'
-import { interceptAllAPIs, injectLoginState, waitForPageReady, assertNoWhiteScreen, navigateTo } from './test-helpers'
+import {
+  interceptAllAPIs,
+  injectLoginState,
+  waitForPageReady,
+  assertNoWhiteScreen,
+  navigateTo,
+} from './test-helpers'
 
 test.describe('首页 (Home)', () => {
   test.beforeEach(async ({ page }) => {
