@@ -10,13 +10,9 @@
  */
 
 import { test, expect } from '@playwright/test'
-import { interceptAllAPIs, waitForPageReady, assertNoWhiteScreen } from './test-helpers'
+import { waitForPageReady, assertNoWhiteScreen } from './test-helpers'
 
 test.describe('登录流程', () => {
-  test.beforeEach(async ({ page }) => {
-    await interceptAllAPIs(page)
-  })
-
   test('点击用户区域应弹出登录弹窗', async ({ page }) => {
     await page.goto('/')
     await waitForPageReady(page)

@@ -13,7 +13,6 @@
 
 import { test, expect } from '@playwright/test'
 import {
-  interceptAllAPIs,
   injectLoginState,
   waitForPageReady,
   assertNoWhiteScreen,
@@ -22,9 +21,6 @@ import {
 } from './test-helpers'
 
 test.describe('作品详情页 (ExperimentSummary)', () => {
-  test.beforeEach(async ({ page }) => {
-    await interceptAllAPIs(page)
-  })
 
   test('应正常加载作品详情页', async ({ page }) => {
     await page.goto(`/#/p/${TEST_CATEGORY}/${TEST_EXPERIMENT_ID}`)

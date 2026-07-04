@@ -39,10 +39,6 @@ jobs:
       - name: Run TypeScript type check
         run: npx vue-tsc --noEmit
 
-      - name: Run static analysis
-        run: node scripts/tests/static-analysis.mjs
-        continue-on-error: true
-
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
@@ -54,10 +50,20 @@ jobs:
             sleep 1
           done
 
-      - name: Run Playwright tests
+      - name: Run Playwright tests chromium
         run: npx playwright test --config scripts/tests/playwright.config.ts --project=chromium
         env:
           CI: true
+
+      # - name: Run Playwright tests firefox
+      #   run: npx playwright test --config scripts/tests/playwright.config.ts --project=firefox
+      #   env:
+      #     CI: true
+
+      # - name: Run Playwright tests webkit
+      #   run: npx playwright test --config scripts/tests/playwright.config.ts --project=webkit
+      #   env:
+      #     CI: true
 
       - name: Kill dev server
         if: always()

@@ -11,7 +11,6 @@
 
 import { test, expect } from '@playwright/test'
 import {
-  interceptAllAPIs,
   injectLoginState,
   waitForPageReady,
   assertNoWhiteScreen,
@@ -19,7 +18,6 @@ import {
 
 test.describe('路由与导航', () => {
   test.beforeEach(async ({ page }) => {
-    await interceptAllAPIs(page)
     await injectLoginState(page)
   })
 

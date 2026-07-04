@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { faker } from '@faker-js/faker'
 import {
-  interceptAllAPIs,
   injectLoginState,
   injectLoginStateWithoutNavigation,
   waitForPageReady,
@@ -12,9 +11,6 @@ import {
 } from './test-helpers'
 
 test.describe('用户操作流程 (Workflows)', () => {
-  test.beforeEach(async ({ page }) => {
-    await interceptAllAPIs(page)
-  })
 
   test('完整浏览流程: 首页 → 作品 → 返回', async ({ page }) => {
     await injectLoginState(page)

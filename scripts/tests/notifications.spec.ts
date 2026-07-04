@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test'
 import {
-  interceptAllAPIs,
   injectLoginState,
   waitForPageReady,
   assertNoWhiteScreen,
@@ -8,7 +7,6 @@ import {
 
 test.describe('通知中心 (Notifications)', () => {
   test.beforeEach(async ({ page }) => {
-    await interceptAllAPIs(page)
     await injectLoginState(page)
   })
 

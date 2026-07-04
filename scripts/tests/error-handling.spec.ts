@@ -1,7 +1,5 @@
 import { test, expect } from '@playwright/test'
 import {
-  interceptAllAPIs,
-  injectLoginState,
   waitForPageReady,
   assertNoWhiteScreen,
   TEST_EXPERIMENT_ID,
@@ -9,9 +7,6 @@ import {
 } from './test-helpers'
 
 test.describe('错误状态与边界 (Error Handling)', () => {
-  test.beforeEach(async ({ page }) => {
-    await interceptAllAPIs(page)
-  })
 
   test('网络故障时页面不应白屏', async ({ page }) => {
     await page.route('**/api/**', async (route) => {
@@ -25,7 +20,7 @@ test.describe('错误状态与边界 (Error Handling)', () => {
   })
 
   test('API 超时应显示友好提示', async ({ page }) => {
-    await page.route('**/api/**', async (route) => {
+    await page.route('**/api/**', async () => {
       await new Promise((resolve) => setTimeout(resolve, 30000))
     })
 

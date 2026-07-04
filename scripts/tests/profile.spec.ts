@@ -12,7 +12,6 @@
 
 import { test, expect } from '@playwright/test'
 import {
-  interceptAllAPIs,
   injectLoginState,
   injectLoginStateWithoutNavigation,
   waitForPageReady,
@@ -21,9 +20,6 @@ import {
 } from './test-helpers'
 
 test.describe('用户资料页 (Profile)', () => {
-  test.beforeEach(async ({ page }) => {
-    await interceptAllAPIs(page)
-  })
 
   test('应正常加载用户资料页', async ({ page }) => {
     await page.goto(`/#/u/${TEST_USER_ID}`)
@@ -94,7 +90,7 @@ test.describe('用户资料页 (Profile)', () => {
   test('资料页应触发 GetProfile 和 GetUser API', async ({ page }) => {
     const calledApis: string[] = []
 
-    // 使用 page.on('request') 追踪 API 调用（不与 interceptAllAPIs 冲突）
+    // 使用 page.on('request') 追踪 API 调用
     page.on('request', (request) => {
       const url = request.url()
       if (url.includes('/api/')) {

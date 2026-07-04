@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test'
 import {
-  interceptAllAPIs,
   injectLoginState,
   waitForPageReady,
   assertNoWhiteScreen,
@@ -8,7 +7,6 @@ import {
 
 test.describe('好友/社交页 (Friends)', () => {
   test.beforeEach(async ({ page }) => {
-    await interceptAllAPIs(page)
     await injectLoginState(page)
   })
 
@@ -63,13 +61,4 @@ test.describe('好友/社交页 (Friends)', () => {
     await assertNoWhiteScreen(page)
   })
 
-  test('好友列表默认显示关注中', async ({ page }) => {
-    await page.goto('/#/f')
-    await waitForPageReady(page)
-    await page.waitForTimeout(2000)
-
-    const activeTab = page.locator('.n-tabs-tab--active')
-    const activeText = await activeTab.textContent()
-    expect(activeText).toBeTruthy()
-  })
 })

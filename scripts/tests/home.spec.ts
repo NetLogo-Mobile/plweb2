@@ -12,7 +12,6 @@
 
 import { test, expect } from '@playwright/test'
 import {
-  interceptAllAPIs,
   injectLoginState,
   waitForPageReady,
   assertNoWhiteScreen,
@@ -20,10 +19,6 @@ import {
 } from './test-helpers'
 
 test.describe('首页 (Home)', () => {
-  test.beforeEach(async ({ page }) => {
-    await interceptAllAPIs(page)
-  })
-
   test('匿名用户访问首页应正常加载', async ({ page }) => {
     await page.goto('/')
     await waitForPageReady(page)

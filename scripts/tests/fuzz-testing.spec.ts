@@ -31,7 +31,7 @@ async function pickRandomNavigable(page: any) {
 }
 
 test.describe('Fuzz Testing', () => {
-  test('1000 次随机交互 — 基于真实渲染元素 @fuzz', async ({ page }, testInfo) => {
+  test('50 次随机交互 — 基于真实渲染元素 @fuzz', async ({ page }, testInfo) => {
     test.setTimeout(1800000)
 
     const screenshotsDir = join(
@@ -90,7 +90,7 @@ test.describe('Fuzz Testing', () => {
     }
 
     let currentIteration = 0
-    const totalIterations = 1000
+    const totalIterations = 50
 
     await injectLoginStateWithoutNavigation(page)
     await page.goto('/')

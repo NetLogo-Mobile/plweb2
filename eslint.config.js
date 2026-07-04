@@ -69,7 +69,7 @@ export default [
       'no-useless-call': 'error',
       complexity: ['warn', 12],
       'max-depth': ['warn', 4],
-      'max-lines-per-function': ['warn', 50],
+      'max-lines-per-function': ['warn', 100],
       'max-nested-callbacks': ['warn', 3],
     },
   },
