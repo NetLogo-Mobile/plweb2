@@ -12,7 +12,7 @@ export default defineConfig({
   testDir: '.',
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
+  retries: 0,
   workers: 1,
   reporter: [
     ['list'],
@@ -21,7 +21,7 @@ export default defineConfig({
   ],
   use: {
     baseURL: 'http://localhost:5173',
-    trace: 'on-first-retry',
+    trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
     actionTimeout: 15000,

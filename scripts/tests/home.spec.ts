@@ -15,7 +15,6 @@ import {
   injectLoginState,
   waitForPageReady,
   assertNoWhiteScreen,
-  navigateTo,
 } from './test-helpers'
 
 test.describe('首页 (Home)', () => {

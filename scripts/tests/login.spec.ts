@@ -10,7 +10,7 @@
  */
 
 import { test, expect } from '@playwright/test'
-import { waitForPageReady, assertNoWhiteScreen } from './test-helpers'
+import { waitForPageReady} from './test-helpers'
 
 test.describe('登录流程', () => {
   test('点击用户区域应弹出登录弹窗', async ({ page }) => {

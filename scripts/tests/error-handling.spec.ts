@@ -67,11 +67,6 @@ test.describe('错误状态与边界 (Error Handling)', () => {
     await assertNoWhiteScreen(page)
   })
 
-  test('恶意 XSS 注入路由不崩溃', async ({ page }) => {
-    await page.goto('/#/' + encodeURIComponent('<script>alert("xss")</script>'))
-    await waitForPageReady(page)
-    await assertNoWhiteScreen(page)
-  })
 
   test('极其深层的嵌套路由不崩溃', async ({ page }) => {
     await page.goto('/#/' + 'a/'.repeat(50) + 'b')

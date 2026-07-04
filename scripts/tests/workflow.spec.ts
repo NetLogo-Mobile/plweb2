@@ -2,7 +2,6 @@ import { test, expect } from '@playwright/test'
 import { faker } from '@faker-js/faker'
 import {
   injectLoginState,
-  injectLoginStateWithoutNavigation,
   waitForPageReady,
   assertNoWhiteScreen,
   TEST_EXPERIMENT_ID,

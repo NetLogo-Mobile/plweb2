@@ -53,11 +53,6 @@ test.describe('用户资料页 (Profile)', () => {
     await page.goto(`/#/u/${TEST_USER_ID}`)
     await waitForPageReady(page)
     await page.waitForTimeout(3000)
-
-    // 自己的资料页应有设置按钮 - 使用 button 选择器加 title 属性
-    const settingsBtn = page.locator('button[title]').first()
-    // 设置按钮可能存在也可能不存在，取决于 isOwnProfile 的判断
-    // 由于 mock 数据的 ID 需要匹配，我们验证页面正常加载即可
     await assertNoWhiteScreen(page)
   })
 
