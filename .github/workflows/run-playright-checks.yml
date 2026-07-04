@@ -75,4 +75,4 @@ jobs:
         with:
           name: test-results
           path: scripts/tests/reports/
-          retention-days: 30
+          retention-days: 7

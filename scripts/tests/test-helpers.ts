@@ -33,8 +33,8 @@ export async function injectLoginState(page: Page) {
   await page.evaluate(() => {
     const authInfo = {
       value: {
-        token: 'mock-token-12345',
-        authCode: 'mock-auth-code-12345',
+        token: 'e2xIE184iJfh0Clr9AZuPQvjNBUckTpD',
+        authCode: 'oBUqDE5h8pyXLSanFbdr30PTIsgukW7O',
         userId: '6666ff550b5f97d6e49d12d7',
       },
       time: Date.now(),
