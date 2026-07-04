@@ -36,8 +36,8 @@ export async function injectLoginStateWithoutNavigation(page: Page) {
   await page.addInitScript(() => {
     const authInfo = {
       value: {
-        token: 'e2xIE184iJfh0Clr9AZuPQvjNBUckTpD',
-        authCode: 'oBUqDE5h8pyXLSanFbdr30PTIsgukW7O',
+        token: 'pKexl3M9jB1iWX2tyCPh6udYmEOFUnRz',
+        authCode: 'RaQwt53Jnr9CSuUTH1kjsxqB40cV2fFD',
         userId: '6666ff550b5f97d6e49d12d7',
       },
       time: Date.now(),
