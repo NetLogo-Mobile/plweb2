@@ -98,7 +98,7 @@ export default defineConfig({
         secure: false, // 关闭 TLS 验证
       },
       '/api': {
-        target: 'https://physics-api-cn.turtlesim.com',
+        target: process.env.VITE_PROXY_API_TARGET || 'https://physics-api-cn.turtlesim.com',
         changeOrigin: true,
         rewrite: (path) => {
           console.log(path.replace('/api', ''))
