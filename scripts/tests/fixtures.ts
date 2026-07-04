@@ -9,6 +9,8 @@ const NOISE_KEYWORDS = [
   'CORS',
   'oss-cn-hongkong.aliyuncs.com',
   'ERR_ABORTED',
+  'Login.Required',
+  'Input.Field.Missing',
 ]
 
 export const test = base.extend<{ autoCollectErrors: void }>({

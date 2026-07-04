@@ -86,6 +86,16 @@ test.describe('作品详情页 (ExperimentSummary)', () => {
   test('详情页加载时应触发 GetSummary API', async ({ page }) => {
     let getSummaryCalled = false
 
+    const mockUser = {
+      ID: '6666ff550b5f97d6e49d12d7',
+      Nickname: 'TestUser',
+      Avatar: 1,
+      AvatarRegion: 1,
+      Signature: '',
+      Decoration: 0,
+      Verification: 'user',
+    }
+
     await page.route('**/api/Contents/GetSummary', async (route) => {
       getSummaryCalled = true
       await route.fulfill({
@@ -95,23 +105,30 @@ test.describe('作品详情页 (ExperimentSummary)', () => {
           Status: 200,
           Message: 'OK',
           Data: {
-            Summary: {
-              ID: TEST_EXPERIMENT_ID,
-              Subject: 'Test Discussion Topic',
-              Category: TEST_CATEGORY,
-              Tags: ['physics', 'test'],
-              Image: 1,
-              UserID: '6666ff550b5f97d6e49d12d7',
-              Nickname: 'TestUser',
-              Avatar: 1,
-              Date: new Date().toISOString(),
-              Stars: 10,
-              Comments: 5,
-              Derivatives: 2,
-              IsStarred: false,
-            },
-            Description: 'Test description',
-            Content: '# Test Content',
+            $type: 'Quantum.Models.Contents.Summary, Quantum Models',
+            ID: TEST_EXPERIMENT_ID,
+            Subject: 'Test Discussion Topic',
+            Category: TEST_CATEGORY,
+            Tags: ['physics', 'test'],
+            Type: 0,
+            Image: 1,
+            User: mockUser,
+            Coauthors: [],
+            Price: 0,
+            Stars: 10,
+            Comments: 5,
+            Remixes: 2,
+            Visits: 0,
+            Supports: 0,
+            Popularity: 0,
+            Version: 1,
+            ImageRegion: 0,
+            SortingDate: new Date().toISOString(),
+            CreationDate: new Date().toISOString(),
+            UpdateDate: new Date().toISOString(),
+            Language: 0,
+            Multilingual: false,
+            Description: ['Test description'],
           },
         }),
       })

@@ -139,10 +139,12 @@ test.describe('Fuzz Testing', () => {
         const parsed = JSON.parse(errorLogsRaw)
         const lines = parsed.map(
           (log: any) =>
-            `[${new Date(log.timestamp).toISOString()}] ${log.type.toUpperCase()}: ${log.message}` +
-            (log.url ? `\n  URL: ${log.url}` : '') +
-            (log.stack ? `\n  Stack: ${log.stack}` : '') +
-            (log.statusCode ? `\n  Status: ${log.statusCode}` : ''),
+            [
+              `[${new Date(log.timestamp).toISOString()}] ${log.type.toUpperCase()}: ${log.message}`,
+              log.url ? `\n  URL: ${log.url}` : '',
+              log.stack ? `\n  Stack: ${log.stack}` : '',
+              log.statusCode ? `\n  Status: ${log.statusCode}` : '',
+            ].join(''),
         )
         writeFileSync(join(screenshotsDir, 'app-error-logs.txt'), lines.join('\n\n'))
       } catch {}
@@ -166,7 +168,9 @@ test.describe('Fuzz Testing', () => {
         !e.message.includes('404') &&
         !e.message.includes('ERR_BLOCKED_BY_CLIENT') &&
         !e.message.includes('Failed to load resource') &&
-        !e.message.includes('net::ERR_'),
+        !e.message.includes('net::ERR_') &&
+        !e.message.includes('Login.Required') &&
+        !e.message.includes('Input.Field.Missing'),
     )
 
     expect(

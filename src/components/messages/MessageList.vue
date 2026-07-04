@@ -90,6 +90,10 @@ function handleMsgClick(message: CommentResult) {
 }
 
 const handleLoad = async () => {
+  if (!ID) {
+    noMore.value = true
+    return
+  }
   if (
     // CheckLogin without popup for the sake of avoiding API Handling errors
     checkLogin(false) === false &&

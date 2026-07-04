@@ -20,9 +20,9 @@ test.describe('用户操作流程 (Workflows)', () => {
     const blockContainer = page.locator('.block-container')
     await expect(blockContainer).toBeVisible({ timeout: 10000 })
 
-    const firstDetailed = page.locator('.block-container .detailed').first()
-    await expect(firstDetailed).toBeVisible({ timeout: 10000 })
-    await firstDetailed.click()
+    const firstCard = page.locator('.block-container .card').first()
+    await expect(firstCard).toBeVisible({ timeout: 10000 })
+    await firstCard.click()
     await page.waitForTimeout(2000)
 
     const currentUrl = page.url()
