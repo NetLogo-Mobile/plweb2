@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures'
 import { faker } from '@faker-js/faker'
 import { mkdirSync } from 'fs'
 import { join } from 'path'
@@ -32,7 +32,7 @@ async function pickRandomNavigable(page: any) {
 
 test.describe('Fuzz Testing', () => {
   test('50 次随机交互 — 基于真实渲染元素 @fuzz', async ({ page }, testInfo) => {
-    test.setTimeout(1800000)
+    test.setTimeout(18000)
 
     const screenshotsDir = join(
       process.cwd(),

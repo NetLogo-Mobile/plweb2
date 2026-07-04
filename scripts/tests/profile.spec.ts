@@ -10,7 +10,7 @@
  * - API 覆盖（/Contents/GetProfile, /Users/GetUser）
  */
 
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures'
 import {
   injectLoginState,
   injectLoginStateWithoutNavigation,

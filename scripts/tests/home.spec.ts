@@ -10,7 +10,7 @@
  * - 导航到登录弹窗
  */
 
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures'
 import {
   injectLoginState,
   waitForPageReady,
@@ -82,27 +82,4 @@ test.describe('首页 (Home)', () => {
     expect(footerExists).toBeGreaterThanOrEqual(0)
   })
 
-  test('首页加载后无控制台错误', async ({ page }) => {
-    const consoleErrors: string[] = []
-    page.on('console', (msg) => {
-      if (msg.type() === 'error') {
-        consoleErrors.push(msg.text())
-      }
-    })
-
-    await page.goto('/')
-    await waitForPageReady(page)
-    await page.waitForTimeout(3000)
-
-    // 过滤掉已知可接受的错误（如网络相关）
-    const criticalErrors = consoleErrors.filter(
-      (e) =>
-        !e.includes('favicon') &&
-        !e.includes('manifest') &&
-        !e.includes('service-worker') &&
-        !e.includes('sw.ts'),
-    )
-    // 允许少量非关键错误，但不应有大量错误
-    expect(criticalErrors.length).toBeLessThan(5)
-  })
 })

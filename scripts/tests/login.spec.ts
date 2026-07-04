@@ -9,7 +9,7 @@
  * - 登录后状态持久化
  */
 
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures'
 import { waitForPageReady} from './test-helpers'
 
 test.describe('登录流程', () => {

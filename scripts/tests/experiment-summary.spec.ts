@@ -11,7 +11,7 @@
  * 测试路径: /p/Discussion/66a84559744ed757b46f8917
  */
 
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures'
 import {
   injectLoginState,
   waitForPageReady,

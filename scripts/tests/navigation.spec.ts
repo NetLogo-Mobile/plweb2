@@ -9,7 +9,7 @@
  * - 浏览器前进/后退
  */
 
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures'
 import {
   injectLoginState,
   waitForPageReady,
@@ -84,29 +84,4 @@ test.describe('路由与导航', () => {
     await assertNoWhiteScreen(page)
   })
 
-  test('路由切换时不应有控制台错误', async ({ page }) => {
-    const consoleErrors: string[] = []
-    page.on('console', (msg) => {
-      if (msg.type() === 'error') {
-        consoleErrors.push(msg.text())
-      }
-    })
-
-    // 连续切换多个路由
-    for (const route of routes.slice(0, 5)) {
-      await page.goto(`/#${route.path}`)
-      await page.waitForTimeout(1000)
-    }
-
-    // 过滤掉非关键错误
-    const criticalErrors = consoleErrors.filter(
-      (e) =>
-        !e.includes('favicon') &&
-        !e.includes('manifest') &&
-        !e.includes('service-worker') &&
-        !e.includes('sw.ts') &&
-        !e.includes('404'),
-    )
-    expect(criticalErrors.length).toBeLessThan(10)
-  })
 })
