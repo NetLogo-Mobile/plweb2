@@ -1,19 +1,10 @@
 import { defineConfig, devices } from '@playwright/test'
 
-/**
- * Playwright 配置文件 - plweb2 前端自动化测试
- *
- * 测试策略：
- * 1. 使用 route.fulfill() 拦截所有 API 请求，确保测试不依赖外部服务
- * 2. 覆盖所有已知 API 路径（见 src/services/api/types.ts PathMap）
- * 3. 测试页面逻辑、导航、登录、数据展示等核心功能
- */
 export default defineConfig({
   testDir: '.',
-  fullyParallel: false,
+  fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: 0,
-  workers: 1,
   reporter: [
     ['list'],
     ['html', { outputFolder: 'scripts/tests/reports/playwright-report', open: 'never' }],
