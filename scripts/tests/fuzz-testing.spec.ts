@@ -94,7 +94,7 @@ test.describe('Fuzz Testing', () => {
 
     await injectLoginStateWithoutNavigation(page)
     await page.goto('/')
-    await page.waitForTimeout(5000)
+    await page.waitForTimeout(1500)
 
     for (let i = 0; i < totalIterations; i++) {
       currentIteration = i

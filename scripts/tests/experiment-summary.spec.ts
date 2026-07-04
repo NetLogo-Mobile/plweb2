@@ -119,7 +119,7 @@ test.describe('作品详情页 (ExperimentSummary)', () => {
 
     await page.goto(`/#/p/${TEST_CATEGORY}/${TEST_EXPERIMENT_ID}`)
     await waitForPageReady(page)
-    await page.waitForTimeout(3000)
+    await page.waitForTimeout(1500)
 
     expect(getSummaryCalled).toBeTruthy()
   })

@@ -1,13 +1,13 @@
 import { test, expect } from './fixtures'
 import {
-  injectLoginState,
+  injectLoginStateWithoutNavigation,
   waitForPageReady,
   assertNoWhiteScreen,
 } from './test-helpers'
 
 test.describe('通知中心 (Notifications)', () => {
   test.beforeEach(async ({ page }) => {
-    await injectLoginState(page)
+    await injectLoginStateWithoutNavigation(page)
   })
 
   test('通知页面应正常加载', async ({ page }) => {

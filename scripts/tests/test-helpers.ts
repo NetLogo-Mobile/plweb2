@@ -28,60 +28,8 @@ export async function mockApiAbort(page: Page, urlPattern: string, errorCode?: s
 }
 
 export async function injectLoginState(page: Page) {
+  await injectLoginStateWithoutNavigation(page)
   await page.goto('/')
-
-  await page.evaluate(() => {
-    const authInfo = {
-      value: {
-        token: 'e2xIE184iJfh0Clr9AZuPQvjNBUckTpD',
-        authCode: 'oBUqDE5h8pyXLSanFbdr30PTIsgukW7O',
-        userId: '6666ff550b5f97d6e49d12d7',
-      },
-      time: Date.now(),
-      maxAgeMs: 30 * 24 * 60 * 60 * 1000,
-    }
-    localStorage.setItem('userAuthInfo', JSON.stringify(authInfo))
-
-    const userInfo = {
-      value: {
-        ID: '6666ff550b5f97d6e49d12d7',
-        Nickname: 'TestUser',
-        Avatar: 1,
-        AvatarRegion: 1,
-        Verification: 'user',
-        Gold: 100,
-        Diamond: 50,
-        Level: 5,
-        Experience: 1200,
-        Prestige: 30,
-        Signature: 'Hello from test',
-        Decoration: 0,
-        Fragment: 10,
-        Subscription: 0,
-        SubscriptionUntil: '',
-        IsBinded: true,
-        Regions: [1],
-        Socials: {},
-      },
-      time: Date.now(),
-      maxAgeMs: 30 * 24 * 60 * 60 * 1000,
-    }
-    localStorage.setItem('userInfo', JSON.stringify(userInfo))
-
-    const userConfig = {
-      value: { language: 'zh', languageManuallySelected: true },
-      time: Date.now(),
-      maxAgeMs: 30 * 24 * 60 * 60 * 1000,
-    }
-    localStorage.setItem('userConfig', JSON.stringify(userConfig))
-
-    const cookieConsent = {
-      value: true,
-      time: Date.now(),
-      maxAgeMs: 365 * 24 * 60 * 60 * 1000,
-    }
-    localStorage.setItem('cookieConsent', JSON.stringify(cookieConsent))
-  })
 }
 
 export async function injectLoginStateWithoutNavigation(page: Page) {

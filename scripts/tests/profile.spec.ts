@@ -31,9 +31,7 @@ test.describe('用户资料页 (Profile)', () => {
   test('应显示用户昵称', async ({ page }) => {
     await page.goto(`/#/u/${TEST_USER_ID}`)
     await waitForPageReady(page)
-    await page.waitForTimeout(3000)
-
-    // 验证用户名区域
+    await page.waitForTimeout(1500)
     const userName = page.locator('.user-name-row div').first()
     await expect(userName).toBeVisible({ timeout: 10000 })
   })
@@ -41,9 +39,7 @@ test.describe('用户资料页 (Profile)', () => {
   test('应显示用户标签（粉丝、关注）', async ({ page }) => {
     await page.goto(`/#/u/${TEST_USER_ID}`)
     await waitForPageReady(page)
-    await page.waitForTimeout(3000)
-
-    // 验证 userInfo 区域
+    await page.waitForTimeout(1500)
     const userInfo = page.locator('.userInfo')
     await expect(userInfo).toBeVisible({ timeout: 10000 })
   })
@@ -52,7 +48,7 @@ test.describe('用户资料页 (Profile)', () => {
     await injectLoginState(page)
     await page.goto(`/#/u/${TEST_USER_ID}`)
     await waitForPageReady(page)
-    await page.waitForTimeout(3000)
+    await page.waitForTimeout(1500)
     await assertNoWhiteScreen(page)
   })
 
@@ -60,13 +56,11 @@ test.describe('用户资料页 (Profile)', () => {
     await injectLoginState(page)
     await page.goto(`/#/u/${TEST_USER_ID}`)
     await waitForPageReady(page)
-    await page.waitForTimeout(3000)
-
+    await page.waitForTimeout(1500)
     const settingsBtn = page.locator('.settings-btn').first()
     if (await settingsBtn.isVisible()) {
       await settingsBtn.click()
       await page.waitForTimeout(1000)
-      // 应导航到 /s
       const url = page.url()
       expect(url).toContain('/s')
     }
@@ -75,17 +69,13 @@ test.describe('用户资料页 (Profile)', () => {
   test('应显示作品标签页', async ({ page }) => {
     await page.goto(`/#/u/${TEST_USER_ID}`)
     await waitForPageReady(page)
-    await page.waitForTimeout(3000)
-
-    // 验证标签页存在
+    await page.waitForTimeout(1500)
     const tabs = page.locator('.n-tabs')
     await expect(tabs).toBeVisible({ timeout: 10000 })
   })
 
   test('资料页应触发 GetProfile 和 GetUser API', async ({ page }) => {
     const calledApis: string[] = []
-
-    // 使用 page.on('request') 追踪 API 调用
     page.on('request', (request) => {
       const url = request.url()
       if (url.includes('/api/')) {
@@ -98,7 +88,7 @@ test.describe('用户资料页 (Profile)', () => {
 
     await page.goto(`/#/u/${TEST_USER_ID}`)
     await waitForPageReady(page)
-    await page.waitForTimeout(5000)
+    await page.waitForTimeout(1500)
 
     // 验证 API 被调用
     expect(

@@ -11,14 +11,14 @@
 
 import { test, expect } from './fixtures'
 import {
-  injectLoginState,
+  injectLoginStateWithoutNavigation,
   waitForPageReady,
   assertNoWhiteScreen,
 } from './test-helpers'
 
 test.describe('路由与导航', () => {
   test.beforeEach(async ({ page }) => {
-    await injectLoginState(page)
+    await injectLoginStateWithoutNavigation(page)
   })
 
   const routes = [
@@ -53,8 +53,6 @@ test.describe('路由与导航', () => {
   test('重定向 /friends → /f 应正常工作', async ({ page }) => {
     await page.goto('/#/friends')
     await waitForPageReady(page)
-
-    // URL 应重定向到 /f
     const url = page.url()
     expect(url).toContain('/f')
   })
