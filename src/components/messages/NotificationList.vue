@@ -114,8 +114,7 @@ function fillInTemplate(data: string | null, message: Message) {
   return re
 }
 
-// 处理加载事件
-// eslint-disable-next-line max-lines-per-function
+
 const handleLoad = async (noTemplates = true) => {
   if (storageManager.getObj('userInfo').value?.Nickname == null) return
   if (loading.value) return // Lock

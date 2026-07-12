@@ -29,24 +29,29 @@ export default defineConfig({
       registerType: 'autoUpdate',
       injectRegister: null,
       devOptions: {
-        enabled: true,
+        enabled: false,
       },
 
       manifest: {
         name: 'plweb2',
         short_name: 'plweb',
         description: 'Physics Lab Web - Online community',
-        theme_color: '#3397e9ff',
+        theme_color: '#3397e9',
+        background_color: '#ffffff',
+        display: 'standalone',
+        start_url: '/',
         icons: [
           {
             src: '/assets/icons/logo-192.png',
             sizes: '192x192',
             type: 'image/png',
+            purpose: 'any maskable',
           },
           {
             src: '/assets/icons/logo-512.png',
             sizes: '512x512',
             type: 'image/png',
+            purpose: 'any maskable',
           },
         ],
         screenshots: [

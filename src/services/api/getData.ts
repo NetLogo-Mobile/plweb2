@@ -5,23 +5,29 @@ import { getDeviceInfo, getVisitorId } from './getDevice.ts'
 import { showMessage } from '@popup/naiveui.ts'
 import { getPath } from '../utils.ts'
 import { normalizePath } from './types.ts'
-import { readApiCache, writeApiCache } from './cache.ts'
+import {
+  readOfflineCache,
+  writeOfflineCache,
+  readUserCache,
+  writeUserCache,
+} from './cache.ts'
 import { updateNotificationUnread } from '@services/notificationUnread.ts'
 
 import type { ApiPath, APIParam, APIResult } from './types.ts'
 import type { Device, Result, ResultOf, Users } from '../../pl-serve-type-main/type/main'
 
-const CACHEABLE_PATHS = new Set([
+const OFFLINE_CACHE_PATHS = new Set([
   '/Contents/GetProfile',
   '/Contents/GetSummary',
   '/Messages/GetComments',
   '/Messages/GetMessages',
   '/Contents/GetLibrary',
-  '/Users/GetUser',
 ])
 
-function canCache(path: string): boolean {
-  return CACHEABLE_PATHS.has(path)
+const USER_CACHE_PATH = '/Users/GetUser'
+
+function canOfflineCache(path: string): boolean {
+  return OFFLINE_CACHE_PATHS.has(path)
 }
 
 function applyAfterRequest<T extends Result>(data: T): T {
@@ -32,11 +38,21 @@ function applyAfterRequest<T extends Result>(data: T): T {
   return data
 }
 
-async function getDataImpl(path: string, body?: unknown): Promise<any> {
+async function getDataImpl(
+  path: string,
+  body?: unknown,
+  options?: { skipUserCache?: boolean },
+): Promise<any> {
   const npath = normalizePath(String(path))
   const beforeRes = beforeRequest(npath)
   if (beforeRes.continue === false) {
     return (beforeRes.data ?? {}) as Result
+  }
+
+  // For GetUser, try the short-lived user cache first (unless explicitly skipped).
+  if (npath === USER_CACHE_PATH && !options?.skipUserCache) {
+    const cached = await readUserCache<Result>(npath, body)
+    if (cached) return applyAfterRequest(cached)
   }
 
   const userInfo = sm.getObj('userAuthInfo')
@@ -58,7 +74,7 @@ async function getDataImpl(path: string, body?: unknown): Promise<any> {
     })
 
     if (!response.ok) {
-      if (npath !== '/Users/GetUser') {
+      if (npath !== USER_CACHE_PATH) {
         window.$ErrorLogger.addBreadcrumb('api', `${npath} failed with status ${response.status}`, {
           statusCode: response.status,
           path: npath,
@@ -70,9 +86,6 @@ async function getDataImpl(path: string, body?: unknown): Promise<any> {
       } catch {
         // Ignore malformed error payloads.
       }
-      showMessage('error', i18n.global.t('errors.networkError'), {
-        duration: 5000,
-      })
       return {
         Status: response.status,
         Message: 'Network Error',
@@ -81,7 +94,7 @@ async function getDataImpl(path: string, body?: unknown): Promise<any> {
     }
 
     const data = (await response.json()) as Result
-    if (npath !== '/Users/GetUser') {
+    if (npath !== USER_CACHE_PATH) {
       window.$ErrorLogger.addBreadcrumb('api', `${npath} success`, {
         statusCode: 200,
         path: npath,
@@ -89,15 +102,21 @@ async function getDataImpl(path: string, body?: unknown): Promise<any> {
       })
     }
 
-    if (data.Status !== 200) {
+    if (data.Status === 200) {
+      if (npath === USER_CACHE_PATH) {
+        await writeUserCache(npath, body, data)
+      }
+      if (canOfflineCache(npath)) {
+        await writeOfflineCache(npath, body, data)
+      }
+    } else {
       window.$ErrorLogger.captureApiError('POST', path, data.Status, data, body)
-    } else if (canCache(npath)) {
-      writeApiCache(npath, body, data)
     }
 
     return applyAfterRequest(data)
   } catch (error) {
-    const cached = canCache(npath) ? readApiCache<Result>(npath, body) : null
+    const canFallback = canOfflineCache(npath) || npath === USER_CACHE_PATH
+    const cached = canFallback ? await readOfflineCache<Result>(npath, body) : null
     if (cached) {
       window.$ErrorLogger.addBreadcrumb('api-cache', `${npath} served from offline cache`, {
         path: npath,
@@ -111,9 +130,10 @@ async function getDataImpl(path: string, body?: unknown): Promise<any> {
 export function getData<Path extends ApiPath>(
   path: Path,
   body: APIParam<Path>,
+  options?: { skipUserCache?: boolean },
 ): Promise<APIResult<Path>>
-export function getData(path: string, body?: unknown): Promise<any> {
-  return getDataImpl(path, body)
+export function getData(path: string, body?: unknown, options?: { skipUserCache?: boolean }): Promise<any> {
+  return getDataImpl(path, body, options)
 }
 
 export async function login(
@@ -145,9 +165,6 @@ export async function login(
     Version: 2411,
     Device,
   }
-  const cacheKey = is_token
-    ? `/Users/Authenticate:${arg1 || ''}:${arg2 || ''}`
-    : '/Users/Authenticate:anonymous'
 
   try {
     const response = await fetch(getPath('/@api/Users/Authenticate'), {
@@ -163,19 +180,15 @@ export async function login(
       } catch {
         // Ignore malformed error payloads.
       }
-      showMessage('error', i18n.global.t('errors.networkError'), {
-        duration: 5000,
-      })
       return {
         Status: response.status,
         Message: '',
         Data: null,
-      } as ResultOf<Users['Authenticate']>
+      } as unknown as ResultOf<Users['Authenticate']>
     }
 
     const data = (await response.json()) as ResultOf<Users['Authenticate']>
     if (data.Status === 200) {
-      writeApiCache(cacheKey, requestBody, data)
       const isRealLogin = Boolean((is_token && arg1 && arg2) || (!is_token && arg1 && arg2))
       if (isRealLogin) {
         updateNotificationUnread(data.Data?.Statistic)
@@ -207,12 +220,14 @@ export async function login(
     messageRef.destroy()
     return data
   } catch (error) {
-    const cached = readApiCache<ResultOf<Users['Authenticate']>>(cacheKey, requestBody)
     messageRef.destroy()
-    if (cached) {
-      window.$ErrorLogger.addBreadcrumb('api-cache', `${cacheKey} served from offline cache`, {})
-      return cached
-    }
-    throw error
+    window.$ErrorLogger.addBreadcrumb('api', '/Users/Authenticate failed with unexpected error', {
+      error: error instanceof Error ? error.message : String(error),
+    })
+    return {
+      Status: 0,
+      Message: 'Network Error',
+      Data: null,
+      } as unknown as ResultOf<Users['Authenticate']>
   }
 }

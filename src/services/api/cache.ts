@@ -1,24 +1,53 @@
 import storageManager from '@storage/index.ts'
 
-type CacheEntry<T = unknown> = {
-  value: T
+interface StoredEntry {
+  cacheKey: string
+  value: unknown
+  timestamp: number
+  size: number
 }
 
-type CacheBucket = Record<string, CacheEntry>
+const DB_NAME = 'plweb-api-cache'
+const DB_VERSION = 2
 
-const API_CACHE_KEY = 'apiResponseCache'
-const API_CACHE_MAX_AGE = 30 * 24 * 60 * 60 * 1000
+const OFFLINE_STORE = 'offlineCache'
+const USER_STORE = 'userCache'
 
-function readCacheBucket(): CacheBucket {
-  const result = storageManager.getObj(API_CACHE_KEY, API_CACHE_MAX_AGE)
-  if (result.status !== 'success' || !result.value) {
-    return {}
-  }
-  return result.value as CacheBucket
+const OFFLINE_MAX_ENTRIES = 200
+const OFFLINE_MAX_BYTES = 4 * 1024 * 1024
+const OFFLINE_MAX_AGE = 15 * 24 * 60 * 60 * 1000
+
+const USER_CACHE_MAX_AGE = 5 * 60 * 1000
+
+// One-time cleanup of the old localStorage-based cache.
+if (localStorage.getItem('apiResponseCache')) {
+  localStorage.removeItem('apiResponseCache')
 }
 
-function writeCacheBucket(bucket: CacheBucket) {
-  storageManager.setObj(API_CACHE_KEY, bucket, API_CACHE_MAX_AGE)
+let dbPromise: Promise<IDBDatabase> | null = null
+
+function openDB(): Promise<IDBDatabase> {
+  if (dbPromise) return dbPromise
+  dbPromise = new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION)
+    request.onerror = () => reject(request.error)
+    request.onsuccess = () => resolve(request.result)
+    request.onupgradeneeded = () => {
+      const db = request.result
+      if (db.objectStoreNames.contains('entries')) {
+        db.deleteObjectStore('entries')
+      }
+      if (!db.objectStoreNames.contains(OFFLINE_STORE)) {
+        const store = db.createObjectStore(OFFLINE_STORE, { keyPath: 'cacheKey' })
+        store.createIndex('timestamp', 'timestamp', { unique: false })
+      }
+      if (!db.objectStoreNames.contains(USER_STORE)) {
+        const store = db.createObjectStore(USER_STORE, { keyPath: 'cacheKey' })
+        store.createIndex('timestamp', 'timestamp', { unique: false })
+      }
+    }
+  })
+  return dbPromise
 }
 
 function stableStringify(value: unknown): string {
@@ -35,32 +64,176 @@ function stableStringify(value: unknown): string {
 
 function getActiveUserKey(): string {
   const userInfo = storageManager.getObj('userInfo').value
-  const userAuthInfo = storageManager.getObj('userAuthInfo').value
-  return (
-    userInfo?.ID ||
-    userAuthInfo?.userId ||
-    userAuthInfo?.userID ||
-    userAuthInfo?.ID ||
-    userAuthInfo?.token ||
-    'anonymous'
-  )
+  return userInfo?.ID || 'anonymous'
 }
 
 export function buildApiCacheKey(path: string, body?: unknown): string {
   return `${getActiveUserKey()}::${path}::${stableStringify(body ?? null)}`
 }
 
-export function readApiCache<T>(path: string, body?: unknown): T | null {
-  const bucket = readCacheBucket()
-  const entry = bucket[buildApiCacheKey(path, body)]
-  if (!entry) return null
-  return entry.value as T
+function getStoredSize(value: unknown): number {
+  return new Blob([JSON.stringify(value)]).size
 }
 
-export function writeApiCache(path: string, body: unknown, value: unknown) {
-  const bucket = readCacheBucket()
-  bucket[buildApiCacheKey(path, body)] = {
-    value,
+// ── Offline cache (fallback on network error, long TTL + eviction) ──
+
+async function evictOfflineEntries(justWrittenKey: string): Promise<void> {
+  let db: IDBDatabase
+  try {
+    db = await openDB()
+  } catch {
+    return
   }
-  writeCacheBucket(bucket)
+
+  const transaction = db.transaction(OFFLINE_STORE, 'readonly')
+  const store = transaction.objectStore(OFFLINE_STORE)
+  const countRequest = store.count()
+  const allRequest = store.getAll()
+
+  await new Promise<void>((resolve, reject) => {
+    transaction.oncomplete = () => resolve()
+    transaction.onerror = () => reject(transaction.error)
+  })
+
+  let totalCount = countRequest.result
+  const allEntries = allRequest.result as StoredEntry[]
+
+  let totalSize = allEntries.reduce((sum, e) => sum + (e.size || 0), 0)
+
+  if (totalCount <= OFFLINE_MAX_ENTRIES && totalSize <= OFFLINE_MAX_BYTES) return
+
+  allEntries.sort((a, b) => a.timestamp - b.timestamp)
+
+  const writeTx = db.transaction(OFFLINE_STORE, 'readwrite')
+  const writeStore = writeTx.objectStore(OFFLINE_STORE)
+
+  for (const entry of allEntries) {
+    if (totalCount <= OFFLINE_MAX_ENTRIES && totalSize <= OFFLINE_MAX_BYTES) break
+    if (entry.cacheKey === justWrittenKey) continue
+    writeStore.delete(entry.cacheKey)
+    totalCount--
+    totalSize -= entry.size || 0
+  }
+
+  return new Promise((resolve, reject) => {
+    writeTx.oncomplete = () => resolve()
+    writeTx.onerror = () => reject(writeTx.error)
+  })
+}
+
+export async function readOfflineCache<T>(path: string, body?: unknown): Promise<T | null> {
+  const key = buildApiCacheKey(path, body)
+  let db: IDBDatabase
+  try {
+    db = await openDB()
+  } catch {
+    return null
+  }
+
+  return new Promise((resolve) => {
+    const transaction = db.transaction(OFFLINE_STORE, 'readwrite')
+    const store = transaction.objectStore(OFFLINE_STORE)
+    const request = store.get(key)
+
+    request.onsuccess = () => {
+      const entry = request.result as StoredEntry | undefined
+      if (!entry) {
+        resolve(null)
+        return
+      }
+      if (Date.now() - entry.timestamp > OFFLINE_MAX_AGE) {
+        store.delete(key)
+        resolve(null)
+        return
+      }
+      resolve(entry.value as T)
+    }
+    request.onerror = () => resolve(null)
+  })
+}
+
+export async function writeOfflineCache(path: string, body: unknown, value: unknown): Promise<void> {
+  const key = buildApiCacheKey(path, body)
+  const entry: StoredEntry = {
+    cacheKey: key,
+    value,
+    timestamp: Date.now(),
+    size: getStoredSize(value),
+  }
+
+  let db: IDBDatabase
+  try {
+    db = await openDB()
+  } catch {
+    return
+  }
+
+  return new Promise((resolve) => {
+    const transaction = db.transaction(OFFLINE_STORE, 'readwrite')
+    const store = transaction.objectStore(OFFLINE_STORE)
+    store.put(entry)
+    transaction.oncomplete = () => {
+      evictOfflineEntries(key)
+      resolve()
+    }
+    transaction.onerror = () => resolve()
+  })
+}
+
+// ── User cache (short TTL, for GetUser reads) ──
+
+export async function readUserCache<T>(path: string, body?: unknown): Promise<T | null> {
+  const key = buildApiCacheKey(path, body)
+  let db: IDBDatabase
+  try {
+    db = await openDB()
+  } catch {
+    return null
+  }
+
+  return new Promise((resolve) => {
+    const transaction = db.transaction(USER_STORE, 'readwrite')
+    const store = transaction.objectStore(USER_STORE)
+    const request = store.get(key)
+
+    request.onsuccess = () => {
+      const entry = request.result as StoredEntry | undefined
+      if (!entry) {
+        resolve(null)
+        return
+      }
+      if (Date.now() - entry.timestamp > USER_CACHE_MAX_AGE) {
+        store.delete(key)
+        resolve(null)
+        return
+      }
+      resolve(entry.value as T)
+    }
+    request.onerror = () => resolve(null)
+  })
+}
+
+export async function writeUserCache(path: string, body: unknown, value: unknown): Promise<void> {
+  const key = buildApiCacheKey(path, body)
+  const entry: StoredEntry = {
+    cacheKey: key,
+    value,
+    timestamp: Date.now(),
+    size: 0,
+  }
+
+  let db: IDBDatabase
+  try {
+    db = await openDB()
+  } catch {
+    return
+  }
+
+  return new Promise((resolve) => {
+    const transaction = db.transaction(USER_STORE, 'readwrite')
+    const store = transaction.objectStore(USER_STORE)
+    store.put(entry)
+    transaction.oncomplete = () => resolve()
+    transaction.onerror = () => resolve()
+  })
 }

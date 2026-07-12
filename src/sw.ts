@@ -39,12 +39,20 @@ async function getFallbackResponse(url: URL): Promise<Response> {
   return (await matchPrecache(fallbackUrl)) || fetch(fallbackUrl)
 }
 
+function requestUrl(request: RequestInfo | URL): string {
+  return typeof request === 'string'
+    ? request
+    : request instanceof URL
+      ? request.toString()
+      : request.url
+}
+
 async function putInCache(request: RequestInfo | URL, response: Response) {
   try {
     const cache = await caches.open(STATIC_IMAGE_CACHE)
     await cache.put(request, response.clone())
   } catch {
-    // Ignore cache put failures for opaque or transient responses.
+    console.warn(`Failed to cache ${requestUrl(request)}`)
   }
 }
 
@@ -77,13 +85,17 @@ registerRoute(
         return await getFallbackResponse(url)
       }
     } catch {
-      // Fall back to the original request mode below.
+      console.warn(`Failed to fetch ${request.url} in CORS mode.`)
     }
 
     try {
       const response = await fetch(request)
-      if (response.ok || response.type === 'opaque') {
+      if (response.ok) {
         await putInCache(request, response)
+        return response
+      }
+      // Opaque responses may hide 404s from cross-originimages.
+      if (response.type === 'opaque') {
         return response
       }
       if (response.status === 404) {
@@ -97,6 +109,7 @@ registerRoute(
   },
 )
 
+// Catches all other image requests not handled by the avatar/cover route above.
 registerRoute(
   ({ request }) => request.destination === 'image',
   new CacheFirst({

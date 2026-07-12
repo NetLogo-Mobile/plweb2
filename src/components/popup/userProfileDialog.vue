@@ -132,7 +132,7 @@ const jumpToUser = (id: string) => {
 }
 
 onMounted(async () => {
-  const re = await getData('/Users/GetUser', { ID: props.userid })
+  const re = await getData('/Users/GetUser', { ID: props.userid }, { skipUserCache: true })
   if (!re.Data || !re.Data.User) return
   const data = re.Data.User
   name.value = data.Nickname

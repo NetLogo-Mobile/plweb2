@@ -39,7 +39,15 @@ registerSW({
   },
 })
 
+// Skip reload on the very first controller (initial SW installation).
+// Only reload on subsequent controller changes (actual SW updates).
+// Module-level variable resets on HMR, so the guard works correctly.
+let swControllerChanged = false
 navigator.serviceWorker?.addEventListener('controllerchange', () => {
+  if (!swControllerChanged) {
+    swControllerChanged = true
+    return
+  }
   window.location.reload()
 })
 
