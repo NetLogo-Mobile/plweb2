@@ -21,12 +21,6 @@ const routes: RouteRecordRaw[] = [
     meta: { keepAlive: true },
   },
   {
-    path: '/m',
-    name: 'messages',
-    component: () => import('../views/Comments.vue'),
-    meta: { keepAlive: true },
-  },
-  {
     path: '/p/:category/:id',
     name: 'ExperimentSummary',
     component: () => import('../views/ExperimentSummary.vue'),
@@ -66,7 +60,6 @@ const routes: RouteRecordRaw[] = [
   // To maintain compatibility with old versions, we add some redirects for old paths
   { path: '/black-hole', redirect: '/b' },
   { path: '/notifications', redirect: '/n' },
-  { path: '/messages', redirect: '/m' },
 
   {
     path: '/e/:category?/:id?',

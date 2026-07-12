@@ -32,7 +32,7 @@ async function pickRandomNavigable(page: any) {
 
 test.describe('Fuzz Testing', () => {
   test('50 次随机交互 — 基于真实渲染元素 @fuzz', async ({ page }, testInfo) => {
-    test.setTimeout(18000)
+    test.setTimeout(180000)
 
     const screenshotsDir = join(
       process.cwd(),

@@ -20,9 +20,11 @@ test.describe('用户操作流程 (Workflows)', () => {
     const blockContainer = page.locator('.block-container')
     await expect(blockContainer).toBeVisible({ timeout: 10000 })
 
-    const firstDetailed = page.locator('.block-container .detailed').first()
-    await expect(firstDetailed).toBeVisible({ timeout: 10000 })
-    await firstDetailed.click()
+    // 首页项目链接：TopicBlock 内 brief.vue 渲染为 <router-link>（<a>）
+    // 直接匹配指向 /p/ 的链接
+    const firstWork = page.locator('.block-container a[href*="/p/"]').first()
+    await expect(firstWork).toBeVisible({ timeout: 10000 })
+    await firstWork.click()
     await page.waitForTimeout(2000)
 
     const currentUrl = page.url()

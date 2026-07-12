@@ -49,3 +49,4 @@ src/composables/useCamera.ts
 .gitignore
 src/types/circuit.ts
 src/composables/useDragAndDrop.ts
+*.patch

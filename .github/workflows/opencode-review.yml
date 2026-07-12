@@ -22,6 +22,12 @@ jobs:
         with:
           node-version: 20
 
+      - name: Run checks
+        run: |
+          npm run eslint
+          npm run build
+          npm run lint:i18n
+
       - name: Install OpenCode CLI
         run: |
           npm install -g opencode-ai

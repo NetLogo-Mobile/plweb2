@@ -14,15 +14,18 @@
 import { test, expect } from './fixtures'
 import {
   injectLoginState,
+  injectLoginStateWithoutNavigation,
   waitForPageReady,
   assertNoWhiteScreen,
   TEST_EXPERIMENT_ID,
   TEST_CATEGORY,
+  TEST_USER_ID,
 } from './test-helpers'
 
 test.describe('作品详情页 (ExperimentSummary)', () => {
 
   test('应正常加载作品详情页', async ({ page }) => {
+    await injectLoginStateWithoutNavigation(page)
     await page.goto(`/#/p/${TEST_CATEGORY}/${TEST_EXPERIMENT_ID}`)
     await waitForPageReady(page)
 
@@ -34,6 +37,7 @@ test.describe('作品详情页 (ExperimentSummary)', () => {
   })
 
   test('应显示作品标题', async ({ page }) => {
+    await injectLoginStateWithoutNavigation(page)
     await page.goto(`/#/p/${TEST_CATEGORY}/${TEST_EXPERIMENT_ID}`)
     await waitForPageReady(page)
 
@@ -43,6 +47,7 @@ test.describe('作品详情页 (ExperimentSummary)', () => {
   })
 
   test('应显示标签', async ({ page }) => {
+    await injectLoginStateWithoutNavigation(page)
     await page.goto(`/#/p/${TEST_CATEGORY}/${TEST_EXPERIMENT_ID}`)
     await waitForPageReady(page)
     await page.waitForTimeout(2000)
@@ -64,6 +69,7 @@ test.describe('作品详情页 (ExperimentSummary)', () => {
   })
 
   test('点击返回按钮应导航回上一页', async ({ page }) => {
+    await injectLoginStateWithoutNavigation(page)
     // 先导航到首页
     await page.goto('/')
     await waitForPageReady(page)
@@ -84,6 +90,8 @@ test.describe('作品详情页 (ExperimentSummary)', () => {
   })
 
   test('详情页加载时应触发 GetSummary API', async ({ page }) => {
+    await injectLoginStateWithoutNavigation(page)
+
     let getSummaryCalled = false
 
     await page.route('**/api/Contents/GetSummary', async (route) => {
@@ -94,24 +102,45 @@ test.describe('作品详情页 (ExperimentSummary)', () => {
         body: JSON.stringify({
           Status: 200,
           Message: 'OK',
+          // Data 本身就是 Summary 对象，不要嵌套在 Data.Summary 里
+          // See: ExperimentSummary.vue fetchSummary() → data.value = res.Data
           Data: {
-            Summary: {
-              ID: TEST_EXPERIMENT_ID,
-              Subject: 'Test Discussion Topic',
-              Category: TEST_CATEGORY,
-              Tags: ['physics', 'test'],
-              Image: 1,
-              UserID: '6666ff550b5f97d6e49d12d7',
+            $type: 'Quantum.Models.Contents.Summary, Quantum Models',
+            Type: 0,
+            ContentID: TEST_EXPERIMENT_ID,
+            ID: TEST_EXPERIMENT_ID,
+            Category: TEST_CATEGORY,
+            Subject: 'Test Discussion Topic',
+            LocalizedSubject: null,
+            Description: ['Test description'],
+            LocalizedDescription: null,
+            Tags: ['physics', 'test'],
+            Image: 1,
+            ImageRegion: 1,
+            Version: 0,
+            Language: 'Chinese',
+            Visits: 10,
+            Stars: 10,
+            Supports: 0,
+            Remixes: 2,
+            Comments: 5,
+            Price: 0,
+            Popularity: 0,
+            UpdateDate: Date.now(),
+            Visibility: 0,
+            SortingDate: Date.now(),
+            CreationDate: Date.now(),
+            Multilingual: false,
+            User: {
+              ID: TEST_USER_ID,
               Nickname: 'TestUser',
+              Signature: 'Hello from test',
               Avatar: 1,
-              Date: new Date().toISOString(),
-              Stars: 10,
-              Comments: 5,
-              Derivatives: 2,
-              IsStarred: false,
+              AvatarRegion: 1,
+              Decoration: 0,
+              Verification: 'user',
             },
-            Description: 'Test description',
-            Content: '# Test Content',
+            Coauthors: [],
           },
         }),
       })
@@ -125,6 +154,7 @@ test.describe('作品详情页 (ExperimentSummary)', () => {
   })
 
   test('详情页应正确处理 API 错误', async ({ page }) => {
+    await injectLoginStateWithoutNavigation(page)
     await page.route('**/api/Contents/GetSummary', async (route) => {
       await route.fulfill({
         status: 200,

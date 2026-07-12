@@ -22,6 +22,7 @@ import {
 test.describe('用户资料页 (Profile)', () => {
 
   test('应正常加载用户资料页', async ({ page }) => {
+    await injectLoginStateWithoutNavigation(page)
     await page.goto(`/#/u/${TEST_USER_ID}`)
     await waitForPageReady(page)
 
@@ -29,6 +30,7 @@ test.describe('用户资料页 (Profile)', () => {
   })
 
   test('应显示用户昵称', async ({ page }) => {
+    await injectLoginStateWithoutNavigation(page)
     await page.goto(`/#/u/${TEST_USER_ID}`)
     await waitForPageReady(page)
     await page.waitForTimeout(1500)
@@ -37,6 +39,7 @@ test.describe('用户资料页 (Profile)', () => {
   })
 
   test('应显示用户标签（粉丝、关注）', async ({ page }) => {
+    await injectLoginStateWithoutNavigation(page)
     await page.goto(`/#/u/${TEST_USER_ID}`)
     await waitForPageReady(page)
     await page.waitForTimeout(1500)
@@ -67,6 +70,7 @@ test.describe('用户资料页 (Profile)', () => {
   })
 
   test('应显示作品标签页', async ({ page }) => {
+    await injectLoginStateWithoutNavigation(page)
     await page.goto(`/#/u/${TEST_USER_ID}`)
     await waitForPageReady(page)
     await page.waitForTimeout(1500)

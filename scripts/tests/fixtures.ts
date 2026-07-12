@@ -11,9 +11,17 @@ const NOISE_KEYWORDS = [
   'ERR_ABORTED',
 ]
 
-export const test = base.extend<{ autoCollectErrors: void }>({
+export const test = base.extend<{ autoCollectErrors: void; suppressErrorCollection: boolean }>({
+  // 可在每个 spec / test 中通过 test.use({ suppressErrorCollection: true }) 关闭
+  // 用于错误处理类测试：它们本身就预期触发控制台错误
+  suppressErrorCollection: [false, { option: true }],
+
   autoCollectErrors: [
-    async ({ page }, use) => {
+    async ({ page, suppressErrorCollection }, use) => {
+      if (suppressErrorCollection) {
+        await use()
+        return
+      }
       const errors: string[] = []
       page.on('console', (msg) => {
         if (msg.type() === 'error') {
