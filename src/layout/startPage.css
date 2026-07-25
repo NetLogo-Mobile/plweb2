@@ -9,3 +9,11 @@
   scrollbar-width: none;
   margin-bottom: 50px;
 }
+
+@media (min-width: 2560px) {
+  .block-container {
+    max-width: 1800px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}

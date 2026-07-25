@@ -7,6 +7,7 @@ const breakpoints = {
   laptop: 960,
   desktop: 1400,
   wide: 1800,
+  ultrawide: 2560,
 }
 
 function getViewportHeight() {
@@ -16,6 +17,7 @@ function getViewportHeight() {
 }
 
 function getBlockItemsPerRow(w: number) {
+  if (w >= breakpoints.ultrawide) return 6
   if (w >= breakpoints.wide) return 4
   if (w >= breakpoints.laptop) return 3
   if (w >= breakpoints.tablet) return 2
@@ -23,6 +25,7 @@ function getBlockItemsPerRow(w: number) {
 }
 
 function getFriendItemsPerRow(w: number) {
+  if (w >= breakpoints.ultrawide) return 8
   if (w >= breakpoints.wide) return 5
   if (w >= breakpoints.desktop) return 4
   if (w >= breakpoints.laptop) return 3
@@ -44,6 +47,7 @@ function getProjectsHeight(w: number) {
 }
 
 function getFontSizeM(w: number) {
+  if (w >= breakpoints.ultrawide) return '22px'
   if (w >= breakpoints.wide) return '20px'
   if (w >= breakpoints.desktop) return '18px'
   if (w >= breakpoints.laptop) return '16px'
@@ -53,6 +57,7 @@ function getFontSizeM(w: number) {
 }
 
 function getFontSizeS(w: number) {
+  if (w >= breakpoints.ultrawide) return '18px'
   if (w >= breakpoints.wide) return '16px'
   if (w >= 650) return '15px'
   if (w >= breakpoints.phone) return '13px'
@@ -77,6 +82,7 @@ export function useResponsive() {
   const isPortrait = computed(() => height.value >= width.value)
   const isCompact = computed(() => width.value < breakpoints.tablet || height.value < 680)
   const isUltraCompact = computed(() => width.value < breakpoints.phone || height.value < 520)
+  const isUltrawide = computed(() => width.value >= breakpoints.ultrawide)
   const shouldCollapseTabs = computed(() => width.value < 720 || height.value < 560)
 
   function handleResize() {
@@ -117,6 +123,7 @@ export function useResponsive() {
     isPortrait,
     isCompact,
     isUltraCompact,
+    isUltrawide,
     shouldCollapseTabs,
   }
 }

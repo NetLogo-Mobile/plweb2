@@ -102,4 +102,13 @@ const goBack = () => {
     display: none;
   }
 }
+
+@media (min-width: 2560px) {
+  .list {
+    max-width: 1800px;
+    left: 50%;
+    transform: translateX(-50%);
+    right: auto;
+  }
+}
 </style>

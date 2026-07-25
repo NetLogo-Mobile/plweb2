@@ -35,4 +35,16 @@ body {
   touch-action: manipulation;
   overflow: hidden;
 }
+
+@media (min-width: 2560px) {
+  html {
+    background-color: #2c2c2e;
+  }
+
+  #app {
+    max-width: 1920px;
+    margin: 0 auto;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.15);
+  }
+}
 </style>

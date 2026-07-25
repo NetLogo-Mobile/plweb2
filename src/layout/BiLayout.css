@@ -11,6 +11,13 @@
   }
 }
 
+@media (min-width: 2560px) {
+  .right-bottom-container {
+    max-width: 960px;
+    margin: 0 auto;
+  }
+}
+
 /* 消息列表容器 ，需要留出底部输入框的高度*/
 /* Container for messages, need to leave space for input box at bottom */
 .message-wrapper {
