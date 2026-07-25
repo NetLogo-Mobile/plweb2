@@ -10,6 +10,7 @@ And most importantly, we sincerely thanks to the previous contributors: Arenfell
     + vue3 component library: https://www.naiveui.com/zh-CN/os-theme/components/t
 - recommended IDE plugins: prettier, errorlens, vue3-official
 - recommended browser plugins: vue.js devtools
+- See our api docs at https://github.com/NetLogo-Mobile/plweb-skill
 
 ## Contribution
 
