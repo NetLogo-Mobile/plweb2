@@ -50,3 +50,5 @@ src/composables/useCamera.ts
 src/types/circuit.ts
 src/composables/useDragAndDrop.ts
 *.patch
+.agents/
+.claude/

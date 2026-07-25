@@ -10,7 +10,6 @@ And most importantly, we sincerely thanks to the previous contributors: Arenfell
     + vue3 component library: https://www.naiveui.com/zh-CN/os-theme/components/t
 - recommended IDE plugins: prettier, errorlens, vue3-official
 - recommended browser plugins: vue.js devtools
-- See our api docs at https://github.com/NetLogo-Mobile/plweb-skill
 
 ## Contribution
 
@@ -25,6 +24,8 @@ To start a contribution follow these steps
 ### start coding
 
 Before you modify the code youd better run `npm run dev` to start the dev server.This will automatically apply your notifications to the browser.And you can also preview the current version on your smart phone or other devices.Most importantly, if you want to add some features related to the API,please read the [API Interface Documentation](./src/services//api/readme.md).
+
+**If you are using agents**, please install skills using `npx skills update`
 
 ### start a pull request
 
