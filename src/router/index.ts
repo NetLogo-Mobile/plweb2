@@ -116,7 +116,9 @@ const routes: RouteRecordRaw[] = [
 ]
 
 const router = createRouter({
-  history: createWebHashHistory('/plweb2/'),
+  // Let Vue Router derive the hash base from the current pathname so the same
+  // build works both at a domain root and in a GitHub Pages subdirectory.
+  history: createWebHashHistory(),
   routes,
 })
 

@@ -39,16 +39,16 @@ export default defineConfig({
         theme_color: '#3397e9',
         background_color: '#ffffff',
         display: 'standalone',
-        start_url: '/',
+        start_url: '.',
         icons: [
           {
-            src: '/assets/icons/logo-192.png',
+            src: 'assets/icons/logo-192.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any maskable',
           },
           {
-            src: '/assets/icons/logo-512.png',
+            src: 'assets/icons/logo-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable',
@@ -56,12 +56,12 @@ export default defineConfig({
         ],
         screenshots: [
           {
-            src: '/assets/mobile.png',
+            src: 'assets/mobile.png',
             sizes: '818x1339',
             type: 'image/png',
           },
           {
-            src: '/assets/desktop.png',
+            src: 'assets/desktop.png',
             sizes: '1033x698',
             type: 'image/png',
             form_factor: 'wide',

@@ -26,8 +26,8 @@ type PProjects = {
 
 const defaultApiUrl = import.meta.env.VITE_API_URL
 const defaultStaticUrl = import.meta.env.VITE_STATIC_URL
-const rootUrl = import.meta.env.VITE_ROOT_URL
-const baseUrl = import.meta.env.VITE_BASE_URL
+const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '')
+const rootUrl = `${baseUrl}/#`
 let coverImgSuffix = getCoverImgSuffix()
 let avatarImgSuffix = getAvatarImgSuffix()
 
@@ -94,15 +94,11 @@ export function getPath(path: string): string {
   const apiUrl = (userConfig.apiBaseUrl as string) || defaultApiUrl
   const staticUrl = (userConfig.staticBaseUrl as string) || defaultStaticUrl
 
-  const a = path
+  return path
     .replace(/\/@api/g, apiUrl)
     .replace(/\/@static/g, staticUrl)
     .replace(/\/@base/g, baseUrl)
     .replace(/\/@root/g, rootUrl)
-  if (window.location.host.includes('turtlesim')) {
-    return a.replace('/plweb2/', '')
-  }
-  return a
 }
 
 export function getUserUrl(user: PUser): string {
