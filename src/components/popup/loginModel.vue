@@ -56,7 +56,7 @@
                   disabled
                 >
                   <template #suffix>
-                    <img src="/assets/login/icon-login.png" width="15px" />
+                    <img :src="getPath('/@base/assets/login/icon-login.png')" width="15px" />
                   </template>
                 </n-input>
               </n-form-item-row>

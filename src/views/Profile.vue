@@ -14,7 +14,7 @@
         <!-- Top header row: Back button and Settings button (landscape only) -->
         <div class="cover-header">
           <img
-            src="/assets/library/Navigation-Return.png"
+            :src="getPath('/@base/assets/library/Navigation-Return.png')"
             style="width: 2.7em"
             class="return"
             @click="goBack"

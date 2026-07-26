@@ -3,7 +3,7 @@
     <div class="settings-container">
       <div class="settings-header">
         <img
-          src="/assets/library/Navigation-Return.png"
+          :src="getPath('/@base/assets/library/Navigation-Return.png')"
           alt="back"
           class="back-icon"
           @click="goBack"
@@ -75,6 +75,7 @@ import { NInput, NSelect } from 'naive-ui'
 import storageManager from '../services/storage'
 import sysConfig from '../config/system.config'
 import i18n from '@i18n/index'
+import { getPath } from '@services/utils'
 
 type SettingsItem = {
   key: string

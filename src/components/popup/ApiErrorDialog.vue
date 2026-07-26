@@ -24,7 +24,6 @@ interface Props {
   message?: string
   titleRef?: Ref<string>
   messageRef?: Ref<string>
-  icon?: string
   confirmLabel?: string
   cancelLabel?: string
   confirmingLabel?: string
@@ -33,7 +32,6 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  icon: '/assets/messages/Message-Default.png',
   confirmLabel: 'OK',
   cancelLabel: 'Cancel',
   confirmingLabel: 'Retrying...',
