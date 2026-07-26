@@ -115,7 +115,7 @@ const routes: RouteRecordRaw[] = [
   },
 ]
 
-const router = createRouter({.
+const router = createRouter({
   history: createWebHashHistory(),
   routes,
 })

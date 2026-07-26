@@ -97,7 +97,7 @@ export function registerNetworkListener() {
         })
       }
     })
-    window.addEventListener('offline ', () => {
+    window.addEventListener('offline', () => {
       showDialog('warning', {
         title: i18n.global.t('networkStatus.offline.title'),
         content: i18n.global.t('networkStatus.offline.message')
