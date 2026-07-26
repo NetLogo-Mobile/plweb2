@@ -285,19 +285,25 @@ export function decodeHrefToQueryObj(base64Input: string) {
   if (!base64Input || typeof base64Input !== 'string') {
     return {}
   }
-  const latin1String = atob(base64Input.replace(/DEVIDER/g, '/'))
-  const utf8Bytes = new Uint8Array([...latin1String].map((char) => char.charCodeAt(0)))
-  const jsonString = new TextDecoder().decode(utf8Bytes)
-  const result = JSON.parse(jsonString)
-  for (const k in result) {
-    if (Object.prototype.hasOwnProperty.call(result, k)) {
-      const v = result[k]
-      if (Array.isArray(v) && v.join('').includes(',')) {
-        result[k] = v[0].split(',')
+  try {
+    const latin1String = atob(base64Input.replace(/DEVIDER/g, '/'))
+    const utf8Bytes = new Uint8Array([...latin1String].map((char) => char.charCodeAt(0)))
+    const jsonString = new TextDecoder().decode(utf8Bytes)
+    const result = JSON.parse(jsonString)
+    if (!result || typeof result !== 'object' || Array.isArray(result)) return {}
+
+    for (const k in result) {
+      if (Object.prototype.hasOwnProperty.call(result, k)) {
+        const v = result[k]
+        if (Array.isArray(v) && v.join('').includes(',')) {
+          result[k] = v[0].split(',')
+        }
       }
     }
+    return result
+  } catch {
+    return {}
   }
-  return result
 }
 
 /**
