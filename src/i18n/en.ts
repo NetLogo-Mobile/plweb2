@@ -30,6 +30,16 @@ export default {
       'We may use cookies or browser features to support sign-in, security, language preferences, and performance. This notice is informational only and does not save your choice separately.',
     dismiss: 'Got it',
   },
+  networkStatus: {
+    offline: {
+      title: 'You are offline',
+      message: 'No network connection is available. Cached data will be shown where possible.',
+    },
+    poor: {
+      title: 'Poor network connection',
+      message: 'Your connection is slow or data saving is enabled. Cached data may be shown.',
+    },
+  },
   user: {
     level: 'Level',
     clickToLogin: 'Click to login',
