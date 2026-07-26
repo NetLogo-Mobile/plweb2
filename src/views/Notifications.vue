@@ -9,43 +9,42 @@
         <!-- The parameter `:CategoryID` is poorly designed, do not modify it. @see NotificationList.vue -->
         <n-tab-pane name="all" :tab="t('notifications.all')">
           <div class="item">
-            <NotificationList :CategoryID="0"></NotificationList>
+            <NotificationList :CategoryID="0" />
           </div>
         </n-tab-pane>
         <n-tab-pane name="system" :tab="t('notifications.system')">
           <div class="item">
-            <NotificationList :CategoryID="1"></NotificationList>
+            <NotificationList :CategoryID="1" />
           </div>
         </n-tab-pane>
         <n-tab-pane name="comments" :tab="t('notifications.comments')">
           <div class="item">
-            <NotificationList :CategoryID="3"></NotificationList>
+            <NotificationList :CategoryID="3" />
           </div>
         </n-tab-pane>
         <n-tab-pane name="friends" :tab="t('notifications.friends')">
           <div class="item">
-            <NotificationList :CategoryID="2"></NotificationList>
+            <NotificationList :CategoryID="2" />
           </div>
         </n-tab-pane>
         <n-tab-pane name="works" :tab="t('notifications.works')">
           <div class="item">
-            <NotificationList :CategoryID="4"></NotificationList>
+            <NotificationList :CategoryID="4" />
           </div>
         </n-tab-pane>
         <n-tab-pane name="admin" :tab="t('notifications.admin')">
           <div class="item">
-            <NotificationList :CategoryID="5"></NotificationList>
+            <NotificationList :CategoryID="5" />
           </div>
         </n-tab-pane>
       </n-tabs>
     </div>
   </main>
-  <Footer></Footer>
+  <Footer />
 </template>
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-const { t } = useI18n()
 import NotificationList from '../components/messages/NotificationList.vue'
 import Header from '../components/utils/Header.vue'
 import { NTabs, NTabPane } from 'naive-ui'
@@ -55,6 +54,8 @@ import { checkLogin } from '@services/utils'
 import { clearNotificationUnread } from '@services/notificationUnread'
 import storageManager from '@storage/index.ts'
 
+const { t } = useI18n()
+
 onActivated(async () => {
   clearNotificationUnread()
   await nextTick()
@@ -62,7 +63,6 @@ onActivated(async () => {
   if (nickname) return
   checkLogin()
 })
-// onMounted(checkLogin);
 </script>
 
 <style scoped>

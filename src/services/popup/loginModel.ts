@@ -2,7 +2,10 @@ import { createApp } from 'vue'
 import loginModel from '../../components/popup/loginModel.vue'
 import i18n from '@i18n/index'
 
-export default async function showLoginModel() {
+let currentClose: (() => void) | null = null
+
+export default function showLoginModel(): () => void {
+  currentClose?.()
   const div = document.createElement('div')
   Object.assign(div.style, {
     position: 'fixed',
@@ -16,12 +19,21 @@ export default async function showLoginModel() {
     background: 'transparent',
   })
   document.body.appendChild(div)
+  let closed = false
   const app = createApp(loginModel, {
-    close: () => {
-      app.unmount()
-      div.remove()
-    },
+    close,
   })
+
+  function close() {
+    if (closed) return
+    closed = true
+    app.unmount()
+    div.remove()
+    if (currentClose === close) currentClose = null
+  }
+
+  currentClose = close
   app.use(i18n)
   app.mount(div)
+  return close
 }
