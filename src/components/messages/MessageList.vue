@@ -79,6 +79,9 @@ async function deleteMsg(message: CommentResult) {
       timestamp: Date.now(),
     })
   } catch (error) {
+    if (index !== -1 && removed[0]) {
+      items.value.splice(index, 0, removed[0])
+    }
     showMessage('error', t('error.unknownError') + (error ? `: ${String(error)}` : ''), {
       duration: 2000,
     })
