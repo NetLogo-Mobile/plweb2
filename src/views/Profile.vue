@@ -146,8 +146,8 @@
             <div class="right-bottom-container">
               <div class="message-wrapper">
                 <MessageList
-                  v-if="route.params.id"
-                  :ID="route.params.id as string"
+                  v-if="routeUserId"
+                  :ID="routeUserId"
                   :Category="'User'"
                   :upDate="upDate"
                   @msgClick="handleMsgClick"
@@ -175,7 +175,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getData } from '@services/api/getData.ts'
 import { showAPiError } from '@popup/index.ts'
@@ -194,24 +194,25 @@ import showActionSheet from '@popup/actionSheet.ts'
 import { showMessage } from '@popup/naiveui'
 import type {
   CommentResult,
+  Result,
   Statistic,
   Summary,
   UserInfo,
 } from '@services/../pl-serve-type-main/type/main'
 
 const { t } = useI18n()
-let comment = ref('')
-let isLoading = ref(false)
-let upDate = ref(1)
-let replyID = ref('')
-let isOwnProfile = ref(false)
+const comment = ref('')
+const isLoading = ref(false)
+const upDate = ref(1)
+const replyID = ref('')
+const isOwnProfile = ref(false)
 
 const selectedTab = ref('Intro')
 const route = useRoute()
 const router = useRouter()
 const defaultCoverUrl = getPath('/@base/assets/messages/Experiment-Default.png')
 
-let coverUrl = ref(defaultCoverUrl)
+const coverUrl = ref(defaultCoverUrl)
 
 type ProfileUserData = {
   User: UserInfo
@@ -223,7 +224,7 @@ type ProfileUserData = {
   }
 }
 
-let userData = ref<ProfileUserData>({
+const userData = ref<ProfileUserData>({
   User: {
     ID: '',
     Nickname: 'Loading...',
@@ -258,30 +259,59 @@ let userData = ref<ProfileUserData>({
   },
 })
 
-let expData = ref<Record<string, Summary[]>>({})
+const expData = ref<Record<string, Summary[]>>({})
 
-// Typed entries for template iteration to avoid `unknown` element types
 const expEntries = computed<[string, Summary[]][]>(() => Object.entries(expData.value))
+const routeUserId = computed(() => {
+  const id = route.params.id
+  return Array.isArray(id) ? id[0] || '' : id || ''
+})
+
+function reportProfileError(response: Result, userId: string) {
+  showAPiError(
+    t('errors.apiErrorTitle'),
+    t('errors.apiErrorMessage', {
+      path: '/Contents/GetProfile',
+      status: response.Status,
+      message: response.Message || '',
+    }),
+    fetchProfile,
+  )
+  const request = removeToken({ ID: userId })
+  const result = removeToken(response)
+  window.$ErrorLogger.captureApiError(
+    'POST',
+    '/Contents/GetProfile',
+    response.Status,
+    result,
+    request,
+  )
+  console.error(`/Contents/GetProfile returned ${response.Status}`, result)
+}
+
+function applyUserProfile(profile: ProfileUserData, userId: string) {
+  userData.value = profile
+  isOwnProfile.value = storageManager.getObj('userInfo').value?.ID === userId
+  coverUrl.value = profile.Statistic.Cover
+    ? getCoverUrl(profile.Statistic.Cover)
+    : getUserUrl(profile.User)
+  window.$Logger.logPageView({
+    pageLink: `/User/${userId}/`,
+    timeStamp: Date.now(),
+  })
+}
+
+let profileRequestId = 0
 
 async function fetchProfile() {
-  const userId = Array.isArray(route.params.id) ? route.params.id[0] || '' : route.params.id
+  const userId = routeUserId.value
+  const requestId = ++profileRequestId
   const expRes = await getData(`/Contents/GetProfile`, {
     ID: userId,
   })
+  if (requestId !== profileRequestId) return
   if (expRes.Status !== 200) {
-    showAPiError(
-      t('errors.apiErrorTitle'),
-      t('errors.apiErrorMessage', {
-        path: '/Contents/GetProfile',
-        status: expRes.Status,
-        message: expRes?.Message || '',
-      }),
-      fetchProfile,
-    )
-    const _req = removeToken({ ID: userId })
-    const _res = removeToken(expRes)
-    window.$ErrorLogger.captureApiError('POST', '/Contents/GetProfile', expRes.Status, _res, _req)
-    console.error(`/Contents/GetProfile returned ${expRes.Status}`, _res)
+    reportProfileError(expRes, userId)
     return
   }
   if (!expRes.Data) return
@@ -289,31 +319,25 @@ async function fetchProfile() {
   const userRes = await getData(`/Users/GetUser`, {
     ID: userId,
   })
+  if (requestId !== profileRequestId) return
   if (userRes.Status !== 200 || !userRes.Data?.User || !userRes.Data.Statistic) {
     return
   }
-  userData.value = userRes.Data as ProfileUserData
-
-  // Check if viewing own profile
-  const currentUser = storageManager.getObj('userInfo')?.value
-  if (currentUser && currentUser.ID === userId) {
-    isOwnProfile.value = true
-  }
-
-  const _url = userData.value.Statistic.Cover
-    ? getCoverUrl(userData.value.Statistic.Cover)
-    : getUserUrl(userRes.Data.User)
-
-  coverUrl.value = _url
-  window.$Logger.logPageView({
-    pageLink: `/User/${route.params.id}/`,
-    timeStamp: Date.now(),
-  })
+  applyUserProfile(userRes.Data as ProfileUserData, userId)
 }
 
-onMounted(() => {
-  fetchProfile()
-})
+watch(
+  routeUserId,
+  () => {
+    selectedTab.value = 'Intro'
+    comment.value = ''
+    replyID.value = ''
+    expData.value = {}
+    coverUrl.value = defaultCoverUrl
+    void fetchProfile()
+  },
+  { immediate: true },
+)
 
 function handleMsgClick(item: CommentResult) {
   replyID.value = item.UserID
@@ -321,7 +345,7 @@ function handleMsgClick(item: CommentResult) {
 }
 
 async function handleEnter() {
-  await postComment(comment, isLoading, 'User', route.params.id as string, replyID, upDate)
+  await postComment(comment, isLoading, 'User', routeUserId.value, replyID, upDate)
 }
 
 function goBack() {
@@ -336,19 +360,19 @@ function goToSettings() {
 function getLink(name: string) {
   switch (name) {
     case 'Latest-Experiments':
-      return `experiments://UserID/${route.params.id}`
+      return `experiments://UserID/${routeUserId.value}`
     case 'Featured-Experiments':
-      return `experiments://UserID/${route.params.id}/Tags/精选`
+      return `experiments://UserID/${routeUserId.value}/Tags/精选`
     case 'Latest-Discussions':
-      return `discussions://UserID/${route.params.id}`
+      return `discussions://UserID/${routeUserId.value}`
     case 'Featured-Discussions':
-      return `discussions://UserID/${route.params.id}/Tags/精选`
+      return `discussions://UserID/${routeUserId.value}/Tags/精选`
     case 'Popular-Discussions':
-      return `discussions://UserID/${route.params.id}/Sort/2`
+      return `discussions://UserID/${routeUserId.value}/Sort/2`
     case 'Popular-Experiments':
-      return `experiments://UserID/${route.params.id}/Sort/2`
+      return `experiments://UserID/${routeUserId.value}/Sort/2`
     default:
-      return `discussions://user${route.params.id}`
+      return `discussions://user${routeUserId.value}`
   }
 }
 

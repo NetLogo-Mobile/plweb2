@@ -16,7 +16,7 @@
     <WorksList
       :key="String(route.params.config || '')"
       :row="maxProjectsPerLine"
-      :q="route.params.config ? decodeHrefToQueryObj(route.params.config as string) : {}"
+      :q="decodedQuery"
     />
   </div>
 </template>
@@ -41,31 +41,46 @@ const decodedQuery = computed(() => {
   return config ? decodeHrefToQueryObj(config) : {}
 })
 
+const SORT_LABELS: Record<string, string> = {
+  '0': 'worklist.sortDefault',
+  Default: 'worklist.sortDefault',
+  '1': 'worklist.sortPopularity',
+  Popularity: 'worklist.sortPopularity',
+  '2': 'worklist.sortRandom',
+  Random: 'worklist.sortRandom',
+}
+
+const SPECIAL_LABELS: Record<string, string> = {
+  Favorite: 'worklist.specialFavorite',
+  Support: 'worklist.specialSupport',
+  Star: 'worklist.specialStar',
+}
+
+function appendQueryLabels(parts: string[], query: ReturnType<typeof decodeHrefToQueryObj>) {
+  const sortLabel = SORT_LABELS[String(query.Sort)]
+  if (sortLabel) parts.push(t(sortLabel))
+  const specialLabel = SPECIAL_LABELS[String(query.Special)]
+  if (specialLabel) parts.push(t(specialLabel))
+}
+
+function appendFilterLabel(parts: string[], query: ReturnType<typeof decodeHrefToQueryObj>) {
+  const tag = query.Tags?.[0]
+  if (tag) {
+    parts.push(tag.startsWith('C-') ? tag.slice(2) : getTagName(tag))
+    return
+  }
+  if (!query.Category) return
+  const key = `worklist.category${query.Category}`
+  const category = t(key)
+  if (category !== key) parts.push(category)
+}
+
 const detailedTitle = computed(() => {
   const query = decodedQuery.value
   const parts: string[] = []
-
-  const sort = query.Sort
-  if (sort === 0 || sort === '0' || sort === 'Default') parts.push(t('worklist.sortDefault'))
-  else if (sort === 1 || sort === '1' || sort === 'Popularity')
-    parts.push(t('worklist.sortPopularity'))
-  else if (sort === 2 || sort === '2' || sort === 'Random') parts.push(t('worklist.sortRandom'))
-
-  if (query.Special === 'Favorite') parts.push(t('worklist.specialFavorite'))
-  else if (query.Special === 'Support') parts.push(t('worklist.specialSupport'))
-  else if (query.Special === 'Star') parts.push(t('worklist.specialStar'))
-
-  if (query.Tags?.length) {
-    const tag = query.Tags[0]
-    parts.push(tag.startsWith('C-') ? tag.slice(2) : getTagName(tag))
-  } else if (query.Category) {
-    const key = `worklist.category${query.Category}`
-    const cat = t(key)
-    if (cat !== key) parts.push(cat)
-  }
-
+  appendQueryLabels(parts, query)
+  appendFilterLabel(parts, query)
   if (!parts.length) return t('worklist.title')
-
   parts.push(t('worklist.works'))
   return parts.join('')
 })

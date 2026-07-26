@@ -91,17 +91,8 @@ export function useResponsive() {
     projectsHeight.value = getProjectsHeight(width.value)
   }
 
-  onMounted(() => {
-    window.addEventListener('resize', handleResize, { passive: true })
-    window.addEventListener('orientationchange', handleResize, {
-      passive: true,
-    })
-  })
-
-  onUnmounted(() => {
-    window.removeEventListener('resize', handleResize)
-    window.removeEventListener('orientationchange', handleResize)
-  })
+  onMounted(() => addResizeListeners(handleResize))
+  onUnmounted(() => removeResizeListeners(handleResize))
 
   return {
     width,
@@ -119,4 +110,14 @@ export function useResponsive() {
     isUltraCompact,
     shouldCollapseTabs,
   }
+}
+
+function addResizeListeners(listener: () => void) {
+  window.addEventListener('resize', listener, { passive: true })
+  window.addEventListener('orientationchange', listener, { passive: true })
+}
+
+function removeResizeListeners(listener: () => void) {
+  window.removeEventListener('resize', listener)
+  window.removeEventListener('orientationchange', listener)
 }

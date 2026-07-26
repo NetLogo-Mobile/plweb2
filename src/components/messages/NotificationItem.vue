@@ -1,26 +1,18 @@
 <template>
   <div class="notification_container">
-    <div
-      class="img"
-      @click.stop="
-        () => {
-          if (notification.Users[0]) showUserCard(notification.Users[0])
-        }
-      "
-    >
-      <img id="avatar" :src="getPath(avatarUrl)" />
+    <div class="img" @click.stop="showNotificationUser">
+      <img class="avatar" :src="getPath(avatarUrl)" alt="" />
     </div>
-    <div id="notification" class="notification">
+    <div class="notification">
       <div
-        id="notification_title"
         v-richText="() => parse(notification.msg_title)"
         class="notification_title"
       ></div>
-      <div id="notification_message" class="notification_message" @click="showComment">
-        <div id="notification_icon" class="notification_icon">
-          <img id="notification_icon" :src="getPath(msg_icon_url)" />
+      <div class="notification_message" @click="showComment">
+        <div class="notification_icon">
+          <img :src="getPath(msg_icon_url)" alt="" />
         </div>
-        <div id="notification_text" class="notification_text">
+        <div class="notification_text">
           <!-- 我认为是在没必要专门像APP一样渲染邮件，所以暂时这样 -->
           <!-- I think it's unnecessary to render emails like an app, so I'll do it this way for now -->
           <n-ellipsis
@@ -37,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import parse from '@services/pltxt2htm/advancedParser'
 import { NEllipsis } from 'naive-ui'
 import showUserCard from '@popup/userProfileDialog.ts'
@@ -56,17 +48,27 @@ const props = defineProps<{
 }>()
 
 const avatarUrl = ref('/@base/assets/user/default-avatar.png')
-const fetchAvatar = async () => {
-  avatarUrl.value =
-    props.notification.msg_type === 1
-      ? '/@base/assets/messages/Message-Unread.png'
-      : await getUserUrl({
-          ID: props.notification.Users[0] ?? '',
-          Avatar: props.notification.UserAvatar,
-        })
-}
-onMounted(fetchAvatar)
-watch(() => props.notification.Users[0], fetchAvatar)
+let avatarRequestId = 0
+
+watch(
+  () => [
+    props.notification.msg_type,
+    props.notification.Users[0],
+    props.notification.UserAvatar,
+  ],
+  async () => {
+    const requestId = ++avatarRequestId
+    const nextAvatar =
+      props.notification.msg_type === 1
+        ? '/@base/assets/messages/Message-Unread.png'
+        : await getUserUrl({
+            ID: props.notification.Users[0] ?? '',
+            Avatar: props.notification.UserAvatar,
+          })
+    if (requestId === avatarRequestId) avatarUrl.value = nextAvatar
+  },
+  { immediate: true },
+)
 
 const msg_icon_url = computed(() => {
   switch (props.notification.msg_type) {
@@ -84,6 +86,11 @@ const msg_icon_url = computed(() => {
       return ''
   }
 })
+
+function showNotificationUser() {
+  const userId = props.notification.Users[0]
+  if (userId) showUserCard(userId)
+}
 
 // 跳转到对话上下文，以后会直接跳转到这句对话的索引所在
 // Jump to the context of the conversation, and later it will directly jump to the index where this sentence is located

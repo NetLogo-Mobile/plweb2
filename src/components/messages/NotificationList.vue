@@ -1,12 +1,12 @@
 <template>
-  <infiniteScroll :hasMore="!noMore" :initialItems="items" @load="handleLoad">
-    <template #default="slotProps: { items: any[] }">
-      <div v-for="item in slotProps.items" :key="item.ID || item.id || Math.random()">
+  <InfiniteScroll :has-more="!noMore" :initial-items="items" @load="handleLoad">
+    <template #default="{ items: notificationItems }">
+      <div v-for="item in asNotificationMessages(notificationItems)" :key="item.ID">
         <Notification :notification="item" />
         <n-divider style="margin: 0" />
       </div>
     </template>
-  </infiniteScroll>
+  </InfiniteScroll>
 </template>
 
 <script setup lang="ts">
@@ -24,7 +24,7 @@ import type { Message, MessageTemplate } from '@services/../pl-serve-type-main/t
 
 onActivated(() => {
   window.$Logger.logPageView({
-    pageLink: `/Social/Notifications/${CategoryID}/`,
+    pageLink: `/Social/Notifications/${props.CategoryID}/`,
     timeStamp: Date.now(),
   })
 })
@@ -83,136 +83,125 @@ let templates: MessageTemplate[] = [
   },
 ]
 
-const { CategoryID } = defineProps<{
+const props = defineProps<{
   CategoryID: number
 }>()
 
-function fillInTemplate(data: string | null, message: Message) {
-  const re = (data ?? '')
-    .replace(
-      /{Users}/g,
-      message.Users.map(
-        (user: string, index: number) => `<user=${user}>${message.UserNames[index]}</user>`,
-        // `<span class='RUser' data-user='${user}'>${message.UserNames[index]}</span>`,
-      ).join(' '),
-    )
-    .replace(
-      /{Experiment}/g,
-      message.Fields?.Discussion
-        ? `<discussion=${message.Fields?.DiscussionID}>${message.Fields?.Discussion}</discussion>`
-        : `<experiment=${message.Fields?.ExperimentID}>${message.Fields?.Experiment}</experiment>`,
-    )
-    .replace(/{\$Content}/g, message.Fields.Content)
-    .replace(
-      /{\$TargetName}/g,
-      message.Fields.TargetName || storageManager.getObj('userInfo').value?.Nickname || '',
-    )
-    .replace(/{\$Until}/g, message.Fields.Until)
-    .replace(/{\$Editor}/g, message.Fields.Editor)
-    .replace(/{\$Gold}/g, message.Numbers?.Gold?.toString() || '{error}')
-    .replace(/undefined/g, '')
-  return re
+function asNotificationMessages(items: unknown[]): NotificationMessage[] {
+  return items as NotificationMessage[]
 }
 
+function fillInTemplate(data: string | null, message: Message) {
+  const users = message.Users.map(
+    (user: string, index: number) => `<user=${user}>${message.UserNames[index]}</user>`,
+  ).join(' ')
+  const experiment = message.Fields?.Discussion
+    ? `<discussion=${message.Fields.DiscussionID}>${message.Fields.Discussion}</discussion>`
+    : `<experiment=${message.Fields?.ExperimentID}>${message.Fields?.Experiment}</experiment>`
+  const targetName = [message.Fields.TargetName, storageManager.getObj('userInfo').value?.Nickname]
+    .find(Boolean)
+    ?.toString() ?? ''
+  const replacements: Array<[RegExp, string]> = [
+    [/{Users}/g, users],
+    [/{Experiment}/g, experiment],
+    [/{\$Content}/g, message.Fields.Content],
+    [/{\$TargetName}/g, targetName],
+    [/{\$Until}/g, message.Fields.Until],
+    [/{\$Editor}/g, message.Fields.Editor],
+    [/{\$Gold}/g, message.Numbers?.Gold?.toString() ?? '{error}'],
+    [/undefined/g, ''],
+  ]
+  return replacements.reduce((text, [pattern, value]) => text.replace(pattern, value), data ?? '')
+}
+
+function getMessages(noTemplates: boolean) {
+  return getData('/Messages/GetMessages', {
+    CategoryID: props.CategoryID,
+    Take: 20,
+    Skip: skip.value,
+    NoTemplates: noTemplates,
+  })
+}
+
+function reportLoadError(response: Awaited<ReturnType<typeof getMessages>>, noTemplates: boolean) {
+  showAPiError(
+    t('errors.apiErrorTitle'),
+    t('errors.apiErrorMessage', {
+      path: '/Messages/GetMessages',
+      status: response.Status,
+      message: response.Message || '',
+    }),
+    () => getMessages(noTemplates),
+  )
+  const request = removeToken({
+    CategoryID: props.CategoryID,
+    Take: 20,
+    Skip: skip.value,
+    NoTemplates: noTemplates,
+  })
+  const result = removeToken(response)
+  window.$ErrorLogger.captureApiError(
+    'POST',
+    '/Messages/GetMessages',
+    response.Status,
+    result,
+    request,
+  )
+  console.error(`/Messages/GetMessages returned ${response.Status}`, result)
+}
+
+const supportedLanguages: Array<keyof MessageTemplate['Subject']> = [
+  'Chinese',
+  'English',
+  'ChineseTraditional',
+  'German',
+  'French',
+  'Japanese',
+  'Italian',
+  'Polish',
+  'Spanish',
+  'Ukrainian',
+]
+
+function formatMessage(message: Message): NotificationMessage {
+  const template = templates.find((item) => item.ID === message.TemplateID)
+  if (!template) {
+    return { ...message, msg_title: '', msg: message.Fields.Content, msg_type: message.CategoryID }
+  }
+  const currentLocale = locale.value as keyof MessageTemplate['Subject']
+  const language = supportedLanguages.includes(currentLocale) ? currentLocale : 'Chinese'
+  return {
+    ...message,
+    msg_title: fillInTemplate(template.Subject[language], message),
+    msg: fillInTemplate(template.Content[language], message),
+    msg_type: message.CategoryID,
+  }
+}
+
+function appendMessages(messages: Message[]) {
+  if (messages.length === 0) {
+    noMore.value = true
+    showMessage('warning', t('ui.messages.noMore'), { duration: 2000 })
+  }
+  items.value.push(...messages.map(formatMessage))
+  skip.value += 20
+}
 
 const handleLoad = async (noTemplates = true) => {
-  if (storageManager.getObj('userInfo').value?.Nickname == null) return
-  if (loading.value) return // Lock
-  if (noMore.value) return
+  if (!storageManager.getObj('userInfo').value?.Nickname || loading.value || noMore.value) return
   loading.value = true
   try {
-    const getMessagesResponse = await getData('/Messages/GetMessages', {
-      CategoryID,
-      Take: 20,
-      Skip: skip.value,
-      NoTemplates: noTemplates,
-    })
-
-    if (getMessagesResponse.Status !== 200 || !getMessagesResponse?.Data) {
-      showAPiError(
-        t('errors.apiErrorTitle'),
-        t('errors.apiErrorMessage', {
-          path: '/Messages/GetMessages',
-          status: getMessagesResponse.Status,
-          message: getMessagesResponse?.Message || '',
-        }),
-        async () => {
-          return getData('/Messages/GetMessages', {
-            CategoryID: CategoryID,
-            Take: 20,
-            Skip: skip.value,
-            NoTemplates: noTemplates,
-          })
-        },
-      )
-      const _req = removeToken({
-        CategoryID: CategoryID,
-        Take: 20,
-        Skip: skip.value,
-        NoTemplates: noTemplates,
-      })
-      const _res = removeToken(getMessagesResponse)
-      window.$ErrorLogger.captureApiError(
-        'POST',
-        '/Messages/GetMessages',
-        getMessagesResponse.Status,
-        _res,
-        _req,
-      )
-      console.error(`/Messages/GetMessages returned ${getMessagesResponse.Status}`, _res)
-      loading.value = false
+    const response = await getMessages(noTemplates)
+    if (response.Status !== 200 || !response.Data) {
+      reportLoadError(response, noTemplates)
       return
     }
-
-    if (!noTemplates) {
-      templates = getMessagesResponse.Data.Templates
-    }
-
-    const messages = getMessagesResponse.Data.Messages
-    if (messages.length === 0) {
-      noMore.value = true
-      showMessage('warning', t('ui.messages.noMore'), { duration: 2000 })
-    }
-
-    const defaultItems = messages.map((message) => {
-      const template = templates.find((t) => t.ID === message.TemplateID)
-      if (!template) {
-        return {
-          ...message,
-          msg_title: '',
-          msg: message.Fields.Content,
-          msg_type: message.CategoryID,
-        }
-      }
-      const lang = (
-        [
-          'Chinese',
-          'English',
-          'ChineseTraditional',
-          'German',
-          'French',
-          'Japanese',
-          'Italian',
-          'Polish',
-          'Spanish',
-          'Ukrainian',
-        ].includes(locale.value)
-          ? locale.value
-          : 'Chinese'
-      ) as keyof MessageTemplate['Subject']
-      return {
-        ...message,
-        msg_title: fillInTemplate(template.Subject[lang], message),
-        msg: fillInTemplate(template.Content[lang], message),
-        msg_type: message.CategoryID,
-      }
-    })
-
-    items.value = [...items.value, ...defaultItems]
-    loading.value = false
-    skip.value += 20
+    if (!noTemplates) templates = response.Data.Templates
+    appendMessages(response.Data.Messages)
   } catch (error) {
     showMessage('error', String(error), { duration: 5000 })
+  } finally {
+    loading.value = false
   }
 }
 
