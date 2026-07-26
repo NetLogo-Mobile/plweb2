@@ -115,8 +115,8 @@ const routes: RouteRecordRaw[] = [
   },
 ]
 
-const router = createRouter({
-  history: createWebHashHistory('/plweb2/'),
+const router = createRouter({.
+  history: createWebHashHistory(),
   routes,
 })
 
