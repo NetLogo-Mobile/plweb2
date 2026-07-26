@@ -132,7 +132,7 @@ function parseCopiedRouteTarget(input: string): { path: string; needLogin: boole
 let lastCheckedClipboard = ''
 
 async function navigateToTarget(target: { path: string; needLogin: boolean }) {
-  if (target.needLogin && !storageManager.getObj('userInfo').value?.User?.ID) {
+  if (target.needLogin && !storageManager.getObj('userInfo').value?.ID) {
     showMessage('warning', 'Please login first', { duration: 2000 })
     return false
   }
