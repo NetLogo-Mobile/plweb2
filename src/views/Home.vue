@@ -126,6 +126,7 @@ onMounted(async () => {
     loadPageData(res)
   }
   await Promise.allSettled([processAuthInfo(), processHomepageProjects()])
+  isLoading.value = false
 })
 
 onActivated(() => {
