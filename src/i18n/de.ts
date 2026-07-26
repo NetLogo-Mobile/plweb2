@@ -30,6 +30,16 @@ export default {
       'Wir können Cookies oder Browserfunktionen verwenden, um Anmeldung, Sicherheit, Spracheinstellungen und Leistung zu unterstützen. Dieser Hinweis dient nur zur Information und speichert deine Auswahl nicht zusätzlich.',
     dismiss: 'Verstanden',
   },
+  networkStatus: {
+    offline: {
+      title: 'Sie sind offline',
+      message: 'Es ist keine Netzwerkverbindung verfügbar. Wenn möglich, werden Daten aus dem Cache angezeigt.',
+    },
+    poor: {
+      title: 'Schlechte Netzwerkverbindung',
+      message: 'Die Verbindung ist langsam oder der Datensparmodus ist aktiv. Möglicherweise werden Daten aus dem Cache angezeigt.',
+    },
+  },
   user: {
     level: 'Stufe',
     clickToLogin: 'Zum Anmelden klicken',
