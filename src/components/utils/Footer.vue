@@ -103,7 +103,7 @@ onUnmounted(() => {
 
 <style scoped>
 footer {
-  height: 50px;
+  height: calc(var(--footer-height) + env(safe-area-inset-bottom));
   position: fixed;
   bottom: 0;
   left: 0;
@@ -118,8 +118,8 @@ nav {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  height: 50px;
-  max-width: 1024px;
+  height: var(--footer-height);
+  max-width: 72rem;
   margin: 0 auto;
   padding: 0 4px;
 }
@@ -137,14 +137,14 @@ nav a {
 }
 
 nav a svg {
-  width: 20px;
-  height: 20px;
+  width: clamp(1.2rem, 2.5dvh, 1.5rem);
+  height: clamp(1.2rem, 2.5dvh, 1.5rem);
 }
 
 nav a span {
-  font-size: 12px;
+  font-size: clamp(0.7rem, 1.5dvh, 0.8rem);
   font-weight: 500;
-  margin-top: 4px;
+  margin-top: 0.2rem;
 }
 
 .notification-icon-wrapper {
