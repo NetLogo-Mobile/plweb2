@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   issue-agent-coding:
+    if: contains(github.event.issue.labels.*.name, 'autofix') # Only run if the issue has the 'autofix' label
     runs-on: ubuntu-latest
 
     steps:
@@ -40,6 +41,10 @@ jobs:
       - name: Install OpenCode CLI
         run: |
           npm install -g opencode-ai
+
+      - name: Install skills
+        run: |
+          npx skills update
 
       # Safely extract Issue details using env variables to prevent shell injection/escaping issues
       - name: Prepare Prompt from Issue

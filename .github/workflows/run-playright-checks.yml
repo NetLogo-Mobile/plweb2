@@ -49,15 +49,15 @@ jobs:
         env:
           CI: true
 
-      # - name: Run Playwright tests firefox
-      #   run: npx playwright test --config scripts/tests/playwright.config.ts --project=firefox
-      #   env:
-      #     CI: true
+      - name: Run Playwright tests firefox
+        run: npx playwright test --config scripts/tests/playwright.config.ts --project=firefox
+        env:
+          CI: true
 
-      # - name: Run Playwright tests webkit
-      #   run: npx playwright test --config scripts/tests/playwright.config.ts --project=webkit
-      #   env:
-      #     CI: true
+      - name: Run Playwright tests webkit
+        run: npx playwright test --config scripts/tests/playwright.config.ts --project=webkit
+        env:
+          CI: true
 
       - name: Kill dev server
         if: always()

@@ -32,6 +32,11 @@ jobs:
         run: |
           npm install -g opencode-ai
 
+      - name: Install skills & dependencies
+        run: |
+          npx skills update
+          npm ci
+
       - name: Generate PR Diff
         id: pr_diff
         run: |
