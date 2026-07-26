@@ -25,7 +25,7 @@ To start a contribution follow these steps
 
 Before you modify the code youd better run `npm run dev` to start the dev server.This will automatically apply your notifications to the browser.And you can also preview the current version on your smart phone or other devices.Most importantly, if you want to add some features related to the API,please read the [API Interface Documentation](./src/services//api/readme.md).
 
-**If you are using agents**, please install skills using `npx skills update`
+**If you are using agents**, please install skills using `npx skills update`.And read AGENTS.md in docs.
 
 ### start a pull request
 
