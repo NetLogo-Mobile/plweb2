@@ -418,14 +418,10 @@ src/components/
 # 开发 (.env)
 VITE_API_URL=/api
 VITE_STATIC_URL=/static
-VITE_ROOT_URL="/#"
-VITE_BASE_URL=""
 
 # 生产 (.env.production)
 VITE_API_URL=https://physics-api-cn.turtlesim.com
 VITE_STATIC_URL=https://physics-lab.oss-cn-hongkong.aliyuncs.com
-VITE_ROOT_URL="/plweb2/#"
-VITE_BASE_URL=/plweb2/
 ```
 
 **代理** (dev): `/api` → physics-api-cn, `/static` → physics-static-cn
@@ -442,21 +438,7 @@ VITE_BASE_URL=/plweb2/
 
 ---
 
-## 20. 代码规范检查
-
-### ESLint (`eslint.config.js`, 平面配置 v9)
-- 继承: `@typescript-eslint/recommended` + `plugin:vue/vue3-recommended`
-- `no-console`: off (允许 console.log)
-- `@typescript-eslint/no-explicit-any`: off
-- `vue/no-v-html`: off
-- `@typescript-eslint/consistent-type-imports`: error
-- `complexity`: max 12 (warn)
-- `max-lines-per-function`: max 50 (warn)
-- `max-depth`: max 4 (warn)
-- `max-nested-callbacks`: max 3 (warn)
-- `@typescript-eslint/no-unused-vars`: warn (忽略 `_` 开头的变量)
-
-### npm 脚本
+## 20. npm 脚本
 
 | 命令 | 说明 |
 |---|---|
@@ -510,9 +492,11 @@ VITE_BASE_URL=/plweb2/
 | API 设计说明 | `src/services/api/readme.md` | 接口设计原理 (中英双语) |
 | 存储管理器说明 | `src/services/storage/readme.md` | 存储层用法 (中英双语) |
 | 富文本解析器说明 | `src/services/pltxt2htm/README.md` | pltxt2htm 使用方法 |
-| 后端类型定义说明 | `src/pl-serve-type-main/README.md` | API 类型文档 |
+| 后端类型定义说明 | `src/pl-serve-type-main/README.md` | API 类型文档 ，你也可以看看plweb相关的skill，如果你找不到skill在哪，请务必提示使用者|
 | 项目 README | `README.md`, `README-zh.md` | 项目简介 (中英双语) |
 | i18n 检查脚本 | `scripts/check-i18n.mjs` | 确保语言键同步 |
+
+注意，再更新任何内容后，请注意更新skills
 
 ---
 
