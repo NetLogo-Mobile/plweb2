@@ -28,6 +28,16 @@ export default {
       '我们可能会使用 Cookie 或浏览器本地能力来支持登录、安全、语言偏好和性能优化。本提示只用于告知，不会额外保存你的选择。',
     dismiss: '知道了',
   },
+  networkStatus: {
+    offline: {
+      title: '当前处于离线状态',
+      message: '未检测到网络连接，我们将在可用时读取并显示缓存数据。',
+    },
+    poor: {
+      title: '当前网络连接较差',
+      message: '网络速度较慢或已启用流量节省，我们可能会读取并显示缓存数据。',
+    },
+  },
   user: {
     level: '等级',
     clickToLogin: '点击登录',

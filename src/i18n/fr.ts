@@ -30,6 +30,16 @@ export default {
       'Nous pouvons utiliser des cookies ou des fonctionnalités du navigateur pour la connexion, la sécurité, les préférences linguistiques et les performances. Cet avis est uniquement informatif et n’enregistre pas votre choix séparément.',
     dismiss: 'Compris',
   },
+  networkStatus: {
+    offline: {
+      title: 'Vous êtes hors ligne',
+      message: 'Aucune connexion réseau n’est disponible. Les données en cache seront affichées lorsque cela est possible.',
+    },
+    poor: {
+      title: 'Connexion réseau faible',
+      message: 'La connexion est lente ou l’économiseur de données est activé. Des données en cache peuvent être affichées.',
+    },
+  },
   user: {
     level: 'Niveau',
     clickToLogin: 'Cliquez pour vous connecter',

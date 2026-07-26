@@ -5,6 +5,7 @@ import i18n from '@i18n/index'
 import ErrorLogger from './services/errorLogger.ts'
 import { LogManager } from '@api/logWriter.ts'
 import { getPath, registerNetworkListener } from '@services/utils'
+import { registerNetworkStatusListener } from '@services/networkStatus'
 import storageManager from '@storage/index'
 import { showMessage } from '@popup/naiveui'
 import type { DirectiveBinding } from 'vue'
@@ -189,3 +190,4 @@ document.addEventListener('visibilitychange', () => {
   }
 })
 registerNetworkListener()
+registerNetworkStatusListener()

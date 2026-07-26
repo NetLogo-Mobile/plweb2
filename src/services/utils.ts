@@ -24,12 +24,27 @@ type PProjects = {
   Image?: number
 }
 
+interface NetworkInformation extends EventTarget {
+  downlink?: number
+  effectiveType?: 'slow-2g' | '2g' | '3g' | '4g'
+  rtt?: number
+  saveData?: boolean
+}
+
+interface NavigatorWithConnection extends Navigator {
+  connection?: NetworkInformation
+  mozConnection?: NetworkInformation
+  webkitConnection?: NetworkInformation
+}
+
 const defaultApiUrl = import.meta.env.VITE_API_URL
 const defaultStaticUrl = import.meta.env.VITE_STATIC_URL
 const rootUrl = import.meta.env.VITE_ROOT_URL
 const baseUrl = import.meta.env.VITE_BASE_URL
 let coverImgSuffix = getCoverImgSuffix()
 let avatarImgSuffix = getAvatarImgSuffix()
+
+
 
 function getCoverImgSuffix() {
   const connection =
@@ -49,9 +64,9 @@ function getCoverImgSuffix() {
 
 function getAvatarImgSuffix() {
   const connection =
-    (navigator as any).connection ||
-    (navigator as any).mozConnection ||
-    (navigator as any).webkitConnection
+    (navigator as NavigatorWithConnection).connection ||
+    (navigator as NavigatorWithConnection).mozConnection ||
+    (navigator as NavigatorWithConnection).webkitConnection
   if (connection) {
     if (connection.saveData) {
       return '!tiny.round'
@@ -68,14 +83,27 @@ function getAvatarImgSuffix() {
 
 export function registerNetworkListener() {
   const connection =
-    (navigator as any).connection ||
-    (navigator as any).mozConnection ||
-    (navigator as any).webkitConnection
+    (navigator as NavigatorWithConnection).connection ||
+    (navigator as NavigatorWithConnection).mozConnection ||
+    (navigator as NavigatorWithConnection).webkitConnection
   if (connection) {
     connection.addEventListener('change', () => {
       coverImgSuffix = getCoverImgSuffix()
       avatarImgSuffix = getAvatarImgSuffix()
+      if(connection.saveData || ['2g', '3g'].includes(connection.effectiveType)) {
+        showDialog('warning', {
+          title: i18n.global.t('networkStatus.poor.title'),
+          content: i18n.global.t('networkStatus.poor.message')
+        })
+      }
     })
+    window.addEventListener('offline ', () => {
+      showDialog('warning', {
+        title: i18n.global.t('networkStatus.offline.title'),
+        content: i18n.global.t('networkStatus.offline.message')
+      })
+    })
+
   }
 }
 
@@ -284,7 +312,7 @@ export function decodeHrefToQueryObj(base64Input: string) {
  * @see i18n.ts
  * @returns 格式化后的日期文本 Formatted date text
  */
-// eslint-disable-next-line max-lines-per-function
+ 
 export function formatDate(id: string, showRelative?: boolean, type?: string): string {
   // 1. 提取并转换16进制时间戳
   // 1. Extract and convert 16-bit timestamp
