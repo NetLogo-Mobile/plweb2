@@ -10,6 +10,7 @@
 
   <div class="list">
     <WorksList
+      :key="String(route.params.config || '')"
       :row="maxProjectsPerLine"
       :q="route.params.config ? decodeHrefToQueryObj(route.params.config as string) : {}"
     />
