@@ -27,6 +27,24 @@ function ensureMermaidInitialized() {
   mermaidInitialized = true
 }
 
+function createMermaidDiagram(svg: string): HTMLElement | null {
+  const svgDocument = new DOMParser().parseFromString(svg, 'image/svg+xml')
+  const svgRoot = svgDocument.documentElement
+  if (svgRoot.localName !== 'svg' || svgDocument.querySelector('parsererror')) return null
+
+  svgRoot.querySelectorAll('script, foreignObject').forEach((element) => element.remove())
+  svgRoot.querySelectorAll('*').forEach((element) => {
+    for (const attribute of [...element.attributes]) {
+      const name = attribute.name.toLowerCase()
+      const value = attribute.value.trim().replace(/\s/g, '')
+      if (name.startsWith('on') || (name.endsWith('href') && /^(?:javascript|data):/i.test(value))) {
+        element.removeAttribute(attribute.name)
+      }
+    }
+  })
+
+  return svgDocument.importNode(svgRoot, true)
+}
 
 async function renderMermaidDiagrams(container: HTMLElement) {
   ensureMermaidInitialized()
@@ -42,11 +60,14 @@ async function renderMermaidDiagrams(container: HTMLElement) {
 
       try {
         const renderId = `mermaid-${Date.now()}-${index}`;
-        const { svg } = await mermaid.render(renderId, source);
-        const wrapper = document.createElement("div");
-        wrapper.className = "mermaid-diagram";
-        wrapper.innerHTML = svg;
-        pre.replaceWith(wrapper);
+        const { svg } = await mermaid.render(renderId, source)
+        const diagram = createMermaidDiagram(svg)
+        if (!diagram) return
+
+        const wrapper = document.createElement('div')
+        wrapper.className = 'mermaid-diagram'
+        wrapper.replaceChildren(diagram)
+        pre.replaceWith(wrapper)
       } catch (e) {
         console.warn("mermaid render failed:", e);
       }
