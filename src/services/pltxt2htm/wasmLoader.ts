@@ -14,6 +14,9 @@ export async function getWasmInstance() {
     wasmInstance = await pltxt2htm()
     wasmInstancePromise = null
     return wasmInstance
-  })()
+  })().catch((error) => {
+    wasmInstancePromise = null
+    throw error
+  })
   return wasmInstancePromise
 }
