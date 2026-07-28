@@ -2,6 +2,7 @@ import { getWasmInstance } from './wasmLoader'
 import { getDeallocator } from './deallocator'
 import hljs from 'highlight.js'
 import mermaid from 'mermaid'
+import DOMPurify from 'dompurify'
 import renderMathInElement from 'katex/contrib/auto-render/auto-render.js'
 import 'katex/dist/katex.min.css'
 import storageManager from '@storage/index'
@@ -27,23 +28,12 @@ function ensureMermaidInitialized() {
   mermaidInitialized = true
 }
 
-function createMermaidDiagram(svg: string): HTMLElement | null {
-  const svgDocument = new DOMParser().parseFromString(svg, 'image/svg+xml')
-  const svgRoot = svgDocument.documentElement
-  if (svgRoot.localName !== 'svg' || svgDocument.querySelector('parsererror')) return null
-
-  svgRoot.querySelectorAll('script, foreignObject').forEach((element) => element.remove())
-  svgRoot.querySelectorAll('*').forEach((element) => {
-    for (const attribute of [...element.attributes]) {
-      const name = attribute.name.toLowerCase()
-      const value = attribute.value.trim().replace(/\s/g, '')
-      if (name.startsWith('on') || (name.endsWith('href') && /^(?:javascript|data):/i.test(value))) {
-        element.removeAttribute(attribute.name)
-      }
-    }
+function createMermaidDiagram(svg: string): Node | null {
+  const diagram = DOMPurify.sanitize(svg, {
+    USE_PROFILES: { svg: true, svgFilters: true },
+    RETURN_DOM: true,
   })
-
-  return svgDocument.importNode(svgRoot, true)
+  return diagram instanceof SVGSVGElement ? diagram : null
 }
 
 async function renderMermaidDiagrams(container: HTMLElement) {
