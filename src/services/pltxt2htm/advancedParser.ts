@@ -112,7 +112,9 @@ async function parse(source: string, context: ParseContext = {}) {
 
   if (!rawHtml) return ''
   const tempDiv = document.createElement('div')
-  tempDiv.innerHTML = rawHtml
+  tempDiv.innerHTML = DOMPurify.sanitize(rawHtml, {
+    USE_PROFILES: { html: true, svg: true, svgFilters: true, mathMl: true },
+  })
 
   if (typeof renderMathInElement === 'function') {
     renderMathInElement(tempDiv, {
