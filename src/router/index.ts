@@ -122,7 +122,9 @@ const router = createRouter({
 
 router.onError((error, to) => {
   if (error.message?.includes('Failed to fetch dynamically imported module')) {
-    window.location.href = to.fullPath
+    const recoveryUrl = new URL(import.meta.env.BASE_URL, window.location.href)
+    recoveryUrl.hash = to.fullPath
+    window.location.replace(recoveryUrl)
   }
 })
 

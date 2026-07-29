@@ -24,7 +24,13 @@
       </div>
     </Header>
     <main>
-      <div v-show="isLoading" class="loading"></div>
+      <div
+        v-show="isLoading"
+        class="loading"
+        :style="{
+          backgroundImage: `url(${getPath('/@base/assets/messages/Message-Default.png')})`,
+        }"
+      ></div>
       <div v-show="!isLoading" class="block-container">
         <n-grid :x-gap="12" :y-gap="12" :cols="blockItemsPerRow">
           <!-- <n-gi>

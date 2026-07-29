@@ -126,20 +126,3 @@ async function handleLoad() {
 handleLoad()
 loading.value = false
 </script>
-
-<style scoped>
-.loading {
-  position: fixed;
-  top: 70px;
-  left: 0;
-  width: 100%;
-  height: 70%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-image: url('/assets/messages/Message-Default.png');
-  background-position: center;
-  background-size: contain;
-  background-repeat: no-repeat;
-}
-</style>
