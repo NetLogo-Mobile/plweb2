@@ -25,7 +25,7 @@ export default {
   cookieNotice: {
     title: 'Cookie 提示',
     message:
-      '我们可能会使用 Cookie 或浏览器本地能力来支持登录、安全、语言偏好和性能优化。本提示只用于告知，不会额外保存你的选择。',
+      '我们使用 Cookie ！',
     dismiss: '知道了',
   },
   networkStatus: {

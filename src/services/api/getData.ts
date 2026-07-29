@@ -5,16 +5,25 @@ import { getDeviceInfo, getVisitorId } from './getDevice.ts'
 import { showMessage } from '@popup/naiveui.ts'
 import { getPath } from '../utils.ts'
 import { normalizePath } from './types.ts'
-import {
-  readOfflineCache,
-  writeOfflineCache,
-  readUserCache,
-  writeUserCache,
-} from './cache.ts'
+import { readOfflineCache, writeOfflineCache, readUserCache, writeUserCache } from './cache.ts'
 import { updateNotificationUnread } from '@services/notificationUnread.ts'
+import Emitter from '@services/eventEmitter.ts'
 
 import type { ApiPath, APIParam, APIResult } from './types.ts'
 import type { Device, Result, ResultOf, Users } from '../../pl-serve-type-main/type/main'
+
+
+
+function handle403(npath: string, source: 'http' | 'body' = 'http') {
+  sm.remove('userAuthInfo')
+  window.$ErrorLogger.addBreadcrumb(
+    'auth',
+    `token cleared due to 403${source === 'body' ? ' body' : ''} on ${npath}`,
+  )
+  if (sm.getObj('userInfo').value?.Nickname == null) {
+    Emitter.emit('loginRequired')
+  }
+}
 
 const OFFLINE_CACHE_PATHS = new Set([
   '/Contents/GetProfile',
@@ -60,6 +69,7 @@ async function getDataImpl(
   const authCode = userInfo.value?.authCode
   const isAuthcatePath = npath === '/Users/Authenticate'
   const apiToken = !isAuthcatePath && !token ? '7pEWTsF4gR9qauzJCDQkxPLOZlnbMtAG' : token
+  const apiAuthCode = !isAuthcatePath && !authCode ? 'IKuoMliVTbXte15U7H8ROjaA2CQk96fh' : authCode
 
   try {
     const response = await fetch(getPath(`/@api${npath}`), {
@@ -68,7 +78,7 @@ async function getDataImpl(
       headers: {
         'Content-Type': 'application/json',
         'x-API-Token': apiToken,
-        'x-API-AuthCode': authCode,
+        'x-API-AuthCode': apiAuthCode,
         'x-API-Version': '2502',
       },
     })
@@ -85,6 +95,9 @@ async function getDataImpl(
         await response.json()
       } catch {
         // Ignore malformed error payloads.
+      }
+      if (response.status === 403) {
+        handle403(npath, 'http')
       }
       return {
         Status: response.status,
@@ -111,6 +124,9 @@ async function getDataImpl(
       }
     } else {
       window.$ErrorLogger.captureApiError('POST', path, data.Status, data, body)
+      if (data.Status === 403) {
+        handle403(npath, 'body')
+      }
     }
 
     return applyAfterRequest(data)
@@ -132,7 +148,11 @@ export function getData<Path extends ApiPath>(
   body: APIParam<Path>,
   options?: { skipUserCache?: boolean },
 ): Promise<APIResult<Path>>
-export function getData(path: string, body?: unknown, options?: { skipUserCache?: boolean }): Promise<any> {
+export function getData(
+  path: string,
+  body?: unknown,
+  options?: { skipUserCache?: boolean },
+): Promise<any> {
   return getDataImpl(path, body, options)
 }
 
@@ -188,14 +208,14 @@ export async function login(
     }
 
     const data = (await response.json()) as ResultOf<Users['Authenticate']>
+    const isRealLogin = Boolean((is_token && arg1 && arg2) || (!is_token && arg1 && arg2))
     if (data.Status === 200) {
-      const isRealLogin = Boolean((is_token && arg1 && arg2) || (!is_token && arg1 && arg2))
       if (isRealLogin) {
         updateNotificationUnread(data.Data?.Statistic)
       }
     }
 
-    if (sm.getObj('userAuthInfo').value?.token == null) {
+    if (isRealLogin && data.Token) {
       sm.setObj(
         'userAuthInfo',
         {
@@ -228,6 +248,6 @@ export async function login(
       Status: 0,
       Message: 'Network Error',
       Data: null,
-      } as unknown as ResultOf<Users['Authenticate']>
+    } as unknown as ResultOf<Users['Authenticate']>
   }
 }

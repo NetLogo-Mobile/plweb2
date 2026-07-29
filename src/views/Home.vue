@@ -116,7 +116,10 @@ onMounted(async () => {
     const ua = sm.getObj('userAuthInfo')
     if (ua.status === 'success' && ua.value?.token != null) {
       const res = await login(ua.value.token, ua.value.authCode, true)
-      if (!res.Data?.User) return
+      if (res.Status !== 200 || !res.Data?.User) {
+        sm.remove('userAuthInfo')
+        return
+      }
       user.value = {
         coins: res.Data.User.Gold,
         gems: res.Data.User.Diamond,
@@ -152,6 +155,11 @@ Emitter.on('userLogin', (res) => {
     ID: res.Data.User.ID,
   }
 })
+
+Emitter.on('loginRequired', () => {
+  showLoginModel()
+})
+
 // It is astonishing that server respond with projects data when login with (null,null)
 // And responed with user data when login with token/password
 // Fourtunately, both data has the same structure
