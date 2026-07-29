@@ -96,8 +96,9 @@ const settingsConfig = reactive(s as SettingsSection[])
 const savedValues = storageManager.getObj('userConfig')?.value || {}
 settingsConfig.forEach((section) => {
   section.items.forEach((item) => {
-    if (item.type !== 'button' && savedValues[item.key] !== undefined) {
-      item.value = savedValues[item.key]
+    const savedValue = savedValues[item.key]
+    if (item.type !== 'button' && typeof savedValue === 'string') {
+      item.value = savedValue
     }
   })
 })

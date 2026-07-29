@@ -54,7 +54,7 @@ export const settingsConfig = [
             languageItem.options = createLanguageOptions()
           }
           const userConfig = storageManager.getObj('userConfig')?.value || {}
-          userConfig.language = newValue
+          userConfig.language = newValue as SupportedLocale
           userConfig.languageManuallySelected = true
           storageManager.setObj('userConfig', userConfig)
           window.$Logger.logEvent({
