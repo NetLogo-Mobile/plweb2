@@ -55,6 +55,8 @@ function toggleFullScreen() {
 function logout() {
   localStorage.clear()
   // This is not merely to clear the storage, mabye an error happened in our storage system so the user try to logout
+  // But we should remain the cookie notice
+  localStorage.setItem('cookieConsent', '{"value":true,"time":1785328995457}')
   router.push({ name: 'Home' }).then(() => {
     window.location.reload()
   })
