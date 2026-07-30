@@ -17,7 +17,7 @@ try {
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
-  const isElectron = mode === 'electron'
+  const isElectron = mode === 'electron' || mode === 'electron-build'
 
   return {
     base: './',
@@ -173,5 +173,6 @@ export default defineConfig(({ mode }) => {
     },
   }
 })
+
 
 

@@ -13,7 +13,7 @@
     "format": "npx prettier --write ./**/*.{ts,vue,js,css} ",
     "lint:i18n": "node scripts/check-i18n.mjs",
     "electron:dev": "vite --mode electron",
-    "electron:build": "vite build --mode electron && electron-builder",
+    "electron:build": "vite build --mode electron-build && electron-builder",
     "electron:preview": "vite preview --mode electron"
   },
   "dependencies": {
