@@ -89,6 +89,9 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0',
+    watch: {
+      ignored: ['**/out/**', '**/dist_electron/**']
+    },
     proxy: {
       // 代理/aliyun-oss
       '/static': {
