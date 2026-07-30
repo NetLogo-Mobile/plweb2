@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 dev-dist
+dist_electron
 *.local
 
 # Editor directories and files
@@ -52,3 +53,4 @@ src/composables/useDragAndDrop.ts
 *.patch
 .agents/
 .claude/
+dist-electron/
