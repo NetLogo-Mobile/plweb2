@@ -1,5 +1,5 @@
 appId: com.turtlesim.plweb
-productName: Physics Lab Web
+productName: plweb
 directories:
   buildResources: buildResources
   output: dist_electron
@@ -16,3 +16,4 @@ nsis:
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   createStartMenuShortcut: true
+
