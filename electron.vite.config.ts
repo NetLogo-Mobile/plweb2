@@ -50,6 +50,27 @@ export default defineConfig({
         '@i18n': '/src/i18n'
       }
     },
+    server: {
+      proxy: {
+        '/static': {
+          target: 'https://physics-static-cn.turtlesim.com',
+          changeOrigin: true,
+          rewrite: (path) => path.replace('/static', ''),
+          headers: {
+            Referer: 'https://www.turtlesim.com/'
+          },
+          secure: false
+        },
+        '/api': {
+          target: 'https://physics-api-cn.turtlesim.com',
+          changeOrigin: true,
+          rewrite: (path) => path.replace('/api', ''),
+          headers: {
+            Referer: 'https://www.turtlesim.com/'
+          }
+        }
+      }
+    },
     build: {
       rollupOptions: {
         input: resolve(__dirname, 'index.html'),
