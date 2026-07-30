@@ -1,7 +1,7 @@
 name: OpenCode
 on:
   issues:
-    types: [opened] # Triggers when a new issue is opened
+    types: [opened, labeled] # 监听创建 Issue 和打标签事件
 
 permissions:
   contents: write       # Required to create new branches and push code
@@ -10,7 +10,12 @@ permissions:
 
 jobs:
   issue-agent-coding:
-    if: contains(github.event.issue.labels.*.name, 'autofix') # Only run if the issue has the 'autofix' label
+    # 触发条件：
+    # 1. 刚刚被打上的标签是 'autofix' (labeled 事件)
+    # 2. 或者新建 Issue 时直接勾选了 'autofix' 标签 (opened 事件)
+    if: >-
+      (github.event.action == 'labeled' && github.event.label.name == 'autofix') ||
+      (github.event.action == 'opened' && contains(github.event.issue.labels.*.name, 'autofix'))
     runs-on: ubuntu-latest
 
     steps:
@@ -65,6 +70,10 @@ jobs:
           2. After completing the changes, you MUST create a Markdown file named 'conclusion.md' in the root directory.
           3. In 'conclusion.md', please describe in detail (strictly in English) which files you modified, what changes you made, what technical solutions you used, and your final implementation summary.
           EOF
+          4. Read the skills about vue best practice or vue developing skills
+          5. If your modification have something to do with Web API, use the plweb skill
+          6. After you finish coding, run all tests and code review with code review skill
+          7. Reflect with the code review output and modify your code
 
       - name: Run OpenCode Coding Agent
         run: |
@@ -118,7 +127,7 @@ jobs:
             
             # 4. Create Pull Request via GitHub CLI
             gh pr create \
-              --title "🤖 Fix: $ISSUE_TITLE (Resolves #$ISSUE_NUMBER)" \
+              --title "auto-fix: $ISSUE_TITLE (Resolves #$ISSUE_NUMBER)" \
               --body-file pr_body.txt \
               --head "$BRANCH_NAME" \
               --base "${{ github.event.repository.default_branch }}"
