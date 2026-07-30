@@ -34,7 +34,7 @@ This project can be packaged as a desktop application using [Electron](https://w
 
 ### Prerequisites
 
-The Electron dependencies are already included in `package.json`. Run `npm install` if you haven't already.
+Run `npm install` to install all dependencies, including `vite-plugin-electron`.
 
 ### Development (with hot reload)
 
@@ -42,7 +42,7 @@ The Electron dependencies are already included in `package.json`. Run `npm insta
 npm run electron:dev
 ```
 
-This starts the Electron app in development mode with the Vite dev server attached.
+This runs `vite --mode electron` with the electron plugin active — it starts the Vite dev server for the renderer, builds main/preload, and launches the Electron window with hot reload.
 
 ### Production Build
 
@@ -50,7 +50,7 @@ This starts the Electron app in development mode with the Vite dev server attach
 npm run electron:build
 ```
 
-This runs `electron-vite build` to compile main / preload / renderer, then `electron-builder` to package the app. The output is placed under `dist_electron/`:
+This runs `vite build --mode electron` to build renderer + main + preload, then `electron-builder` to package the app. The output is placed under `dist_electron/`:
 
 | Output | Description |
 |--------|-------------|
@@ -67,11 +67,10 @@ npm run electron:preview
 
 - `electron/main/index.ts` — Electron main process (window creation, IPC handlers)
 - `electron/preload/index.ts` — Preload script (context bridge to expose Node.js APIs)
-- `electron.vite.config.ts` — electron-vite build configuration
+- `vite.config.ts` — Standard Vite config with `vite-plugin-electron` (active in `--mode electron`)
 - `electron-builder.yml` — electron-builder packaging settings (installer type, icons)
 
 > **Note:** In Electron mode, the PWA service worker is automatically skipped. All Web APIs (API calls, OSS resources) work the same as in the browser.
-
 ### start a pull request
 
 Run `npm run lint` to format the code and check ESLint.Run `npm run build` to perform TypeScript checks.After that you can start a poor request and it will be revealed within a few days once it has been margin into the main branch it will automatically deploy to to the production environment.
@@ -93,5 +92,4 @@ Run `npm run lint` to format the code and check ESLint.Run `npm run build` to pe
 - pltxt2htm: https://github.com/SekaiArendelle/pltxt2htm
 - fingerprintjs, highlight.js, katex, mermaid, prettier, vue3, vue-i18n, vue-router
 - @types/katex, @types/node, @typescript-eslint/eslint-plugin, @typescript-eslint/parser, @vitejs/plugin-vue, @vue/tsconfig, autoprefixer, eslint, eslint-plugin-vue, naive-ui, playwright, typescript, vite, vite-plugin-pwa, vue-tsc
-
 

@@ -54,3 +54,4 @@ src/composables/useDragAndDrop.ts
 *.patch
 .agents/
 .claude/
+dist-electron/

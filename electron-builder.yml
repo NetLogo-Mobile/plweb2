@@ -4,7 +4,8 @@ directories:
   buildResources: buildResources
   output: dist_electron
 files:
-  - out/**/*
+  - dist-electron/**/*
+  - dist/**
 win:
   target:
     - target: nsis
