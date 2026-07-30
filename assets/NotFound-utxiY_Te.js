@@ -1,0 +1,1 @@
+import{Ar as e,Kr as t,Yr as n,dr as r,j as i,mr as a,u as o,vr as s}from"./index-BAYPH2iR.js";var c={style:{"text-align":`center`,"margin-top":`50px`}},l=[`src`],u=s({__name:`NotFound`,setup(s){let{t:u}=i();return(i,s)=>(e(),a(`div`,c,[r(`h1`,null,n(t(u)(`notfound.title`)),1),r(`img`,{src:t(o)(`/@base/assets/messages/Message-Default.png`)},null,8,l)]))}});export{u as default};
