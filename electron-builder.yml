@@ -1,12 +1,12 @@
 appId: com.turtlesim.plweb
 productName: plweb
 directories:
-  buildResources: buildResources
   output: dist_electron
 files:
   - dist-electron/**/*
   - dist/**
 win:
+  icon: public/assets/icons/logo-512.png
   target:
     - target: nsis
       arch:
@@ -16,4 +16,3 @@ nsis:
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   createStartMenuShortcut: true
-
