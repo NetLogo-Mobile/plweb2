@@ -86,13 +86,8 @@ export default defineConfig(({ mode }) => {
         ? [
             electron([
               {
-                entry: 'electron/main/index.ts',
+                entry: { main: 'electron/main/index.ts' },
                 vite: {
-                  build: {
-                    lib: {
-                      fileName: 'main',
-                    },
-                  },
                   plugins: [notBundle(), esmShim()],
                 },
               },
@@ -173,6 +168,7 @@ export default defineConfig(({ mode }) => {
     },
   }
 })
+
 
 
 
