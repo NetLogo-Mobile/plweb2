@@ -2,6 +2,17 @@ import { resolve } from 'path'
 import { defineConfig } from 'electron-vite'
 import vue from '@vitejs/plugin-vue'
 
+/** Provide a no-op stub for virtual:pwa-register in Electron mode. */
+const pwaRegisterStubPlugin = {
+  name: 'pwa-register-stub',
+  resolveId(id) {
+    if (id === 'virtual:pwa-register') return '\0virtual:pwa-register'
+  },
+  load(id) {
+    if (id === '\0virtual:pwa-register') return 'export function registerSW() {}'
+  }
+}
+
 export default defineConfig({
   main: {
     build: {
@@ -27,7 +38,7 @@ export default defineConfig({
     define: {
       __ELECTRON__: 'true'
     },
-    plugins: [vue()],
+    plugins: [vue(), pwaRegisterStubPlugin],
     resolve: {
       alias: {
         '@popup': '/src/services/popup',
@@ -42,7 +53,6 @@ export default defineConfig({
     build: {
       rollupOptions: {
         input: resolve(__dirname, 'index.html'),
-        external: ['virtual:pwa-register'],
         output: {
           manualChunks: (id) => {
             if (id.includes('highlight.js')) return 'highlightjs'
