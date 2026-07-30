@@ -27,6 +27,51 @@ Before you modify the code youd better run `npm run dev` to start the dev server
 
 **If you are using agents**, please install skills using `npx skills update`.And read AGENTS.md in docs.
 
+
+## Build as Electron App
+
+This project can be packaged as a desktop application using [Electron](https://www.electronjs.org/).
+
+### Prerequisites
+
+The Electron dependencies are already included in `package.json`. Run `npm install` if you haven't already.
+
+### Development (with hot reload)
+
+```bash
+npm run electron:dev
+```
+
+This starts the Electron app in development mode with the Vite dev server attached.
+
+### Production Build
+
+```bash
+npm run electron:build
+```
+
+This runs `electron-vite build` to compile main / preload / renderer, then `electron-builder` to package the app. The output is placed under `dist_electron/`:
+
+| Output | Description |
+|--------|-------------|
+| `dist_electron/win-unpacked/` | Portable unpacked application |
+| `dist_electron/Physics Lab Web Setup *.exe` | NSIS installer for Windows |
+
+### Preview production build
+
+```bash
+npm run electron:preview
+```
+
+### Configuration
+
+- `electron/main/index.ts` — Electron main process (window creation, IPC handlers)
+- `electron/preload/index.ts` — Preload script (context bridge to expose Node.js APIs)
+- `electron.vite.config.ts` — electron-vite build configuration
+- `electron-builder.yml` — electron-builder packaging settings (installer type, icons)
+
+> **Note:** In Electron mode, the PWA service worker is automatically skipped. All Web APIs (API calls, OSS resources) work the same as in the browser.
+
 ### start a pull request
 
 Run `npm run lint` to format the code and check ESLint.Run `npm run build` to perform TypeScript checks.After that you can start a poor request and it will be revealed within a few days once it has been margin into the main branch it will automatically deploy to to the production environment.
@@ -48,3 +93,5 @@ Run `npm run lint` to format the code and check ESLint.Run `npm run build` to pe
 - pltxt2htm: https://github.com/SekaiArendelle/pltxt2htm
 - fingerprintjs, highlight.js, katex, mermaid, prettier, vue3, vue-i18n, vue-router
 - @types/katex, @types/node, @typescript-eslint/eslint-plugin, @typescript-eslint/parser, @vitejs/plugin-vue, @vue/tsconfig, autoprefixer, eslint, eslint-plugin-vue, naive-ui, playwright, typescript, vite, vite-plugin-pwa, vue-tsc
+
+

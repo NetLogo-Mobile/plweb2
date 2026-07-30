@@ -10,6 +10,7 @@ declare global {
 
   const __APP_VERSION__: string
   const __BUILD_HASH__: string
+  const __ELECTRON__: true | undefined
 }
 
 export {}

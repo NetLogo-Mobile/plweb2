@@ -1,0 +1,17 @@
+appId: com.turtlesim.plweb
+productName: Physics Lab Web
+directories:
+  buildResources: buildResources
+  output: dist_electron
+files:
+  - out/**/*
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true

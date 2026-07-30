@@ -3,6 +3,7 @@
   "private": true,
   "version": "1.2.4",
   "type": "module",
+  "main": "./out/main/index.js",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vue-tsc --build  --force && vite build",
@@ -10,7 +11,10 @@
     "eslint": "npx eslint src/**/*.{ts,vue,js,css} && node scripts/check-i18n.mjs",
     "eslint:fix": "npx eslint src/**/*.{ts,vue,js,css} --fix && node scripts/check-i18n.mjs",
     "format": "npx prettier --write ./**/*.{ts,vue,js,css} ",
-    "lint:i18n": "node scripts/check-i18n.mjs"
+    "lint:i18n": "node scripts/check-i18n.mjs",
+    "electron:dev": "electron-vite dev",
+    "electron:build": "electron-vite build && electron-builder",
+    "electron:preview": "electron-vite preview"
   },
   "dependencies": {
     "@fingerprintjs/fingerprintjs": "^5.0.1",
@@ -25,6 +29,7 @@
     "vue-router": "^4.6.3"
   },
   "devDependencies": {
+    "@electron-toolkit/utils": "^4.0.0",
     "@faker-js/faker": "^10.4.0",
     "@playwright/test": "^1.60.0",
     "@types/katex": "^0.16.8",
@@ -34,6 +39,9 @@
     "@vitejs/plugin-vue": "^6.0.7",
     "@vue/tsconfig": "^0.8.1",
     "autoprefixer": "^10.4.21",
+    "electron": "^43.2.0",
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^5.0.0",
     "eslint": "^9.39.5",
     "eslint-plugin-vue": "^10.2.0",
     "naive-ui": "^2.43.1",
@@ -45,5 +53,7 @@
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "^4.60.1"
-  }
+  },
+  "description": "Physics Lab Web - Online community",
+  "author": "TurtleSim"
 }
