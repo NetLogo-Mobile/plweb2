@@ -17,7 +17,7 @@ if (result.status === 'success') {
 }
 
 // Read with expiry (returns 'expired' after 1 hour)
-const cached = sm.getObj('apiResponseCache', 60 * 60 * 1000);
+const cached = sm.getObj('userConfig', 60 * 60 * 1000);
 
 // Remove
 sm.remove('visitorId');
@@ -35,7 +35,7 @@ Just one file: `index.ts`. Default export is `storageManager`.
 ### `getObj(key, maxAgeMs?)`
 
 ```ts
-getObj(key: localStorages, maxAgeMs?: number): StorageResult<any>
+getObj<Key extends StorageKey>(key: Key, maxAgeMs?: number): StorageResult<StorageSchema[Key]>
 ```
 
 Returns:
@@ -54,7 +54,7 @@ Same as `getObj` but tries to return a string value. If the stored value is plai
 Stores as: `{ value, time: Date.now(), maxAgeMs }`
 
 ```ts
-sm.setObj('visitorId', 'abc123', 365 * 24 * 60 * 60 * 1000); // expires in 365 days
+sm.setObj('userIDAndAvatarIDMap', { 'user-1': [3, Date.now()] }, 72 * 60 * 60 * 1000); // expires in 72 hours
 sm.setObj('cookieConsent', true); // never expires
 ```
 
@@ -74,29 +74,30 @@ Calls `localStorage.clear()` — removes everything.
 
 ## Available Keys
 
-The TypeScript type `localStorages` restricts valid keys to:
+The TypeScript type `StorageKey` restricts valid keys to the keys of the `StorageSchema` interface:
 
 | Key | Purpose |
 |---|---|
 | `userInfo` | Current user's profile data |
 | `tagConfig` | Content tag configuration |
-| `userConfig` | User preferences (language, debug mode) |
-| `visitorId` | FingerprintJS device ID (365 days) |
+| `userConfig` | User preferences (language, mermaid, debugger, API base URL, ...) |
+| `visitorId` | Legacy FingerprintJS device ID — no longer written; device ID is generated on-the-fly by `@api/getDevice` |
 | `requestHistoryMap` | API request timestamps for rate limiting (2 days) |
-| `apiResponseCache` | Offline API response cache (30 days) |
+| `apiResponseCache` | Legacy offline API response cache — no longer written; removed on startup (see `@api/cache`) |
 | `userIDAndAvatarIDMap` | Avatar index cache per user (72 hours) |
 | `userAuthInfo` | Auth token + auth code (30 days) |
 | `cookieConsent` | Whether user dismissed the cookie notice |
 
 ## Adding a New Key
 
-If you need to store something new, add it to the `localStorages` union type in `index.ts`:
+If you need to store something new, add it to the `StorageSchema` interface in `index.ts`:
 
 ```ts
-type localStorages =
-  | "userInfo"
+export interface StorageSchema {
+  userInfo: UserInfo
   // ... existing keys ...
-  | "yourNewKey";  // ← add here
+  yourNewKey: YourType; // ← add here
+}
 ```
 
 This gives you full TypeScript type safety when calling `sm.getObj('yourNewKey')`.

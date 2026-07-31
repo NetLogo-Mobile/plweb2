@@ -1,0 +1,9 @@
+[
+  {
+    "iteration": 0,
+    "type": "console-error",
+    "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "url": "http://localhost:5173/#/",
+    "timestamp": 1785495477783
+  }
+]

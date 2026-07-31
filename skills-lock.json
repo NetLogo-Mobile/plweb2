@@ -5,31 +5,31 @@
       "source": "awesome-skills/code-review-skill",
       "sourceType": "github",
       "skillPath": "SKILL.md",
-      "computedHash": "45bce6c34d9014b51a5163640455dd7fefa0726be41013cd21540d0a41026c3a"
+      "computedHash": "56ffac36c171dd1289ff9d732c5f0249180ed0c905a5fc355257e92703bc4c38"
     },
     "plweb-skill": {
       "source": "Netlogo-Mobile/plweb-skill",
       "sourceType": "github",
       "skillPath": "SKILL.md",
-      "computedHash": "dabcda8ac70288266285416609cdff6ab9ee2d146a45fa8ce8472bcaa98464f5"
+      "computedHash": "76927042aeb2a7629fa690b2f9cb86e49b3d7e63fd7c790f535eb18e995860d9"
     },
     "vue-best-practices": {
       "source": "vuejs-ai/skills",
       "sourceType": "github",
       "skillPath": "skills/vue-best-practices/SKILL.md",
-      "computedHash": "21132f6c11c765bd11d0d6ad081122dd858630073e2123b651e58f17b399b131"
+      "computedHash": "3df585ad31aec78fe55c56c1411262737e6b231677a3153dec512a882fde80cd"
     },
     "vue-debug-guides": {
       "source": "vuejs-ai/skills",
       "sourceType": "github",
       "skillPath": "skills/vue-debug-guides/SKILL.md",
-      "computedHash": "58bb2ad9e92dce0c15b42acc65aeec1dd93bc36f9db96ab248e52b1d22945472"
+      "computedHash": "fa7b31c32a6717ae47cd2ea208773e27536225ad053a564effe656bf927fe9ef"
     },
     "vue-router-best-practices": {
       "source": "vuejs-ai/skills",
       "sourceType": "github",
       "skillPath": "skills/vue-router-best-practices/SKILL.md",
-      "computedHash": "5a8f2f8021fe27cef48d8cf053b4cdb9375c0dc5d5e066330888229d0370f55c"
+      "computedHash": "f0745ed318c113e592ab4a9ded57ceadd0db2edab00cdb46b216c83f5ce0799e"
     }
   }
 }
