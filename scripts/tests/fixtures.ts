@@ -9,6 +9,19 @@ const NOISE_KEYWORDS = [
   'CORS',
   'oss-cn-hongkong.aliyuncs.com',
   'ERR_ABORTED',
+  // Browsers abort in-flight requests when another navigation/fuzzing operation
+  // runs before the request completes. Those interruptions surface as benign
+  // console/page errors and must not fail the tests.
+  //   WebKit:  TypeError: Load failed / AbortError: Fetch is aborted
+  //   Firefox: The operation was aborted. / NetworkError when attempting...
+  //   Safari:  NSURLErrorDomain cancelled / "The operation couldn't be..."
+  'Load failed',
+  'Fetch is aborted',
+  'The operation was aborted',
+  'The operation couldn',
+  'NetworkError when attempting',
+  'NSURLErrorDomain',
+  'AbortError',
 ]
 
 export const test = base.extend<{ autoCollectErrors: void; suppressErrorCollection: boolean }>({

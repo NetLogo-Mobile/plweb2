@@ -1,4 +1,5 @@
 import { getData } from './api/getData'
+import { isRequestInterruptedError } from './api/requestInterruption'
 import { getUserUrl } from './utils'
 import { getPath } from './utils'
 import storageManager from './storage'
@@ -48,7 +49,12 @@ export async function getAvatarUrl(ID: string, useCache = true) {
       cache[ID] = [avatarIndex, Date.now()]
       storageManager.setObj('userIDAndAvatarIDMap', cache, 72 * 60 * 60 * 1000) // 72小时 72 hours
     } catch (error) {
-      console.error('Getting avatar error', error)
+      // A request interrupted by a navigation / another operation is benign
+      // (WebKit surfaces it as `TypeError: Load failed` / `AbortError`); do not
+      // log it as an error. Just fall back to the default avatar.
+      if (!isRequestInterruptedError(error)) {
+        console.error('Getting avatar error', error)
+      }
       return getPath('/@base/assets/user/default-avatar.png')
     }
   }
