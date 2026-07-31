@@ -1,9 +1,16 @@
 name: Dependabot auto-merge
-on: pull_request
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: dependabot-automerge-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 permissions:
   contents: write
   pull-requests: write
+  actions: write
 
 jobs:
   dependabot:
@@ -14,7 +21,7 @@ jobs:
         id: metadata
         uses: dependabot/fetch-metadata@v2
         with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          github-token: '${{ secrets.GITHUB_TOKEN }}'
 
       - name: Enable auto-merge for Dependabot PRs
         if: steps.metadata.outputs.update-type != 'version-update:semver-major'
@@ -26,6 +33,31 @@ jobs:
       - name: Approve a PR
         if: steps.metadata.outputs.update-type != 'version-update:semver-major'
         run: gh pr review --approve "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Dispatch deployment after merge
+        if: steps.metadata.outputs.update-type != 'version-update:semver-major'
+        run: |
+          for attempt in {1..60}; do
+            state="$(gh pr view "$PR_URL" --json state --jq '.state')"
+
+            if [ "$state" = "MERGED" ]; then
+              gh workflow run build.yml --ref main
+              exit 0
+            fi
+
+            if [ "$state" = "CLOSED" ]; then
+              echo "Dependabot PR was closed without merging."
+              exit 0
+            fi
+
+            sleep 30
+          done
+
+          echo "Timed out waiting for the Dependabot PR to merge."
+          exit 1
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
           GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
