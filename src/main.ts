@@ -1,4 +1,4 @@
-import { createApp } from 'vue'
+import { createApp, watch } from 'vue'
 import App from './App.vue'
 import router from './router/index'
 import i18n from '@i18n/index'
@@ -57,9 +57,24 @@ const app = createApp(App)
 app.use(router)
 app.use(i18n)
 
+const DOCUMENT_LANG_BY_LOCALE: Record<string, string> = {
+  Chinese: 'zh-CN',
+  English: 'en',
+  German: 'de',
+  Japanese: 'ja',
+  French: 'fr',
+}
+
+function syncDocumentLang() {
+  document.documentElement.lang = DOCUMENT_LANG_BY_LOCALE[i18n.global.locale.value] || 'en'
+}
+
+syncDocumentLang()
+watch(() => i18n.global.locale.value, syncDocumentLang)
+
 app.directive('richText', {
   mounted(el, binding: DirectiveBinding<() => Promise<string>>) {
-    el.innerHTML = 'rendering...'
+    el.innerHTML = i18n.global.t('ui.messages.loading')
     Promise.resolve(binding.value()).then((html) => {
       el.innerHTML = html
     })
@@ -135,7 +150,7 @@ let lastCheckedClipboard = ''
 
 async function navigateToTarget(target: { path: string; needLogin: boolean }) {
   if (target.needLogin && !storageManager.getObj('userInfo').value?.ID) {
-    showMessage('warning', 'Please login first', { duration: 2000 })
+    showMessage('warning', i18n.global.t('ui.messages.loginRequiredFirst'), { duration: 2000 })
     return false
   }
   try {
@@ -147,7 +162,7 @@ async function navigateToTarget(target: { path: string; needLogin: boolean }) {
       message: 'Failed to auto-open pasted link',
       context: { targetPath: target.path, error },
     })
-    showMessage('error', 'Failed to open link', { duration: 2500 })
+    showMessage('error', i18n.global.t('ui.messages.openLinkFailed'), { duration: 2500 })
     return false
   }
 }

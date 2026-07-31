@@ -61,9 +61,10 @@ let comment = ref('') // 输入的内容 Input content
 
 onMounted(async () => {
   const parsedName = await parse(route.params.name as string)
-  title.value = `${parsedName} 的 ${
-    routeCategory.value === 'User' ? t('comments.home') : t('comments.area')
-  }`
+  title.value = t('comments.title', {
+    name: parsedName,
+    category: routeCategory.value === 'User' ? t('comments.home') : t('comments.area'),
+  })
 })
 
 const goBack = () => {
