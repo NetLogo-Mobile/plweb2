@@ -68,7 +68,7 @@ async function getDataImpl(
   const token = userInfo.value?.token?.trim()
   const authCode = userInfo.value?.authCode
   const isAuthcatePath = npath === '/Users/Authenticate'
-  const apiToken = !isAuthcatePath && !token ? '7pEWTsF4gR9qauzJCDQkxPLOZlnbMtAG' : token
+  const apiToken = token
   const apiAuthCode = !isAuthcatePath && !authCode ? 'IKuoMliVTbXte15U7H8ROjaA2CQk96fh' : authCode
 
   try {
