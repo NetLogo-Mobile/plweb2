@@ -154,8 +154,12 @@ async function getDataImpl(
 
     return applyAfterRequest(data)
   } catch (error) {
-    const canFallback = canOfflineCache(npath) || npath === USER_CACHE_PATH
-    const cached = canFallback ? await readOfflineCache<Result>(npath, body) : null
+    const cached =
+      npath === USER_CACHE_PATH
+        ? await readUserCache<Result>(npath, body)
+        : canOfflineCache(npath)
+          ? await readOfflineCache<Result>(npath, body)
+          : null
     if (cached) {
       window.$ErrorLogger.addBreadcrumb('api-cache', `${npath} served from offline cache`, {
         path: npath,
