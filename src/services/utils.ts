@@ -301,7 +301,8 @@ export function decodeHrefToQueryObj(base64Input: string) {
       }
     }
     return result
-  } catch {
+  } catch (e) {
+    console.warn('decodeHrefToQueryObj: failed to decode input', e)
     return {}
   }
 }
