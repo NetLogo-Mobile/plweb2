@@ -35,7 +35,7 @@ export async function getAvatarUrl(ID: string, useCache = true) {
       // Promise用于超时
       // Promise is used for timeout
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('请求超时')), 30000) // 30秒 30s
+        setTimeout(() => reject(new Error('Request timed out')), 30000) // 30秒 30s
       })
       const response = (await Promise.race([
         getData('/Users/GetUser', { ID }),
