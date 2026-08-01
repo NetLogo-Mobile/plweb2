@@ -2,11 +2,11 @@ name: OpenCode Codex-Style PR Reviewer
 
 on:
   pull_request:
-    types: [opened, synchronize] # Runs automatically on all PRs and updates
+    types: [opened, synchronize] # PR 创建或更新时触发
 
 permissions:
-  contents: read          # Required to checkout code and compute diff
-  pull-requests: write   # Required to post review comments on the PR
+  contents: read          # 允许读取代码和 Git 历史
+  pull-requests: write   # 允许在 PR 下发评论
 
 jobs:
   code-review:
@@ -15,65 +15,47 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Full git history is required to compute diff accurately
+          fetch-depth: 0 # 必须为 0，AI 才能读取完整 Git 历史记录
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
-      - name: Install dependencies
-        run: |
-          npm ci
-
-      - name: Run checks
-        run: |
-          npm run eslint
-          npm run build
-          npm run lint:i18n
-
-      - name: Install OpenCode CLI
+      - name: Install OpenCode CLI & Update Skills
         run: |
           npm install -g opencode-ai
-
-      - name: Install skills & dependencies
-        run: |
           npx skills update
-          npm ci
 
-      - name: Generate PR Diff
-        id: pr_diff
+      - name: Fetch Target Base Branch
         run: |
-          # Fetch the target base branch of the PR
+          # 确保 AI 在本地可以对比 origin/<base_ref> 和 当前 HEAD
           git fetch origin ${{ github.base_ref }}:${{ github.base_ref }}
-          
-          # Compute the diff between the base branch and current HEAD (PR state)
-          git diff origin/${{ github.base_ref }}...HEAD > pr.diff
-          
-          if [ ! -s pr.diff ]; then
-            echo "No changes found."
-            echo "has_changes=false" >> $GITHUB_ENV
-          else
-            echo "has_changes=true" >> $GITHUB_ENV
-          fi
 
-      - name: Execute OpenCode with pr-review Skill
-        if: env.has_changes == 'true'
+      - name: Execute OpenCode Agent (Self-Exploration Mode)
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          BASE_REF: ${{ github.base_ref }}
         run: |
-          # Construct the review instructions. 
-          # OpenCode automatically detects '.opencode/skills/pr-review/SKILL.md' and loads it.
+          # 构造让 AI 自主探索仓库的提示词
           cat << 'EOF' > review_prompt.txt
-          Please perform an expert-level PR code review on the following git diff using your "pr-review" skill. 
-          Your analysis must be highly technical, objective, and constructive.
-          
-          ---
-          DIFF START:
+          You are a Senior Vue Architect performing an expert-level Pull Request Code Review.
+
+          【PR Context】:
+          - PR Title: $PR_TITLE
+          - Base Branch: origin/$BASE_REF
+          - Current Head: HEAD
+
+          【Your Review Mission】:
+          1. Use terminal commands (e.g., `git log origin/$BASE_REF..HEAD`, `git diff --stat origin/$BASE_REF...HEAD`, `git diff origin/$BASE_REF...HEAD -- <filepath>`) to inspect the commit history and changes introduced in this PR.
+          2. Skip lock files (e.g., package-lock.json, yarn.lock, pnpm-lock.yaml) and build artifacts (dist/, build/).
+          3. If changed files are too large, inspect them file-by-file or component-by-component. Read full files if you need extra context.
+          4. Strictly evaluate the changes using Vue 3 Best Practices (Composition API, reactivity gotchas, script setup, props/emits typing, performance leaks, etc.) and general code quality standards.
+          5. Write a concise, objective, and constructive Markdown review report.
           EOF
-          
-          cat pr.diff >> review_prompt.txt
-          echo "DIFF END" >> review_prompt.txt
-          
-          # Run OpenCode using the free DeepSeek V4 Flash model
+
+          # 启动 OpenCode，AI 会自动调用 Bash 终端执行 git 命令并分析
           opencode run \
             --model opencode/deepseek-v4-flash-free \
             --variant high \
@@ -81,15 +63,17 @@ jobs:
             "$(cat review_prompt.txt)" > review_report.md
 
       - name: Post PR Review Comment
-        if: env.has_changes == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Format the comment header
-          echo "### 🤖 Codex-Style Code Review by OpenCode" > final_comment.md
-          echo "> 💡 This is an automated advisory review. It is non-blocking and does not affect merge requirements." >> final_comment.md
-          echo "" >> final_comment.md
-          cat review_report.md >> final_comment.md
-          
-          # Comment on the PR using GitHub CLI
-          gh pr comment ${{ github.event.pull_request.number }} --body-file final_comment.md
+          # 如果 AI 生成了报告则发表评论
+          if [ -s review_report.md ]; then
+            echo "### 🤖 Codex-Style Code Review by OpenCode (Vue Best Practice Enabled)" > final_comment.md
+            echo "> 💡 Autonomous AI Reviewer inspecting git commit history and Vue code quality." >> final_comment.md
+            echo "" >> final_comment.md
+            cat review_report.md >> final_comment.md
+            
+            gh pr comment ${{ github.event.pull_request.number }} --body-file final_comment.md
+          else
+            echo "No review report generated."
+          fi

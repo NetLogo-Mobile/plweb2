@@ -139,10 +139,12 @@ test.describe('Fuzz Testing', () => {
         const parsed = JSON.parse(errorLogsRaw)
         const lines = parsed.map(
           (log: any) =>
-            `[${new Date(log.timestamp).toISOString()}] ${log.type.toUpperCase()}: ${log.message}` +
-            (log.url ? `\n  URL: ${log.url}` : '') +
-            (log.stack ? `\n  Stack: ${log.stack}` : '') +
-            (log.statusCode ? `\n  Status: ${log.statusCode}` : ''),
+            [
+              `[${new Date(log.timestamp).toISOString()}] ${log.type.toUpperCase()}: ${log.message}`,
+              log.url ? `\n  URL: ${log.url}` : '',
+              log.stack ? `\n  Stack: ${log.stack}` : '',
+              log.statusCode ? `\n  Status: ${log.statusCode}` : '',
+            ].join(''),
         )
         writeFileSync(join(screenshotsDir, 'app-error-logs.txt'), lines.join('\n\n'))
       } catch {}
@@ -157,17 +159,29 @@ test.describe('Fuzz Testing', () => {
       if (errors.length > 20) console.log(`  ... 还有 ${errors.length - 20} 个错误`)
     }
 
-    const filteredErrors = errors.filter(
-      (e) =>
-        !e.message.includes('favicon') &&
-        !e.message.includes('manifest') &&
-        !e.message.includes('service-worker') &&
-        !e.message.includes('sw.ts') &&
-        !e.message.includes('404') &&
-        !e.message.includes('ERR_BLOCKED_BY_CLIENT') &&
-        !e.message.includes('Failed to load resource') &&
-        !e.message.includes('net::ERR_'),
-    )
+    const NOISE_PATTERNS = [
+      'favicon',
+      'manifest',
+      'service-worker',
+      'sw.ts',
+      '404',
+      'ERR_BLOCKED_BY_CLIENT',
+      'Failed to load resource',
+      'net::ERR_',
+      // Browsers interrupt in-flight requests when another fuzzing operation
+      // runs before the request completes; these benign messages are noise.
+      //   WebKit:  TypeError: Load failed / AbortError: Fetch is aborted
+      //   Firefox: The operation was aborted. / NetworkError when attempting...
+      //   Safari:  NSURLErrorDomain cancelled / "The operation couldn't be..."
+      'Load failed',
+      'Fetch is aborted',
+      'The operation was aborted',
+      'The operation couldn',
+      'NetworkError when attempting',
+      'NSURLErrorDomain',
+      'AbortError',
+    ]
+    const filteredErrors = errors.filter((e) => !NOISE_PATTERNS.some((kw) => e.message.includes(kw)))
 
     expect(
       filteredErrors.length,

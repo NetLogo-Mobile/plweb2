@@ -3,6 +3,8 @@ import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 import { execSync } from 'child_process'
 import { readFileSync } from 'fs'
+import electron from 'vite-plugin-electron'
+import { notBundle, esmShim } from 'vite-plugin-electron/plugin'
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'))
 
@@ -14,116 +16,159 @@ try {
 }
 
 // https://vite.dev/config/
-export default defineConfig({
-  base: './',
-  define: {
-    __APP_VERSION__: JSON.stringify(pkg.version),
-    __BUILD_HASH__: JSON.stringify(buildHash),
-  },
-  plugins: [
-    vue(),
-    VitePWA({
-      strategies: 'injectManifest',
-      srcDir: 'src',
-      filename: 'sw.ts',
-      registerType: 'autoUpdate',
-      injectRegister: null,
-      devOptions: {
-        enabled: false,
-      },
+export default defineConfig(({ mode }) => {
+  const isElectron = mode === 'electron' || mode === 'electron-build'
 
-      manifest: {
-        name: 'plweb2',
-        short_name: 'plweb',
-        description: 'Physics Lab Web - Online community',
-        theme_color: '#3397e9',
-        background_color: '#ffffff',
-        display: 'standalone',
-        start_url: '.',
-        icons: [
-          {
-            src: 'assets/icons/logo-192.png',
-            sizes: '192x192',
-            type: 'image/png',
-            purpose: 'any maskable',
-          },
-          {
-            src: 'assets/icons/logo-512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any maskable',
-          },
-        ],
-        screenshots: [
-          {
-            src: 'assets/mobile.png',
-            sizes: '818x1339',
-            type: 'image/png',
-          },
-          {
-            src: 'assets/desktop.png',
-            sizes: '1033x698',
-            type: 'image/png',
-            form_factor: 'wide',
-          },
-        ],
-      },
+  return {
+    base: './',
+    define: {
+      __APP_VERSION__: JSON.stringify(pkg.version),
+      __BUILD_HASH__: JSON.stringify(buildHash),
+      ...(isElectron ? { __ELECTRON__: 'true' } : {}),
+    },
+    plugins: [
+      vue(),
+      VitePWA({
+        strategies: 'injectManifest',
+        srcDir: 'src',
+        filename: 'sw.ts',
+        registerType: 'autoUpdate',
+        injectRegister: null,
+        devOptions: {
+          enabled: false,
+        },
 
-      injectManifest: {
-        // Include wasm so the rich-text parser remains available when the app is offline.
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,wasm}'],
-        globIgnores: ['assets/icons/logo-192.png', 'assets/icons/logo-512.png'],
+        manifest: {
+          name: 'plweb2',
+          short_name: 'plweb',
+          description: 'Physics Lab Web - Online community',
+          theme_color: '#3397e9',
+          background_color: '#ffffff',
+          display: 'standalone',
+          start_url: '.',
+          icons: [
+            {
+              src: 'assets/icons/logo-192.png',
+              sizes: '192x192',
+              type: 'image/png',
+              purpose: 'any maskable',
+            },
+            {
+              src: 'assets/icons/logo-512.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'any maskable',
+            },
+          ],
+          screenshots: [
+            {
+              src: 'assets/mobile.png',
+              sizes: '818x1339',
+              type: 'image/png',
+            },
+            {
+              src: 'assets/desktop.png',
+              sizes: '1033x698',
+              type: 'image/png',
+              form_factor: 'wide',
+            },
+          ],
+        },
+
+        injectManifest: {
+          // Include wasm so the rich-text parser remains available when the app is offline.
+          globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,wasm}'],
+          globIgnores: ['assets/icons/logo-192.png', 'assets/icons/logo-512.png'],
+        },
+      }),
+      // Electron plugin — only active when --mode electron is set
+      ...(isElectron
+        ? [
+            electron([
+              {
+                entry: { main: 'electron/main/index.ts' },
+                vite: {
+                  plugins: [notBundle(), esmShim()],
+                },
+              },
+              {
+                vite: {
+                  build: {
+                    outDir: 'dist-electron',
+                    rollupOptions: {
+                      input: 'electron/preload/index.ts',
+                      output: {
+                        format: 'cjs',
+                        entryFileNames: 'preload.mjs',
+                      },
+                    },
+                  },
+                  plugins: [notBundle()],
+                },
+                onstart(args) {
+                  args.reload()
+                },
+              },
+            ]),
+          ]
+        : []),
+    ],
+    resolve: {
+      alias: {
+        '@popup': '/src/services/popup',
+        '@api': '/src/services/api',
+        '@storage': '/src/services/storage',
+        '@services': '/src/services',
+        '@components': '/src/components',
+        '@views': '/src/views',
+        '@i18n': '/src/i18n',
       },
-    }),
-  ],
-  resolve: {
-    alias: {
-      '@popup': '/src/services/popup',
-      '@api': '/src/services/api',
-      '@storage': '/src/services/storage',
-      '@services': '/src/services',
-      '@components': '/src/components',
-      '@views': '/src/views',
-      '@i18n': '/src/i18n',
     },
-  },
-  server: {
-    host: '0.0.0.0',
-    proxy: {
-      // 代理/aliyun-oss
-      '/static': {
-        target: 'https://physics-static-cn.turtlesim.com',
-        changeOrigin: true,
-        rewrite: (path) => {
-          return path.replace('/static', '')
-        },
-        headers: {
-          Referer: 'https://www.turtlesim.com/',
-        },
-        secure: false, // 关闭 TLS 验证
+    server: {
+      host: '0.0.0.0',
+      watch: {
+        ignored: ['**/out/**', '**/dist_electron/**'],
       },
-      '/api': {
-        target: 'https://physics-api-cn.turtlesim.com',
-        changeOrigin: true,
-        rewrite: (path) => {
-          console.log(path.replace('/api', ''))
-          return path.replace('/api', '')
+      proxy: {
+        // Proxy for Aliyun OSS
+        '/static': {
+          target: 'https://physics-static-cn.turtlesim.com',
+          changeOrigin: true,
+          rewrite: (path) => {
+            return path.replace('/static', '')
+          },
+          headers: {
+            Referer: 'https://www.turtlesim.com/',
+          },
+          secure: false, // Disable TLS verification
         },
-        headers: {
-          Referer: 'https://www.turtlesim.com/',
-        },
-      },
-    },
-  },
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks: (id) => {
-          if (id.includes('highlight.js')) {
-            return 'highlightjs'
-          }
+        '/api': {
+          target: 'https://physics-api-cn.turtlesim.com',
+          changeOrigin: true,
+          rewrite: (path) => {
+            console.log(path.replace('/api', ''))
+            return path.replace('/api', '')
+          },
+          headers: {
+            Referer: 'https://www.turtlesim.com/',
+          },
         },
       },
     },
-  },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: (id) => {
+            if (id.includes('highlight.js')) {
+              return 'highlightjs'
+            }
+          },
+        },
+      },
+    },
+  }
 })
+
+
+
+

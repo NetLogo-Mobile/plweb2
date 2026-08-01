@@ -3,7 +3,7 @@
     <div class="settings-container">
       <div class="settings-header">
         <img
-          src="/assets/library/Navigation-Return.png"
+          :src="getPath('/@base/assets/library/Navigation-Return.png')"
           alt="back"
           class="back-icon"
           @click="goBack"
@@ -75,6 +75,7 @@ import { NInput, NSelect } from 'naive-ui'
 import storageManager from '../services/storage'
 import sysConfig from '../config/system.config'
 import i18n from '@i18n/index'
+import { getPath } from '@services/utils'
 
 type SettingsItem = {
   key: string
@@ -95,8 +96,9 @@ const settingsConfig = reactive(s as SettingsSection[])
 const savedValues = storageManager.getObj('userConfig')?.value || {}
 settingsConfig.forEach((section) => {
   section.items.forEach((item) => {
-    if (item.type !== 'button' && savedValues[item.key] !== undefined) {
-      item.value = savedValues[item.key]
+    const savedValue = savedValues[item.key]
+    if (item.type !== 'button' && typeof savedValue === 'string') {
+      item.value = savedValue
     }
   })
 })

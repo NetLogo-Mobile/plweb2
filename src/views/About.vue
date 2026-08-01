@@ -105,15 +105,19 @@
 
     <!-- slogan -->
     <div id="sloganText" class="slogan" :class="{ show: sloganShow }">
-      <span>Build</span> <span>Community</span> <span>Together</span>
+      <span>{{ t('about.slogan1') }}</span> <span>{{ t('about.slogan2') }}</span>
+      <span>{{ t('about.slogan3') }}</span>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import sysConfig from '../config/system.config'
 import storageManager from '@storage/index'
+
+const { t } = useI18n()
 
 const userId = storageManager.getObj('userInfo').value?.ID
 
@@ -128,33 +132,31 @@ const searchActive = ref(false)
 const banknoteShow = ref(false)
 const sloganShow = ref(false)
 
-const typingQueue = [
-  { text: 'Connect community everywhere', action: 'type' },
-  { text: 'Connect community everywhere', action: 'wait', duration: 800 },
-  { text: 'Connect community everywhere', action: 'backspace' },
-  { text: 'More advanced features', action: 'type' },
-  { text: 'More advanced features', action: 'wait', duration: 800 },
-  { text: 'More advanced features', action: 'backspace' },
-  { text: 'do i need to write sth more?', action: 'type' },
-  { text: 'do i need to write sth more?', action: 'wait', duration: 800 },
-  { text: 'do i need to write sth more?', action: 'backspace' },
-  { text: 'What are you waiting for?', action: 'type' },
-  { text: 'What are you waiting for?', action: 'wait', duration: 800 },
-  { text: 'What are you waiting for?', action: 'backspace' },
-  { text: 'There will be nothing......', action: 'type' },
-  { text: 'There will be nothing......', action: 'wait', duration: 800 },
-  { text: 'There will be nothing......', action: 'backspace' },
-  { text: 'Boom!', action: 'type' },
-  { text: 'Boom!', action: 'wait', duration: 12000 },
-  { text: 'Boom!', action: 'backspace' },
-  { text: 'Just kidding....', action: 'type' },
-  { text: 'Just kidding....', action: 'wait', duration: 800 },
-  { text: 'Just kidding....', action: 'backspace' },
-  { text: ' You will not recieve an achievement', action: 'type' },
-  { text: ' You will not recieve an achievement', action: 'wait', duration: 800 },
+const typingPhrases = [
+  'about.type1',
+  'about.type2',
+  'about.type3',
+  'about.type4',
+  'about.type5',
+  'about.type6',
+  'about.type7',
+  'about.type8',
 ]
 
+function buildTypingQueue() {
+  const queue = []
+  for (const key of typingPhrases) {
+    const text = t(key)
+    const isBoom = key === 'about.type6'
+    queue.push({ text, action: 'type' })
+    queue.push({ text, action: 'wait', duration: isBoom ? 12000 : 800 })
+    queue.push({ text, action: 'backspace' })
+  }
+  return queue
+}
+
 function runTypingEffect(callback) {
+  const typingQueue = buildTypingQueue()
   let step = 0
   function executeNext() {
     if (step >= typingQueue.length) {

@@ -1,4 +1,4 @@
-import { createApp } from 'vue'
+import { createApp, watch } from 'vue'
 import App from './App.vue'
 import router from './router/index'
 import i18n from '@i18n/index'
@@ -11,33 +11,35 @@ import type { DirectiveBinding } from 'vue'
 import 'highlight.js/styles/github.css'
 import { registerSW } from 'virtual:pwa-register'
 
-const PWA_UPDATE_CHECK_INTERVAL = 60 * 60 * 1000
+if (typeof __ELECTRON__ === 'undefined') {
+  const PWA_UPDATE_CHECK_INTERVAL = 60 * 60 * 1000
 
-registerSW({
-  immediate: true,
-  onRegisteredSW(_swScriptUrl, registration) {
-    if (!registration) return
+  registerSW({
+    immediate: true,
+    onRegisteredSW(_swScriptUrl, registration) {
+      if (!registration) return
 
-    const checkForUpdate = () => {
-      if (!navigator.onLine) return
-      registration.update().catch((error) => {
-        window.$ErrorLogger?.captureError({
-          type: 'custom',
-          message: 'Failed to check for PWA update',
-          context: { error },
+      const checkForUpdate = () => {
+        if (!navigator.onLine) return
+        registration.update().catch((error) => {
+          window.$ErrorLogger?.captureError({
+            type: 'custom',
+            message: 'Failed to check for PWA update',
+            context: { error },
+          })
         })
-      })
-    }
+      }
 
-    checkForUpdate()
-    window.setInterval(checkForUpdate, PWA_UPDATE_CHECK_INTERVAL)
-    window.addEventListener('online', checkForUpdate)
-    window.addEventListener('focus', checkForUpdate)
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') checkForUpdate()
-    })
-  },
-})
+      checkForUpdate()
+      window.setInterval(checkForUpdate, PWA_UPDATE_CHECK_INTERVAL)
+      window.addEventListener('online', checkForUpdate)
+      window.addEventListener('focus', checkForUpdate)
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') checkForUpdate()
+      })
+    },
+  })
+}
 
 // Skip reload on the very first controller (initial SW installation).
 // Only reload on subsequent controller changes (actual SW updates).
@@ -55,9 +57,24 @@ const app = createApp(App)
 app.use(router)
 app.use(i18n)
 
+const DOCUMENT_LANG_BY_LOCALE: Record<string, string> = {
+  Chinese: 'zh-CN',
+  English: 'en',
+  German: 'de',
+  Japanese: 'ja',
+  French: 'fr',
+}
+
+function syncDocumentLang() {
+  document.documentElement.lang = DOCUMENT_LANG_BY_LOCALE[i18n.global.locale.value] || 'en'
+}
+
+syncDocumentLang()
+watch(() => i18n.global.locale.value, syncDocumentLang)
+
 app.directive('richText', {
   mounted(el, binding: DirectiveBinding<() => Promise<string>>) {
-    el.innerHTML = 'rendering...'
+    el.innerHTML = i18n.global.t('ui.messages.loading')
     Promise.resolve(binding.value()).then((html) => {
       el.innerHTML = html
     })
@@ -132,8 +149,8 @@ function parseCopiedRouteTarget(input: string): { path: string; needLogin: boole
 let lastCheckedClipboard = ''
 
 async function navigateToTarget(target: { path: string; needLogin: boolean }) {
-  if (target.needLogin && !storageManager.getObj('userInfo').value?.User?.ID) {
-    showMessage('warning', 'Please login first', { duration: 2000 })
+  if (target.needLogin && !storageManager.getObj('userInfo').value?.ID) {
+    showMessage('warning', i18n.global.t('ui.messages.loginRequiredFirst'), { duration: 2000 })
     return false
   }
   try {
@@ -145,7 +162,7 @@ async function navigateToTarget(target: { path: string; needLogin: boolean }) {
       message: 'Failed to auto-open pasted link',
       context: { targetPath: target.path, error },
     })
-    showMessage('error', 'Failed to open link', { duration: 2500 })
+    showMessage('error', i18n.global.t('ui.messages.openLinkFailed'), { duration: 2500 })
     return false
   }
 }

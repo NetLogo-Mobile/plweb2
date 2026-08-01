@@ -1,4 +1,5 @@
 import { getData } from './api/getData'
+import { isRequestInterruptedError } from './api/requestInterruption'
 import { isRateLimitResponse } from './api/Interceptor'
 import type { Ref } from 'vue'
 import i18n from '@i18n/index'
@@ -50,7 +51,11 @@ export default async function postComment(
       })
     }
   } catch (e) {
-    console.error(e)
+    // A request interrupted by a navigation / another operation is benign;
+    // do not surface it as a console error.
+    if (!isRequestInterruptedError(e)) {
+      console.error(e)
+    }
   } finally {
     isLoading.value = false
   }

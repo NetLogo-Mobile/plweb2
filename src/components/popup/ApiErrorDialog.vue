@@ -5,10 +5,10 @@
       <h3 class="title">{{ displayTitle }}</h3>
       <p class="message">{{ displayMessage }}</p>
       <div class="buttons">
-        <button class="btn cancel" @click="onCancel">{{ cancelLabel }}</button>
+        <button class="btn cancel" @click="onCancel">{{ cancelLabel || t('ui.cancel') }}</button>
         <button class="btn confirm" :disabled="loading" @click="onConfirmClick">
-          <span v-if="loading">{{ confirmingLabel }}</span>
-          <span v-else>{{ confirmLabel }}</span>
+          <span v-if="loading">{{ confirmingLabel || t('ui.retrying') }}</span>
+          <span v-else>{{ confirmLabel || t('ui.ok') }}</span>
         </button>
       </div>
     </div>
@@ -18,13 +18,13 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { Ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 interface Props {
   title?: string
   message?: string
   titleRef?: Ref<string>
   messageRef?: Ref<string>
-  icon?: string
   confirmLabel?: string
   cancelLabel?: string
   confirmingLabel?: string
@@ -32,12 +32,9 @@ interface Props {
   close?: () => void
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  icon: '/assets/messages/Message-Default.png',
-  confirmLabel: 'OK',
-  cancelLabel: 'Cancel',
-  confirmingLabel: 'Retrying...',
-})
+const props = defineProps<Props>()
+
+const { t } = useI18n()
 
 const loading = ref(false)
 

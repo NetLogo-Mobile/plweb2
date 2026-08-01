@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Redirecting...</title>
+  </head>
+  <body>
+    <script>
+      ;(() => {
+        const parts = window.location.pathname.split('/').filter(Boolean)
+        const isProjectPage =
+          window.location.hostname.endsWith('.github.io') && parts[0] === 'plweb2'
+        const basePath = isProjectPage ? `/${parts.shift()}/` : '/'
+        const routePath = `/${parts.join('/')}`
+
+        window.location.replace(
+          `${basePath}#${routePath}${window.location.search}${window.location.hash}`,
+        )
+      })()
+    </script>
+  </body>
+</html>

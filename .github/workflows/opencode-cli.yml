@@ -1,16 +1,19 @@
 name: OpenCode
 on:
   issues:
-    types: [opened] # Triggers when a new issue is opened
+    types: [labeled] # 创建时带标签或后续补标签都会触发该事件
 
 permissions:
-  contents: write       # Required to create new branches and push code
-  pull-requests: write  # Required to create PRs
-  issues: write         # Required to link/manage issues
+  contents: write # Required to create new branches and push code
+  pull-requests: write # Required to create PRs
+  issues: write # Required to link/manage issues
 
 jobs:
   issue-agent-coding:
-    if: contains(github.event.issue.labels.*.name, 'autofix') # Only run if the issue has the 'autofix' label
+    # 仅监听 labeled 事件：
+    # 创建 Issue 时勾选 autofix 标签会同时触发 opened 和 labeled，
+    # 若同时监听 opened 会重复执行写代码任务，因此只保留 labeled。
+    if: github.event.label.name == 'autofix'
     runs-on: ubuntu-latest
 
     steps:
@@ -56,14 +59,18 @@ jobs:
           echo "### Issue Description:" >> issue_prompt.txt
           echo "$ISSUE_BODY" >> issue_prompt.txt
           echo "" >> issue_prompt.txt
-          
+
           # Strictly instructs the AI to generate a 'conclusion.md' in English
           cat << 'EOF' >> issue_prompt.txt
-          
+
           【Mandatory Requirements】:
           1. Please develop or fix the codebase according to the Issue description provided above.
           2. After completing the changes, you MUST create a Markdown file named 'conclusion.md' in the root directory.
           3. In 'conclusion.md', please describe in detail (strictly in English) which files you modified, what changes you made, what technical solutions you used, and your final implementation summary.
+          4. Read the skills about vue best practice or vue developing skills
+          5. If your modification have something to do with Web API, use the plweb skill
+          6. After you finish coding, run all tests and code review with code review skill
+          7. Reflect with the code review output and modify your code
           EOF
 
       - name: Run OpenCode Coding Agent
@@ -83,11 +90,11 @@ jobs:
         run: |
           # Clean up the temporary prompt file
           rm -f issue_prompt.txt
-          
+
           # Configure Git Bot credentials
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          
+
           # Check for changes in the workspace
           if [ -n "$(git status --porcelain)" ]; then
             echo "Changes detected, assembling Pull Request description..."
@@ -118,7 +125,7 @@ jobs:
             
             # 4. Create Pull Request via GitHub CLI
             gh pr create \
-              --title "🤖 Fix: $ISSUE_TITLE (Resolves #$ISSUE_NUMBER)" \
+              --title "auto-fix: $ISSUE_TITLE (Resolves #$ISSUE_NUMBER)" \
               --body-file pr_body.txt \
               --head "$BRANCH_NAME" \
               --base "${{ github.event.repository.default_branch }}"

@@ -7,32 +7,32 @@
       <n-tabs type="line" animated justify-content="space-evenly">
         <!-- :CategoryID 是糟糕的，不建议改动 @see NotificationList.vue -->
         <!-- The parameter `:CategoryID` is poorly designed, do not modify it. @see NotificationList.vue -->
-        <n-tab-pane name="全部" :tab="t('notifications.all')">
+        <n-tab-pane name="all" :tab="t('notifications.all')">
           <div class="item">
             <NotificationList :CategoryID="0"></NotificationList>
           </div>
         </n-tab-pane>
-        <n-tab-pane name="系统消息" :tab="t('notifications.system')">
+        <n-tab-pane name="system" :tab="t('notifications.system')">
           <div class="item">
             <NotificationList :CategoryID="1"></NotificationList>
           </div>
         </n-tab-pane>
-        <n-tab-pane name="回复和评论" :tab="t('notifications.comments')">
+        <n-tab-pane name="comments" :tab="t('notifications.comments')">
           <div class="item">
             <NotificationList :CategoryID="3"></NotificationList>
           </div>
         </n-tab-pane>
-        <n-tab-pane name="关注和粉丝" :tab="t('notifications.friends')">
+        <n-tab-pane name="friends" :tab="t('notifications.friends')">
           <div class="item">
             <NotificationList :CategoryID="2"></NotificationList>
           </div>
         </n-tab-pane>
-        <n-tab-pane name="作品" :tab="t('notifications.works')">
+        <n-tab-pane name="works" :tab="t('notifications.works')">
           <div class="item">
             <NotificationList :CategoryID="4"></NotificationList>
           </div>
         </n-tab-pane>
-        <n-tab-pane name="管理通知" :tab="t('notifications.admin')">
+        <n-tab-pane name="admin" :tab="t('notifications.admin')">
           <div class="item">
             <NotificationList :CategoryID="5"></NotificationList>
           </div>

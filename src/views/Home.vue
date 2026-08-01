@@ -24,7 +24,13 @@
       </div>
     </Header>
     <main>
-      <div v-show="isLoading" class="loading"></div>
+      <div
+        v-show="isLoading"
+        class="loading"
+        :style="{
+          backgroundImage: `url(${getPath('/@base/assets/messages/Message-Default.png')})`,
+        }"
+      ></div>
       <div v-show="!isLoading" class="block-container">
         <n-grid :x-gap="12" :y-gap="12" :cols="blockItemsPerRow">
           <!-- <n-gi>
@@ -110,7 +116,10 @@ onMounted(async () => {
     const ua = sm.getObj('userAuthInfo')
     if (ua.status === 'success' && ua.value?.token != null) {
       const res = await login(ua.value.token, ua.value.authCode, true)
-      if (!res.Data?.User) return
+      if (res.Status !== 200 || !res.Data?.User) {
+        sm.remove('userAuthInfo')
+        return
+      }
       user.value = {
         coins: res.Data.User.Gold,
         gems: res.Data.User.Diamond,
@@ -126,6 +135,7 @@ onMounted(async () => {
     loadPageData(res)
   }
   await Promise.allSettled([processAuthInfo(), processHomepageProjects()])
+  isLoading.value = false
 })
 
 onActivated(() => {
@@ -146,6 +156,11 @@ Emitter.on('userLogin', (res) => {
     ID: res.Data.User.ID,
   }
 })
+
+Emitter.on('loginRequired', () => {
+  showLoginModel()
+})
+
 // It is astonishing that server respond with projects data when login with (null,null)
 // And responed with user data when login with token/password
 // Fourtunately, both data has the same structure

@@ -1,20 +1,30 @@
 import { afterRequest, beforeRequest } from './Interceptor.ts'
+import { isRequestInterruptedError } from './requestInterruption.ts'
 import sm from '@storage/index.ts'
 import i18n, { detectBrowserLanguage, toApiLanguage } from '@i18n/index.ts'
 import { getDeviceInfo, getVisitorId } from './getDevice.ts'
 import { showMessage } from '@popup/naiveui.ts'
 import { getPath } from '../utils.ts'
 import { normalizePath } from './types.ts'
-import {
-  readOfflineCache,
-  writeOfflineCache,
-  readUserCache,
-  writeUserCache,
-} from './cache.ts'
+import { readOfflineCache, writeOfflineCache, readUserCache, writeUserCache } from './cache.ts'
 import { updateNotificationUnread } from '@services/notificationUnread.ts'
+import Emitter from '@services/eventEmitter.ts'
 
 import type { ApiPath, APIParam, APIResult } from './types.ts'
 import type { Device, Result, ResultOf, Users } from '../../pl-serve-type-main/type/main'
+
+
+
+function handle403(npath: string, source: 'http' | 'body' = 'http') {
+  sm.remove('userAuthInfo')
+  window.$ErrorLogger.addBreadcrumb(
+    'auth',
+    `token cleared due to 403${source === 'body' ? ' body' : ''} on ${npath}`,
+  )
+  if (sm.getObj('userInfo').value?.Nickname == null) {
+    Emitter.emit('loginRequired')
+  }
+}
 
 const OFFLINE_CACHE_PATHS = new Set([
   '/Contents/GetProfile',
@@ -28,6 +38,27 @@ const USER_CACHE_PATH = '/Users/GetUser'
 
 function canOfflineCache(path: string): boolean {
   return OFFLINE_CACHE_PATHS.has(path)
+}
+
+/**
+ * A page-lifetime AbortController. When the page is being unloaded (real
+ * navigation / reload / close) we abort every in-flight fetch so the browser
+ * does not have to tear them down itself. Aborting through a signal produces a
+ * deterministic `AbortError`, which `isRequestInterruptedError` recognizes, so
+ * callers never observe an unhandled rejection for requests that were killed by
+ * a navigation.
+ */
+let pageLifecycleController: AbortController | null = null
+function getPageLifecycleSignal(): AbortSignal {
+  // Create a fresh controller if none exists or the previous one was already
+  // aborted (e.g. after a BFCache restore following `pagehide`).
+  if (!pageLifecycleController || pageLifecycleController.signal.aborted) {
+    pageLifecycleController = new AbortController()
+    const abort = () => pageLifecycleController?.abort()
+    window.addEventListener('pagehide', abort, { once: true })
+    window.addEventListener('beforeunload', abort, { once: true })
+  }
+  return pageLifecycleController.signal
 }
 
 function applyAfterRequest<T extends Result>(data: T): T {
@@ -59,7 +90,8 @@ async function getDataImpl(
   const token = userInfo.value?.token?.trim()
   const authCode = userInfo.value?.authCode
   const isAuthcatePath = npath === '/Users/Authenticate'
-  const apiToken = !isAuthcatePath && !token ? '7pEWTsF4gR9qauzJCDQkxPLOZlnbMtAG' : token
+  const apiToken = token
+  const apiAuthCode = !isAuthcatePath && !authCode ? 'IKuoMliVTbXte15U7H8ROjaA2CQk96fh' : authCode
 
   try {
     const response = await fetch(getPath(`/@api${npath}`), {
@@ -68,9 +100,10 @@ async function getDataImpl(
       headers: {
         'Content-Type': 'application/json',
         'x-API-Token': apiToken,
-        'x-API-AuthCode': authCode,
+        'x-API-AuthCode': apiAuthCode,
         'x-API-Version': '2502',
       },
+      signal: getPageLifecycleSignal(),
     })
 
     if (!response.ok) {
@@ -85,6 +118,9 @@ async function getDataImpl(
         await response.json()
       } catch {
         // Ignore malformed error payloads.
+      }
+      if (response.status === 403) {
+        handle403(npath, 'http')
       }
       return {
         Status: response.status,
@@ -111,17 +147,39 @@ async function getDataImpl(
       }
     } else {
       window.$ErrorLogger.captureApiError('POST', path, data.Status, data, body)
+      if (data.Status === 403) {
+        handle403(npath, 'body')
+      }
     }
 
     return applyAfterRequest(data)
   } catch (error) {
-    const canFallback = canOfflineCache(npath) || npath === USER_CACHE_PATH
-    const cached = canFallback ? await readOfflineCache<Result>(npath, body) : null
+    const cached =
+      npath === USER_CACHE_PATH
+        ? await readUserCache<Result>(npath, body)
+        : canOfflineCache(npath)
+          ? await readOfflineCache<Result>(npath, body)
+          : null
     if (cached) {
       window.$ErrorLogger.addBreadcrumb('api-cache', `${npath} served from offline cache`, {
         path: npath,
       })
       return applyAfterRequest(cached)
+    }
+    // A request interrupted by a navigation (or by another fuzzing/UI operation
+    // running before it could complete) is not an application error. It must NOT
+    // be surfaced as a regular API failure: returning a non-200 result would make
+    // callers show error dialogs and log `console.error(... returned N)`. Instead
+    // we let the rejection propagate as an `AbortError` / interruption error; the
+    // global `unhandledrejection` handler in `errorLogger` recognizes it and
+    // suppresses the noise (browser native log + Playwright pageerror). This is
+    // especially important for WebKit, which reports these interruptions as
+    // `TypeError: Load failed` / `AbortError: Fetch is aborted`.
+    if (isRequestInterruptedError(error)) {
+      window.$ErrorLogger.addBreadcrumb('api-interrupted', `${npath} interrupted`, {
+        message: error instanceof Error ? error.message : String(error),
+        path: npath,
+      })
     }
     throw error
   }
@@ -132,7 +190,11 @@ export function getData<Path extends ApiPath>(
   body: APIParam<Path>,
   options?: { skipUserCache?: boolean },
 ): Promise<APIResult<Path>>
-export function getData(path: string, body?: unknown, options?: { skipUserCache?: boolean }): Promise<any> {
+export function getData(
+  path: string,
+  body?: unknown,
+  options?: { skipUserCache?: boolean },
+): Promise<any> {
   return getDataImpl(path, body, options)
 }
 
@@ -188,14 +250,14 @@ export async function login(
     }
 
     const data = (await response.json()) as ResultOf<Users['Authenticate']>
+    const isRealLogin = Boolean((is_token && arg1 && arg2) || (!is_token && arg1 && arg2))
     if (data.Status === 200) {
-      const isRealLogin = Boolean((is_token && arg1 && arg2) || (!is_token && arg1 && arg2))
       if (isRealLogin) {
         updateNotificationUnread(data.Data?.Statistic)
       }
     }
 
-    if (sm.getObj('userAuthInfo').value?.token == null) {
+    if (isRealLogin && data.Token) {
       sm.setObj(
         'userAuthInfo',
         {
@@ -228,6 +290,6 @@ export async function login(
       Status: 0,
       Message: 'Network Error',
       Data: null,
-      } as unknown as ResultOf<Users['Authenticate']>
+    } as unknown as ResultOf<Users['Authenticate']>
   }
 }

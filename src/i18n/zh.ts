@@ -25,7 +25,7 @@ export default {
   cookieNotice: {
     title: 'Cookie 提示',
     message:
-      '我们可能会使用 Cookie 或浏览器本地能力来支持登录、安全、语言偏好和性能优化。本提示只用于告知，不会额外保存你的选择。',
+      '我们使用 Cookie ！',
     dismiss: '知道了',
   },
   networkStatus: {
@@ -75,6 +75,7 @@ export default {
     placeholder: '发布一条友善的言论',
     home: '主页',
     area: '评论区',
+    title: '{name} 的 {category}',
   },
   notfound: {
     title: '404 未找到',
@@ -109,12 +110,13 @@ export default {
     apiErrorTitle: '请求错误',
     apiErrorMessage: '{path} 返回 {status}：{message}',
     tagNotFound: '标签 {tag} 未找到',
+    requestTimeout: '请求超时',
   },
   expeSummary: {
     enterExp: '进入实验 ',
     introTab: '简介',
     intro: '实验介绍',
-    wordCount: '字数统计',
+    wordCount: '字数统计：{count}',
     comments: '评论',
     copyID: '复制作品ID',
     copyInternalLink: '复制内部链接',
@@ -175,6 +177,7 @@ export default {
     loginRequiredTitle: '需要登录',
     loginRequiredContent: '请先登录后再编辑作品。',
     login: '去登录',
+    save: '保存',
     saveSuccess: '保存成功',
     emptyPreview: '暂无内容',
     untitled: '未命名',
@@ -187,6 +190,19 @@ export default {
     uploadImgHint: '暂不支持图片上传',
     editTags: '编辑标签',
     tagPlaceholder: '输入标签后回车',
+  },
+  about: {
+    slogan1: '一起',
+    slogan2: '建设',
+    slogan3: '社区',
+    type1: '连接世界各地的社区',
+    type2: '更多高级功能',
+    type3: '还需要写点什么吗？',
+    type4: '你还在等什么？',
+    type5: '这里什么都不会有……',
+    type6: '砰！',
+    type7: '开个玩笑……',
+    type8: '你不会获得任何成就',
   },
   footer: {
     home: '首页',
@@ -209,6 +225,8 @@ export default {
       uploadFailed: '上传失败',
       changeCoverFailed: '更换封面失败，请稍后再试',
       replyToUser: '回复 ',
+      loginRequiredFirst: '请先登录',
+      openLinkFailed: '打开链接失败',
     },
     labels: {
       my: '我的',

@@ -1,7 +1,11 @@
 <template>
   <!-- show when click 'more' in Block/TopicBlock component -->
   <Header>
-    <img src="/assets/library/Navigation-Return.png" style="width: 2.7em" @click="goBack" />
+    <img
+      :src="getPath('/@base/assets/library/Navigation-Return.png')"
+      style="width: 2.7em"
+      @click="goBack"
+    />
     <h2 style="margin-right: auto; margin-left: 20px" class="title">
       <span class="title-detailed">{{ detailedTitle }}</span>
       <span class="title-generic">{{ $t('worklist.title') }}</span>
@@ -10,6 +14,7 @@
 
   <div class="list">
     <WorksList
+      :key="String(route.params.config || '')"
       :row="maxProjectsPerLine"
       :q="route.params.config ? decodeHrefToQueryObj(route.params.config as string) : {}"
     />
@@ -20,7 +25,7 @@
 import Header from '../components/utils/Header.vue'
 import WorksList from '../components/projects/wortList.vue'
 import { useRoute } from 'vue-router'
-import { decodeHrefToQueryObj } from '@services/utils'
+import { decodeHrefToQueryObj, getPath } from '@services/utils'
 import { useResponsive } from '../layout/useResponsive'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
