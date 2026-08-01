@@ -22,6 +22,9 @@
           </div>
         </div>
       </div>
+      <button class="activity-button" :aria-label="$t('activity.daily')" @click.stop="openDailyActivity">
+        {{ $t('activity.daily') }}
+      </button>
     </Header>
     <main>
       <div
@@ -50,6 +53,14 @@
     </main>
   </div>
   <Footer></Footer>
+  <DailyActivity
+    :open="activityOpen"
+    :activities="activities"
+    :statuses="activityStatuses"
+    :statistic="statistic"
+    @close="activityOpen = false"
+    @updated="onActivityUpdated"
+  />
 </template>
 
 <script setup lang="ts">
@@ -68,16 +79,25 @@ import Header from '../components/utils/Header.vue'
 import Footer from '../components/utils/Footer.vue'
 import Block from '../components/blocks/Block.vue'
 import TopicBlock from '../components/blocks/TopicBlock.vue'
+import DailyActivity from '../components/popup/DailyActivity.vue'
 import { showLoginModel } from '@popup/index'
 import type {
   ListBlock,
   ResultOf,
   TopicBlock as TopicBlockType,
   Users,
+  Activity,
+  ActivityStatus,
+  Statistic,
+  Sync,
 } from '@services/../pl-serve-type-main/type/main'
 
 const isLoading = ref(true)
 const blocks = ref<Array<ListBlock | TopicBlockType>>([])
+const activities = ref<Activity[]>([])
+const activityStatuses = ref<ActivityStatus[]>([])
+const statistic = ref<Statistic>()
+const activityOpen = ref(false)
 const { t } = useI18n()
 
 function isTopicBlock(block: ListBlock | TopicBlockType): block is TopicBlockType {
@@ -118,24 +138,20 @@ onMounted(async () => {
       const res = await login(ua.value.token, ua.value.authCode, true)
       if (res.Status !== 200 || !res.Data?.User) {
         sm.remove('userAuthInfo')
-        return
+        return false
       }
-      user.value = {
-        coins: res.Data.User.Gold,
-        gems: res.Data.User.Diamond,
-        level: res.Data.User.Level,
-        username: res.Data.User.Nickname,
-        avatarUrl: getUserUrl(res.Data.User),
-        ID: res.Data.User.ID,
-      }
+      loadPageData(res)
+      return true
     }
+    return false
   }
   async function processHomepageProjects() {
     const res = await login(null, null)
     loadPageData(res)
   }
-  await Promise.allSettled([processAuthInfo(), processHomepageProjects()])
-  isLoading.value = false
+  if (!(await processAuthInfo())) {
+    await processHomepageProjects()
+  }
 })
 
 onActivated(() => {
@@ -146,15 +162,7 @@ onActivated(() => {
 })
 
 Emitter.on('userLogin', (res) => {
-  if (!res.Data?.User) return
-  user.value = {
-    coins: res.Data.User.Gold,
-    gems: res.Data.User.Diamond,
-    level: res.Data.User.Level,
-    username: res.Data.User.Nickname,
-    avatarUrl: getUserUrl(res.Data.User),
-    ID: res.Data.User.ID,
-  }
+  loadPageData(res)
 })
 
 Emitter.on('loginRequired', () => {
@@ -171,6 +179,9 @@ async function loadPageData(response: ResultOf<Users['Authenticate']>) {
     Emitter.emit('updateTagConfig', response.Data.ContentTags)
   }
   blocks.value = [...(response.Data.Library?.Blocks ?? [])]
+  activities.value = response.Data.Activities ?? []
+  statistic.value = response.Data.Statistic
+  activityStatuses.value = response.Data.Statistic?.Activities ?? []
   const userData = response.Data.User
 
   // Both null-null-login or real-login can get user data,but the previous one is fake
@@ -192,6 +203,35 @@ async function loadPageData(response: ResultOf<Users['Authenticate']>) {
   })
 }
 
+function onActivityUpdated(sync: Sync | undefined) {
+  if (!sync) return
+  if (sync.User) {
+    user.value = {
+      coins: sync.User.Gold,
+      gems: sync.User.Diamond,
+      level: sync.User.Level,
+      username: sync.User.Nickname || t('user.clickToLogin'),
+      avatarUrl: getUserUrl(sync.User),
+      ID: sync.User.ID,
+    }
+  }
+  if (sync.Activities) {
+    activities.value = sync.Activities
+  }
+  if (sync.Statistic) {
+    statistic.value = sync.Statistic
+    activityStatuses.value = sync.Statistic.Activities ?? []
+  }
+}
+
+function openDailyActivity() {
+  if (checkLogin(false)) {
+    activityOpen.value = true
+  } else {
+    showLoginModel()
+  }
+}
+
 function showModalFn() {
   if (checkLogin(false)) {
     router.push(`/u/${user.value.ID}`)
@@ -210,6 +250,18 @@ function showModalFn() {
 .user {
   display: flex;
   align-items: center;
+}
+
+.activity-button {
+  margin-left: auto;
+  padding: 8px 14px;
+  border: 1px solid #d89420;
+  border-radius: 6px;
+  background: #f2b43b;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  display:none;
 }
 
 .avatar {

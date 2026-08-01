@@ -1,6 +1,6 @@
 import { getWasmInstance } from './wasmLoader'
 import { getDeallocator } from './deallocator'
-import hljs from 'highlight.js'
+import { highlightCodeBlocks } from './highlight'
 import mermaid from 'mermaid'
 import renderMathInElement from 'katex/contrib/auto-render/auto-render.js'
 import 'katex/dist/katex.min.css'
@@ -120,11 +120,7 @@ async function parse(source: string, context: ParseContext = {}) {
     await renderMermaidDiagrams(tempDiv)
   }
 
-  tempDiv
-    .querySelectorAll("pre code:not(.language-mermaid)")
-    .forEach((block) => {
-      hljs.highlightElement(block as HTMLElement);
-    });
+  highlightCodeBlocks(tempDiv)
 
   return tempDiv.innerHTML
 }

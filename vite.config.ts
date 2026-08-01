@@ -159,8 +159,18 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks: (id) => {
-            if (id.includes('highlight.js')) {
-              return 'highlightjs'
+            if (!id.includes('node_modules')) return
+            if (id.includes('highlight.js')) return 'highlightjs'
+            if (id.includes('naive-ui')) return 'naive-ui'
+            if (id.includes('katex')) return 'katex'
+            if (id.includes('date-fns')) return 'date-fns'
+            if (
+              id.includes('/vue/') ||
+              id.includes('/vue-router/') ||
+              id.includes('/vue-i18n/') ||
+              id.includes('/@vue/')
+            ) {
+              return 'vue-vendor'
             }
           },
         },

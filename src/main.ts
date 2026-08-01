@@ -8,7 +8,6 @@ import { getPath, registerNetworkListener } from '@services/utils'
 import storageManager from '@storage/index'
 import { showMessage } from '@popup/naiveui'
 import type { DirectiveBinding } from 'vue'
-import 'highlight.js/styles/github.css'
 import { registerSW } from 'virtual:pwa-register'
 
 if (typeof __ELECTRON__ === 'undefined') {

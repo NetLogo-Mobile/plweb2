@@ -224,7 +224,7 @@ export async function login(
   const requestBody = {
     Login: username,
     Password: password,
-    Version: 2411,
+    Version: 2503,
     Device,
   }
 
