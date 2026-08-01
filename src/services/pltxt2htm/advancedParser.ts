@@ -2,6 +2,7 @@ import { getWasmInstance } from './wasmLoader'
 import { getDeallocator } from './deallocator'
 import hljs from 'highlight.js'
 import mermaid from 'mermaid'
+import DOMPurify from 'dompurify'
 import renderMathInElement from 'katex/contrib/auto-render/auto-render.js'
 import 'katex/dist/katex.min.css'
 import storageManager from '@storage/index'
@@ -27,6 +28,13 @@ function ensureMermaidInitialized() {
   mermaidInitialized = true
 }
 
+function createMermaidDiagram(svg: string): Node | null {
+  const diagram = DOMPurify.sanitize(svg, {
+    USE_PROFILES: { svg: true, svgFilters: true },
+    RETURN_DOM: true,
+  })
+  return diagram instanceof SVGSVGElement ? diagram : null
+}
 
 async function renderMermaidDiagrams(container: HTMLElement) {
   ensureMermaidInitialized()
@@ -42,11 +50,14 @@ async function renderMermaidDiagrams(container: HTMLElement) {
 
       try {
         const renderId = `mermaid-${Date.now()}-${index}`;
-        const { svg } = await mermaid.render(renderId, source);
-        const wrapper = document.createElement("div");
-        wrapper.className = "mermaid-diagram";
-        wrapper.innerHTML = svg;
-        pre.replaceWith(wrapper);
+        const { svg } = await mermaid.render(renderId, source)
+        const diagram = createMermaidDiagram(svg)
+        if (!diagram) return
+
+        const wrapper = document.createElement('div')
+        wrapper.className = 'mermaid-diagram'
+        wrapper.replaceChildren(diagram)
+        pre.replaceWith(wrapper)
       } catch (e) {
         console.warn("mermaid render failed:", e);
       }
@@ -101,7 +112,9 @@ async function parse(source: string, context: ParseContext = {}) {
 
   if (!rawHtml) return ''
   const tempDiv = document.createElement('div')
-  tempDiv.innerHTML = rawHtml
+  tempDiv.innerHTML = DOMPurify.sanitize(rawHtml, {
+    USE_PROFILES: { html: true, svg: true, svgFilters: true, mathMl: true },
+  })
 
   if (typeof renderMathInElement === 'function') {
     renderMathInElement(tempDiv, {
