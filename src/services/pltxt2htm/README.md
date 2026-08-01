@@ -30,7 +30,7 @@ const simpleHtml = await parseCommon(sourceText);
 **What it does:**
 1. Calls WASM function `fixedadv_parser` to convert pltxt → raw HTML
 2. Renders LaTeX math with KaTeX (`$...$` for inline, `$$...$$` for display)
-3. Renders Mermaid diagrams (code blocks with `language-mermaid`)
+3. Renders Mermaid diagrams (code blocks with `language-mermaid`) — honors the `userConfig.mermaid` setting (`'on'` default, `'off'` disables)
 4. Highlights code blocks with highlight.js
 5. Returns the complete HTML string
 
@@ -95,19 +95,10 @@ The WASM binary is at `./vendor/pltxt2htm.wasm` and loaded via the JS glue code 
 - `vendor/pltxt2htm.js` — Emscripten-generated JS loader for the WASM module
 - `vendor/pltxt2htm.wasm` — compiled WebAssembly binary (not human-readable)
 
-## Automated XSS Monitoring Workflow / 自动化 XSS 监控工作流
+## CI Workflows / CI 工作流
 
-- **English:** CI now includes a scheduled workflow (`.github/workflows/pltxt2htm-xss-monitor.yml`) that runs every 6 hours and on manual dispatch. It dynamically downloads the latest upstream release asset `wasm32-unknown-emscripten-pltxt2htm-wasm-release.zip`, refreshes payload dictionaries from multiple authoritative feeds, and executes browser-based detection with Playwright.
-- **中文：** CI 现已包含定时工作流（`.github/workflows/pltxt2htm-xss-monitor.yml`），每 6 小时执行一次，并支持手动触发。它会动态下载上游最新发行版资产 `wasm32-unknown-emscripten-pltxt2htm-wasm-release.zip`，从多个权威源刷新攻击载荷字典，并通过 Playwright 执行浏览器级自动检测。
+- **English:** `.github/workflows/sync-pltxt2htm-release.yml` runs daily (cron `0 0 * * *`) and on manual dispatch. It downloads the latest upstream release asset `wasm32-unknown-emscripten-pltxt2htm-wasm-release.zip` from the `SekaiArendelle/pltxt2htm` repository, extracts the `.js`/`.wasm` files, and copies them into `vendor/`, committing when the files have changed.
+- **中文：** `.github/workflows/sync-pltxt2htm-release.yml` 每天执行一次（cron `0 0 * * *`），并支持手动触发。它会从 `SekaiArendelle/pltxt2htm` 仓库下载最新发行版资产 `wasm32-unknown-emscripten-pltxt2htm-wasm-release.zip`，解压 `.js`/`.wasm` 文件并复制到 `vendor/` 目录，有更新时自动提交。
 
-### Payload Sources / 载荷来源
-
-- **PayloadsAllTheThings**
-- **PortSwigger XSS Cheat Sheet**
-- **XSSTest Polyglots**
-- **Bypass Filters payload list**
-
-### Detection Logic / 检测逻辑
-
-- **English:** The monitor treats each payload as suspicious if it produces executable HTML patterns (e.g., `<script>`, event handlers, JS URLs) or triggers browser-level execution signals (dialogs/console markers). Any hit fails CI.
-- **中文：** 监控脚本会将每条载荷注入检测流程：若产出可执行 HTML 模式（如 `<script>`、事件处理器、`javascript:` URL）或触发浏览器执行信号（对话框/控制台标记），即判定为可疑并让 CI 失败。
+- **English:** `.github/workflows/run-playright-checks.yml` runs the Playwright E2E suite (Chromium, Firefox, WebKit) on pull requests and pushes to `main`/`dev`/`feature/**` branches.
+- **中文：** `.github/workflows/run-playright-checks.yml` 在 PR 以及 `main`/`dev`/`feature/**` 分支的推送时运行 Playwright 端到端测试（Chromium、Firefox、WebKit）。

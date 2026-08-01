@@ -38,14 +38,14 @@
             :class="{ active: activeTab === 'Discussion' }"
             @click="activeTab = 'Discussion'"
           >
-            Discussion
+            {{ t('worklist.categoryDiscussion') }}
           </button>
           <button
             class="tab-btn"
             :class="{ active: activeTab === 'Experiment' }"
             @click="activeTab = 'Experiment'"
           >
-            Experiment
+            {{ t('worklist.categoryExperiment') }}
           </button>
         </div>
 

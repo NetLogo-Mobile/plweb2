@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import storageManager from './storage'
 import { showNotification } from '@popup/naiveui'
+import { isRequestInterruptedError, isRequestInterruptedMessage } from './api/requestInterruption'
 
 /**
  * 增强的错误日志系统
@@ -203,15 +204,23 @@ class ErrorLogger {
 
     // Unhandled promise rejection
     window.addEventListener('unhandledrejection', (event) => {
-      this.captureError({
+      const context: ErrorContext = {
         type: 'promise',
         message: event.reason?.message || String(event.reason),
         stack: event.reason?.stack,
         // pass original rejection reason so console can expand it
         error: event.reason,
         breadcrumbs: [...this.breadcrumbs],
-      })
-      // Do not call event.preventDefault() so the browser's default logging remains visible
+      }
+      this.captureError(context)
+      // Suppress the browser's native "Unhandled Promise Rejection" log for
+      // benign request interruptions (e.g. a WebKit request aborted by another
+      // navigation/fuzzing operation). Otherwise WebKit-based Playwright tests
+      // observe a `pageerror` / console error even though the interruption is
+      // harmless. Real errors keep the default logging behavior.
+      if (this.isBenignRequestInterruption(context)) {
+        event.preventDefault()
+      }
     })
   }
 
@@ -219,6 +228,13 @@ class ErrorLogger {
    * 捕获错误并记录（含去重与精简输出）
    */
   captureError(context: ErrorContext) {
+    // A request interrupted by a navigation or by another operation running
+    // before it could complete is not a real application bug. WebKit (Safari)
+    // is the engine most likely to surface such interruptions (e.g.
+    // `TypeError: Load failed` / `AbortError: Fetch is aborted`). Record the
+    // log entry for diagnostics, but never surface it as an error-level console
+    // message or a notification, so WebKit-based Playwright tests stay clean.
+    const isInterruption = this.isBenignRequestInterruption(context)
     // Always record API/network errors: even in non-debug mode we want these for diagnostics.
     // Other non-vital logs still respect debugMode.
     if (!this.debugMode && !['vue', 'window', 'promise', 'api', 'network'].includes(context.type)) {
@@ -278,28 +294,35 @@ class ErrorLogger {
     this.lastErrorTime = now
     this.lastErrorCount = 1
 
-    // Show a concise notification for critical errors
-    if (this.isErrorCritical(context.type)) {
+    // Show a concise notification for critical errors (skip benign interruptions)
+    if (this.isErrorCritical(context.type) && !isInterruption) {
       this.showErrorNotification(errorLog, this.lastErrorCount)
     }
 
     // Console output: be concise to avoid double noise (browser already prints native errors)
     const rawContext = { ...context }
-    // console.groupCollapsed(
-    //   `%c[${context.type.toUpperCase()}] ${context.message}`,
-    //   'color: red; font-weight: bold',
-    // )
     console.info(context.message)
-    if (rawContext.error) {
-      // print the original Error object so it can be expanded when needed
-      console.error('Error object:', rawContext.error)
-    } else if (context.stack) {
-      console.error('Stack:', context.stack)
+    if (!isInterruption) {
+      if (rawContext.error) {
+        // print the original Error object so it can be expanded when needed
+        console.error('Error object:', rawContext.error)
+      } else if (context.stack) {
+        console.error('Stack:', context.stack)
+      }
     }
-    if (this.debugMode) {
+    if (this.debugMode && !isInterruption) {
       console.debug('Full context (sanitized):', errorLog)
     }
     console.groupEnd()
+  }
+
+  /**
+   * 判断是否为"请求被中断"这类良性错误（导航/路由切换等打断在途请求）
+   * WebKit/Safari 最容易把这类中断暴露成 `TypeError: Load failed`、
+   * `AbortError: Fetch is aborted` 或 `NSURLErrorDomain` cancelled 错误。
+   */
+  private isBenignRequestInterruption(context: ErrorContext): boolean {
+    return isRequestInterruptedError(context.error) || isRequestInterruptedMessage(context.message)
   }
 
   /**

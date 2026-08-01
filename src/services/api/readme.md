@@ -23,10 +23,12 @@ if (result.Status === 200) {
 
 **What happens when you call `getData`:**
 1. Interceptor checks rate limits (you can't spam comments too fast)
-2. Auto-injects `x-API-Token`, `x-API-AuthCode`, `x-API-Version` headers
-3. Sends POST to the server (auto-resolves `@api` → real URL)
-4. If network fails, tries to serve from offline cache (works for 6 paths)
-5. Logs API errors to `$ErrorLogger` and shows a notification on failure
+2. For `/Users/GetUser`, tries the short-lived user cache first (unless `skipUserCache` is set)
+3. Auto-injects `x-API-Token`, `x-API-AuthCode`, `x-API-Version` headers
+4. Sends POST to the server (auto-resolves `@api` → real URL)
+5. On success (Status 200) writes the response to the offline/user cache
+6. If the request fails (network error), serves from the offline cache when available; otherwise re-throws the error so callers can decide how to surface it
+7. Non-200 / HTTP error responses are logged to `$ErrorLogger` (`captureApiError`)
 
 **Typed paths:** Every API path has TypeScript types. Use `ApiPath` to get full parameter/result types:
 
@@ -55,14 +57,20 @@ const result: APIResult<'/Users/GetUser'> = await getData('/Users/GetUser', {
 - `afterRequest(response)` — hides the loading message
 - `isRateLimitResponse(response)` — check if a response means "too many requests"
 
-### `cache.ts` — Offline response cache
+### `cache.ts` — API response cache (IndexedDB)
 
 **Exports:**
 - `buildApiCacheKey(path, body?)` — builds a unique cache key per user + path + body
-- `readApiCache<T>(path, body?)` — reads cached API response
-- `writeApiCache(path, body, value)` — writes API response to cache
+- `readOfflineCache<T>(path, body?)` — reads a long-lived offline cache entry
+- `writeOfflineCache(path, body, value)` — writes to the long-lived offline cache
+- `readUserCache<T>(path, body?)` — reads a short-lived user cache entry
+- `writeUserCache(path, body, value)` — writes to the short-lived user cache
 
-Cached in localStorage under `apiResponseCache` key, expires after 30 days.
+Stored in **IndexedDB** (database `plweb-api-cache`) with two object stores:
+- `offlineCache` — fallback on network errors. Capped at 200 entries / 4 MB, entries expire after 15 days.
+- `userCache` — short-lived cache for `/Users/GetUser`, expires after 5 minutes.
+
+The legacy `localStorage` `apiResponseCache` key is removed on startup (one-time cleanup).
 
 ### `getDevice.ts` — Browser & device info
 
@@ -91,7 +99,7 @@ window.$Logger.logEvent({ category: 'Community', action: 'Comment', label: 'expe
 1. Find the backend function type in `src/pl-serve-type-main/type/main.ts`
 2. Add it to `PathMap` in `types.ts`
 3. Call it with `getData('/Your/NewEndpoint', { ... })` — types will work automatically
-4. For offline caching, add the path to `CACHEABLE_PATHS` in `getData.ts`
+4. For offline caching, add the path to `OFFLINE_CACHE_PATHS` in `getData.ts`
 
 ## Important Notes
 

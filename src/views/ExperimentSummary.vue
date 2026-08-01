@@ -121,7 +121,7 @@
                   class="intro"
                 ></div>
                 <div class="word-count">
-                  {{ t('expeSummary.wordCount') }}：{{ descriptionWordCount }}
+                  {{ t('expeSummary.wordCount', { count: descriptionWordCount }) }}
                 </div>
               </div>
             </div>

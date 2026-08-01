@@ -79,7 +79,7 @@ async function deleteMsg(message: CommentResult) {
       timestamp: Date.now(),
     })
   } catch (error) {
-    showMessage('error', t('error.unknownError') + (error ? `: ${String(error)}` : ''), {
+    showMessage('error', t('errors.unknownError') + (error ? `: ${String(error)}` : ''), {
       duration: 2000,
     })
   }
