@@ -29,6 +29,7 @@
     "vue-router": "^4.6.3"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260801.1",
     "@faker-js/faker": "^10.4.0",
     "@playwright/test": "^1.60.0",
     "@types/katex": "^0.16.8",
