@@ -55,11 +55,18 @@ async function fetchComments(options?: { from?: CommentResult['ID'] | null; skip
 async function deleteMsg(message: CommentResult) {
   const index = items.value.findIndex((item) => item.ID === message.ID)
   let removed: CommentResult[] = []
+  let restored = false
   if (index !== -1) {
     removed = items.value.splice(index, 1)
     // splice方法会直接改动数据的
     // method splice will directly modify the data
     removed = [...removed]
+  }
+  const restore = () => {
+    if (!restored && index !== -1 && removed[0]) {
+      items.value.splice(index, 0, removed[0])
+      restored = true
+    }
   }
   try {
     const re = await getData('/Messages/RemoveComment', {
@@ -68,8 +75,8 @@ async function deleteMsg(message: CommentResult) {
     })
     // 删除未成功，加回列表原有位置
     // if the delete failed, add the removed item back to the original position
-    if (re.Status !== 200 && index !== -1 && removed[0]) {
-      items.value.splice(index, 0, removed[0])
+    if (re.Status !== 200) {
+      restore()
       showMessage('error', t('messagesI18n.errorOnDelete'), { duration: 2000 })
     }
     window.$Logger.logEvent({
@@ -79,9 +86,7 @@ async function deleteMsg(message: CommentResult) {
       timestamp: Date.now(),
     })
   } catch (error) {
-    if (index !== -1 && removed[0]) {
-      items.value.splice(index, 0, removed[0])
-    }
+    restore()
     showMessage('error', t('error.unknownError') + (error ? `: ${String(error)}` : ''), {
       duration: 2000,
     })
