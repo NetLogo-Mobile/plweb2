@@ -188,7 +188,7 @@ import {
   watch,
 } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { getRouteCategory } from '../router/category'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
@@ -243,6 +243,7 @@ const showSidebar = ref(false)
 const coverUrl = ref('')
 const defaultCover = getPath('/@base/assets/messages/Experiment-Default.png')
 const route = useRoute()
+const router = useRouter()
 const { t, locale } = useI18n()
 
 const tagModalVisible = ref(false)
@@ -348,7 +349,11 @@ async function selectWork(id: string) {
   if (!work) return
 
   const ticket = ++selectTicket
-  history.replaceState(null, '', `#/e/${work.category}/${work.id}`)
+  await router.replace({
+    name: 'Editor',
+    params: { category: work.category, id: work.id },
+    query: route.query,
+  })
 
   showSidebar.value = false
   detailLoading.value = true
