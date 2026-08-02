@@ -1,11 +1,13 @@
 /* 首页和黑洞的外层容器，包含一个边框和底部导航栏高度留出 */
 /*  The container of the start page and black hole, which contains a border and a bottom navigation bar height for margin. */
 .block-container {
-  /* For Header */
-  height: calc(100dvh - 110px);
-  padding: 10px 20px 0px 10px;
-  overflow-y: scroll;
+  height: calc(100dvh - var(--header-height) - var(--footer-height));
+  max-width: var(--content-max-width);
+  padding: clamp(0.625rem, 1.4vw, 1.25rem) var(--page-gutter);
+  overflow-y: auto;
   box-sizing: border-box;
   scrollbar-width: none;
-  margin-bottom: 50px;
+  margin: 0 auto var(--footer-height);
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }

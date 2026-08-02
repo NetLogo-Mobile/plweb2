@@ -210,22 +210,25 @@ function showModalFn() {
 .user {
   display: flex;
   align-items: center;
+  min-width: 0;
 }
 
 .avatar {
-  width: 40px;
-  height: 40px;
+  width: clamp(2.25rem, 5dvh, 2.75rem);
+  height: clamp(2.25rem, 5dvh, 2.75rem);
   border-radius: 50%;
+  flex: 0 0 auto;
 }
 
 .user-info {
-  flex-grow: 1;
-  padding-left: 10px;
+  padding-left: clamp(0.4rem, 1vw, 0.75rem);
+  min-width: 0;
 }
 
 .username {
   white-space: nowrap;
-  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .level {
@@ -236,29 +239,38 @@ function showModalFn() {
 .resources {
   display: flex;
   align-items: center;
+  gap: clamp(0.35rem, 1vw, 0.8rem);
 }
 
 .resource {
   display: flex;
   align-items: center;
-  margin-left: 10px;
 }
 
 .icon {
-  width: 20px;
-  height: 20px;
-  margin-right: 5px;
-  margin-left: 5px;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-right: 0.25rem;
 }
 
 .gems {
-  height: 28px;
-  width: 28px;
+  height: 1.55rem;
+  width: 1.55rem;
 }
 /* Header end */
 
 .block {
   height: 100%;
+}
+
+@media (max-width: 420px) {
+  .level {
+    font-size: 0.72rem;
+  }
+
+  .resources {
+    font-size: 0.8rem;
+  }
 }
 
 .div {
