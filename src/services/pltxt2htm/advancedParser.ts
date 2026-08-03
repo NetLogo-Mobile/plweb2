@@ -5,6 +5,7 @@ import mermaid from 'mermaid'
 import DOMPurify from 'dompurify'
 import renderMathInElement from 'katex/contrib/auto-render/auto-render.js'
 import 'katex/dist/katex.min.css'
+import './rendering.css'
 import storageManager from '@storage/index'
 import { getPath } from '@services/utils'
 
