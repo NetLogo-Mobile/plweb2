@@ -36,10 +36,7 @@
           <!-- <n-gi>
             <Actions />
           </n-gi> -->
-          <n-gi
-            v-for="block in blocks.filter((i) => i.Summaries.length > 0)"
-            :key="getBlockKey(block)"
-          >
+          <n-gi v-for="block in visibleBlocks" :key="getBlockKey(block)">
             <div class="block">
               <TopicBlock v-if="isTopicBlock(block)" :block="block" />
               <Block v-else :block="block" :maxProjectsPerBlock="maxProjectsPerBlock" />
@@ -53,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onActivated } from 'vue'
+import { computed, onActivated, onMounted, onUnmounted, ref } from 'vue'
 import { NGi, NGrid } from 'naive-ui'
 import router from '../router'
 import { checkLogin, getPath, getUserUrl } from '@services/utils'
@@ -78,6 +75,7 @@ import type {
 
 const isLoading = ref(true)
 const blocks = ref<Array<ListBlock | TopicBlockType>>([])
+const visibleBlocks = computed(() => blocks.value.filter((block) => block.Summaries.length > 0))
 const { t } = useI18n()
 
 function isTopicBlock(block: ListBlock | TopicBlockType): block is TopicBlockType {
@@ -110,7 +108,10 @@ const user =
 
 const { blockItemsPerRow, maxProjectsPerBlock } = useResponsive()
 
+let isMounted = false
+
 onMounted(async () => {
+  isMounted = true
   // First render from cache, then update it
   async function processAuthInfo() {
     const ua = sm.getObj('userAuthInfo')
@@ -120,6 +121,7 @@ onMounted(async () => {
         sm.remove('userAuthInfo')
         return
       }
+      if (!isMounted) return
       user.value = {
         coins: res.Data.User.Gold,
         gems: res.Data.User.Diamond,
@@ -132,6 +134,7 @@ onMounted(async () => {
   }
   async function processHomepageProjects() {
     const res = await login(null, null)
+    if (!isMounted) return
     loadPageData(res)
   }
   await Promise.allSettled([processAuthInfo(), processHomepageProjects()])
@@ -145,7 +148,7 @@ onActivated(() => {
   })
 })
 
-Emitter.on('userLogin', (res) => {
+function handleUserLogin(res: ResultOf<Users['Authenticate']>) {
   if (!res.Data?.User) return
   user.value = {
     coins: res.Data.User.Gold,
@@ -155,6 +158,13 @@ Emitter.on('userLogin', (res) => {
     avatarUrl: getUserUrl(res.Data.User),
     ID: res.Data.User.ID,
   }
+}
+
+Emitter.on('userLogin', handleUserLogin)
+
+onUnmounted(() => {
+  isMounted = false
+  Emitter.off('userLogin', handleUserLogin)
 })
 
 Emitter.on('loginRequired', () => {
