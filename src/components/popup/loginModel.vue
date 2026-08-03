@@ -99,6 +99,7 @@ import { getPath } from '@services/utils'
 import { NInput, NTabPane, NButton, NForm, NTabs, NFormItemRow, NCard } from 'naive-ui'
 import Emitter from '@services/eventEmitter'
 import { showMessage } from '@popup/naiveui'
+import { rememberAccount } from '@services/accountSwitcher'
 
 const emailOrPhone = ref('')
 const loginPassword = ref('')
@@ -112,6 +113,7 @@ async function handlePasswordLogin() {
   let res = await login(emailOrPhone.value, loginPassword.value, false)
   if (res.Status === 200) {
     sm.setObj('userInfo', res.Data.User)
+    rememberAccount(res.Data.User, sm.getObj('userAuthInfo').value)
     Emitter.emit('userLogin', res)
     close()
   } else {

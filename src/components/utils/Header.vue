@@ -3,6 +3,7 @@
     <slot></slot>
     <!-- @see https://icomoon.io/app/ -->
     <div class="buttons">
+      <div v-if="savedAccounts.length > 1" class="account-switch" @click="showAccountSwitcher">⇄</div>
       <div class="logout" @click="logout">
         <svg width="25" height="25" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -33,7 +34,11 @@
 <script setup lang="ts">
 import router from '../../router/index'
 import { ref } from 'vue'
+import storageManager from '@storage/index'
+import { getSavedAccounts, switchAccount } from '@services/accountSwitcher'
+import showActionSheet from '@popup/actionSheet'
 let isFullScreen = ref(false)
+const savedAccounts = ref(getSavedAccounts())
 
 function toggleFullScreen() {
   if (!document.fullscreenElement) {
@@ -53,13 +58,23 @@ function toggleFullScreen() {
  *  @deprecated
  */
 function logout() {
-  localStorage.clear()
-  // This is not merely to clear the storage, mabye an error happened in our storage system so the user try to logout
-  // But we should remain the cookie notice
-  localStorage.setItem('cookieConsent', '{"value":true,"time":1785328995457}')
+  storageManager.remove('userInfo')
+  storageManager.remove('userAuthInfo')
   router.push({ name: 'Home' }).then(() => {
     window.location.reload()
   })
+}
+
+function showAccountSwitcher() {
+  showActionSheet(
+    savedAccounts.value.map((account) => ({ label: account.user.Nickname || account.user.ID })),
+    (index) => {
+      const account = savedAccounts.value[index]
+      if (!account) return
+      switchAccount(account)
+      window.location.reload()
+    },
+  )
 }
 </script>
 
