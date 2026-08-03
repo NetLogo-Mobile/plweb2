@@ -1,7 +1,7 @@
 name: Dependabot auto-merge
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, closed]
 
 concurrency:
   group: dependabot-automerge-${{ github.event.pull_request.number }}
@@ -15,7 +15,9 @@ permissions:
 jobs:
   dependabot:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    if: >-
+      github.event.action != 'closed' &&
+      github.event.pull_request.user.login == 'dependabot[bot]'
     steps:
       - name: Dependabot metadata
         id: metadata
@@ -37,27 +39,16 @@ jobs:
           PR_URL: ${{github.event.pull_request.html_url}}
           GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
-      - name: Dispatch deployment after merge
-        if: steps.metadata.outputs.update-type != 'version-update:semver-major'
-        run: |
-          for attempt in {1..60}; do
-            state="$(gh pr view "$PR_URL" --json state --jq '.state')"
-
-            if [ "$state" = "MERGED" ]; then
-              gh workflow run build.yml --ref main
-              exit 0
-            fi
-
-            if [ "$state" = "CLOSED" ]; then
-              echo "Dependabot PR was closed without merging."
-              exit 0
-            fi
-
-            sleep 30
-          done
-
-          echo "Timed out waiting for the Dependabot PR to merge."
-          exit 1
+  deploy-after-dependabot-merge:
+    runs-on: ubuntu-latest
+    if: >-
+      github.event.action == 'closed' &&
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      github.event.pull_request.base.ref == 'main' &&
+      !contains(github.event.pull_request.title, 'pltxt2htm')
+    steps:
+      - name: Trigger deployment
+        run: gh workflow run build.yml --ref main
         env:
-          PR_URL: ${{github.event.pull_request.html_url}}
-          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
