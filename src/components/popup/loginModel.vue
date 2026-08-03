@@ -111,7 +111,7 @@ const { close } = defineProps<LoginModelProps>()
 
 async function handlePasswordLogin() {
   let res = await login(emailOrPhone.value, loginPassword.value, false)
-  if (res.Status === 200) {
+  if (res.Status === 200 && res.Data?.User) {
     sm.setObj('userInfo', res.Data.User)
     rememberAccount(res.Data.User, sm.getObj('userAuthInfo').value)
     Emitter.emit('userLogin', res)

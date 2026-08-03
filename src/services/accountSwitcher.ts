@@ -13,7 +13,7 @@ export function rememberAccount(user: UserInfo, auth: UserAuthInfo | null) {
     { user, auth, updatedAt: Date.now() },
     ...getSavedAccounts().filter((account) => account.user.ID !== user.ID),
   ].slice(0, MAX_SAVED_ACCOUNTS)
-  storageManager.setObj('savedAccounts', next)
+  storageManager.setObj('savedAccounts', next, 30 * 24 * 60 * 60 * 1000)
 }
 
 export function switchAccount(account: SavedAccount) {

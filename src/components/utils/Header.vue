@@ -3,7 +3,7 @@
     <slot></slot>
     <!-- @see https://icomoon.io/app/ -->
     <div class="buttons">
-      <div v-if="savedAccounts.length > 1" class="account-switch" @click="showAccountSwitcher">⇄</div>
+      <div v-if="savedAccounts.length > 0" class="account-switch" @click="showAccountSwitcher">⇄</div>
       <div class="logout" @click="logout">
         <svg width="25" height="25" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
           <path
