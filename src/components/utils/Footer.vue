@@ -33,7 +33,7 @@
         </svg>
         <span>{{ $t('footer.blackHole') }}</span>
       </router-link>
-      <router-link to="/lab" class="lab-link">
+      <router-link to="/lab">
         <svg
           fill="none"
           stroke="currentColor"
@@ -47,8 +47,7 @@
             stroke-width="2"
           ></path>
         </svg>
-        <span>我的</span>
-        <span class="lab-label">{{ $t('footer.myLab') }}</span>
+        <span>{{ $t('footer.myLab') }}</span>
       </router-link>
       <router-link to="/f">
         <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -122,14 +121,6 @@ footer {
   border-top: 1px solid #e5e7eb;
   box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.1);
   z-index: 50;
-}
-
-.lab-link > span {
-  display: none;
-}
-
-.lab-link > .lab-label {
-  display: inline;
 }
 
 nav {
