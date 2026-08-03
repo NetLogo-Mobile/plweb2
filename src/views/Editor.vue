@@ -313,6 +313,7 @@ const allWorks = computed(() => [...worksByCategory.Discussion, ...worksByCatego
 const selectedWork = computed(
   () => allWorks.value.find((work) => work.id === selectedId.value) || null,
 )
+const hasLoadedWorks = ref(false)
 
 const dirty = computed(() => {
   const work = selectedWork.value
@@ -328,6 +329,7 @@ const currentTabWorks = computed(() => {
 
 function toggleSidebar() {
   showSidebar.value = !showSidebar.value
+  if (showSidebar.value && !hasLoadedWorks.value) void loadWorks()
 }
 
 function goBack() {
@@ -390,19 +392,21 @@ async function loadCategory(category: Category) {
 }
 
 async function loadWorks() {
+  if (loading.value) return
   if (!checkLogin(true)) {
     isLoggedIn.value = false
     return
   }
+  const preservedWork = selectedWork.value
   isLoggedIn.value = true
   loading.value = true
   try {
     await Promise.all([loadCategory('Discussion'), loadCategory('Experiment')])
-    if (allWorks.value.length > 0) {
-      selectWork(allWorks.value[0].id)
-    } else {
-      selectedId.value = ''
+    if (preservedWork && !allWorks.value.some((work) => work.id === preservedWork.id)) {
+      worksByCategory[preservedWork.category].unshift(preservedWork)
     }
+    hasLoadedWorks.value = true
+    if (allWorks.value.length === 0) selectedId.value = ''
   } catch (error) {
     showMessage('error', (error as Error).message, { duration: 4000 })
   } finally {
@@ -412,6 +416,7 @@ async function loadWorks() {
 
 async function loadMoreWorks(category: Category) {
   const key = category
+  if (!showSidebar.value || loading.value) return
   if (loadingMoreByCategory[key] || !hasMoreByCategory[key]) return
   loadingMoreByCategory[key] = true
   try {
@@ -537,21 +542,14 @@ async function updateTags() {
   tagModalVisible.value = false
 }
 
-async function loadWorkById(category: string, id: string) {
+let directLoadTicket = 0
+
+async function loadWorkById(category: Category, id: string) {
+  const ticket = ++directLoadTicket
   loading.value = true
   try {
-    const [work, discResult, expResult] = await Promise.all([
-      fetchEditableWork(category as any, id),
-      fetchEditableWorks(cursorsByCategory.Discussion, PAGE_SIZE),
-      fetchEditableWorks(cursorsByCategory.Experiment, PAGE_SIZE),
-    ])
-
-    cursorsByCategory.Discussion = discResult.cursors
-    cursorsByCategory.Experiment = expResult.cursors
-    worksByCategory.Discussion = discResult.works
-    worksByCategory.Experiment = expResult.works
-    hasMoreByCategory.Discussion = discResult.hasMore
-    hasMoreByCategory.Experiment = expResult.hasMore
+    const work = await fetchEditableWork(category, id)
+    if (ticket !== directLoadTicket) return
 
     const seen = new Set(allWorks.value.map((w) => w.id))
     if (!seen.has(work.id)) {
@@ -562,10 +560,10 @@ async function loadWorkById(category: string, id: string) {
     applyWork(work)
     detailLoading.value = false
   } catch (error) {
+    if (ticket !== directLoadTicket) return
     showMessage('error', (error as Error).message, { duration: 5000 })
-    loadWorks()
   } finally {
-    loading.value = false
+    if (ticket === directLoadTicket) loading.value = false
   }
 }
 
@@ -579,7 +577,7 @@ onMounted(() => {
     if (id) {
       loadWorkById(category, id)
     } else {
-      loadWorks()
+      loading.value = false
     }
   } else {
     loading.value = false
