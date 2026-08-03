@@ -69,6 +69,7 @@ import Footer from '../components/utils/Footer.vue'
 import Block from '../components/blocks/Block.vue'
 import TopicBlock from '../components/blocks/TopicBlock.vue'
 import { showLoginModel } from '@popup/index'
+import { rememberAccount } from '@services/accountSwitcher'
 import type {
   ListBlock,
   ResultOf,
@@ -120,6 +121,7 @@ onMounted(async () => {
         sm.remove('userAuthInfo')
         return
       }
+      rememberAccount(res.Data.User, sm.getObj('userAuthInfo').value)
       user.value = {
         coins: res.Data.User.Gold,
         gems: res.Data.User.Diamond,
