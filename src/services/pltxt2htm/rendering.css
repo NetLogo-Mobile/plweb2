@@ -1,4 +1,4 @@
-.katex-display,
+.pltxt-katex-display,
 .mermaid-diagram {
   clear: both;
   display: block;
@@ -8,8 +8,8 @@
   overflow-y: hidden;
 }
 
-.katex-display {
-  margin: 1em 0;
+.pltxt-katex-display {
+  margin: 1rem 0;
 }
 
 .mermaid-diagram {

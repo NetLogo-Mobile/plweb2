@@ -127,6 +127,9 @@ async function parse(source: string, context: ParseContext = {}) {
       ],
       ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
     })
+    tempDiv
+      .querySelectorAll('.katex-display')
+      .forEach((element) => element.classList.add('pltxt-katex-display'))
   }
 
   const enableMermaid = (storageManager.getObj('userConfig')?.value?.mermaid ?? 'on') === 'on'
