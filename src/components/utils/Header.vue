@@ -33,12 +33,20 @@
 
 <script setup lang="ts">
 import router from '../../router/index'
-import { ref } from 'vue'
+import { onUnmounted, ref } from 'vue'
 import storageManager from '@storage/index'
 import { getSavedAccounts, switchAccount } from '@services/accountSwitcher'
 import showActionSheet from '@popup/actionSheet'
-let isFullScreen = ref(false)
+import Emitter from '@services/eventEmitter'
+const isFullScreen = ref(false)
 const savedAccounts = ref(getSavedAccounts())
+
+function refreshSavedAccounts() {
+  savedAccounts.value = getSavedAccounts()
+}
+
+Emitter.on('userLogin', refreshSavedAccounts)
+onUnmounted(() => Emitter.off('userLogin', refreshSavedAccounts))
 
 function toggleFullScreen() {
   if (!document.fullscreenElement) {
@@ -66,6 +74,7 @@ function logout() {
 }
 
 function showAccountSwitcher() {
+  refreshSavedAccounts()
   showActionSheet(
     savedAccounts.value.map((account) => ({ label: account.user.Nickname || account.user.ID })),
     (index) => {
