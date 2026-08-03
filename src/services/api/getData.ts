@@ -15,13 +15,17 @@ import type { Device, Result, ResultOf, Users } from '../../pl-serve-type-main/t
 
 
 
+let loginPromptShown = false
+
 function handle403(npath: string, source: 'http' | 'body' = 'http') {
   sm.remove('userAuthInfo')
+  sm.remove('userInfo')
   window.$ErrorLogger.addBreadcrumb(
     'auth',
     `token cleared due to 403${source === 'body' ? ' body' : ''} on ${npath}`,
   )
-  if (sm.getObj('userInfo').value?.Nickname == null) {
+  if (!loginPromptShown) {
+    loginPromptShown = true
     Emitter.emit('loginRequired')
   }
 }
@@ -242,6 +246,7 @@ export async function login(
       } catch {
         // Ignore malformed error payloads.
       }
+      if (response.status === 403 && is_token) handle403('/Users/Authenticate')
       return {
         Status: response.status,
         Message: '',
@@ -255,6 +260,8 @@ export async function login(
       if (isRealLogin) {
         updateNotificationUnread(data.Data?.Statistic)
       }
+    } else if (data.Status === 403 && is_token) {
+      handle403('/Users/Authenticate', 'body')
     }
 
     if (isRealLogin && data.Token) {
@@ -266,6 +273,7 @@ export async function login(
         },
         30 * 24 * 60 * 60 * 1000,
       )
+      loginPromptShown = false
     }
 
     const userConfig = sm.getObj('userConfig').value || {}
