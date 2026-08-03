@@ -20,6 +20,7 @@
       <n-button
         v-if="selectedWork && !detailLoading"
         type="primary"
+        size="small"
         :loading="saving"
         :disabled="!dirty"
         @click="saveCurrentWork"
