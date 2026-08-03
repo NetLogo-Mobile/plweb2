@@ -152,7 +152,7 @@ const handleLoad = async () => {
 
   const messages = getMessagesResponse.Data.Comments
   const _length = messages.length
-  if (from) messages.shift()
+  if (from && from !== initialFrom) messages.shift()
   from = messages[messages.length - 1]?.ID ?? null
 
   items.value = [...items.value, ...messages]
