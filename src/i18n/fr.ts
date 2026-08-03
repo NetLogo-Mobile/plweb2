@@ -218,9 +218,12 @@ export default {
     notifications: 'Notifications',
   },
   myLab: {
+    title: 'Mon laboratoire',
     edit: 'Modifier',
+    view: 'Voir',
     empty: 'Aucune œuvre dans votre laboratoire.',
     loadFailed: 'Impossible de charger le laboratoire.',
+    loginRequired: 'Connectez-vous pour voir votre laboratoire.',
   },
   ui: {
     messages: {

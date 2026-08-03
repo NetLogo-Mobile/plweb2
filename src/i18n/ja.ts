@@ -217,9 +217,12 @@ export default {
     notifications: '通知',
   },
   myLab: {
+    title: 'マイラボ',
     edit: '編集',
+    view: '表示',
     empty: 'ラボにはまだ作品がありません。',
     loadFailed: 'ラボを読み込めませんでした。',
+    loginRequired: 'ラボを表示するにはログインしてください。',
   },
   ui: {
     messages: {

@@ -24,7 +24,7 @@ const routes: RouteRecordRaw[] = [
     path: '/lab',
     name: 'MyLab',
     component: () => import('../views/MyLab.vue'),
-    meta: { keepAlive: true },
+    meta: { keepAlive: false },
   },
   {
     path: '/p/:category/:id',

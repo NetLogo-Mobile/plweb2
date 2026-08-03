@@ -210,7 +210,14 @@ export default {
     friends: '好友',
     notifications: '通知',
   },
-  myLab: { edit: '编辑', empty: '实验室中还没有作品。', loadFailed: '无法加载我的实验室。' },
+  myLab: {
+    title: '我的实验室',
+    edit: '编辑',
+    view: '查看',
+    empty: '实验室中还没有作品。',
+    loadFailed: '无法加载我的实验室。',
+    loginRequired: '请先登录以查看我的实验室。',
+  },
   ui: {
     messages: {
       loading: '加载中...',

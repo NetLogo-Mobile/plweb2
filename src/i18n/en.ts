@@ -215,9 +215,12 @@ export default {
     notifications: 'Notifications',
   },
   myLab: {
+    title: 'My Lab',
     edit: 'Edit',
+    view: 'View',
     empty: 'No works in your lab yet.',
     loadFailed: 'Unable to load your lab.',
+    loginRequired: 'Sign in to view your lab.',
   },
   ui: {
     messages: {

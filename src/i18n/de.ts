@@ -218,9 +218,12 @@ export default {
     notifications: 'Benachrichtigungen',
   },
   myLab: {
+    title: 'Mein Labor',
     edit: 'Bearbeiten',
+    view: 'Ansehen',
     empty: 'Noch keine Werke im Labor.',
     loadFailed: 'Labor konnte nicht geladen werden.',
+    loginRequired: 'Melde dich an, um dein Labor anzusehen.',
   },
   ui: {
     messages: {
