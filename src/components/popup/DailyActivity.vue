@@ -419,20 +419,24 @@ async function claim(index: number) {
   const activity = selected.value
   const item = activity.Items[index]
   claimingIndex.value = index
-  const claimStatistic = item.Local ? buildClaimStatistic(activity, index) : props.statistic
-  const result = await getData('/Users/ReceiveBonus', {
-    ActivityID: activity.ID,
-    Index: index,
-    Statistic: claimStatistic,
-  })
-  claimingIndex.value = null
-
-  const sync = result.Data as Sync | null
-  if (result.Status === 200) {
-    emit('updated', sync ?? undefined)
-    showMessage('success', t('activity.rewardReceived'), { duration: 1600 })
-  } else {
-    showMessage('error', result.Message || t('activity.claimFailed'), { duration: 2500 })
+  try {
+    const claimStatistic = item.Local ? buildClaimStatistic(activity, index) : props.statistic
+    const result = await getData('/Users/ReceiveBonus', {
+      ActivityID: activity.ID,
+      Index: index,
+      Statistic: claimStatistic,
+    })
+    const sync = result.Data as Sync | null
+    if (result.Status === 200) {
+      emit('updated', sync ?? undefined)
+      showMessage('success', t('activity.rewardReceived'), { duration: 1600 })
+    } else {
+      showMessage('error', result.Message || t('activity.claimFailed'), { duration: 2500 })
+    }
+  } catch {
+    showMessage('error', t('activity.claimFailed'), { duration: 2500 })
+  } finally {
+    claimingIndex.value = null
   }
 }
 </script>
