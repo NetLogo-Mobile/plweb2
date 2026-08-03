@@ -1,7 +1,7 @@
 <template>
   <InfiniteScroll :has-more="!noMore" :initial-items="items" :marginTop="0" @load="handleLoad">
     <template #default="{ items }">
-      <div v-for="item in items as CommentResult[]" :key="item.ID">
+      <div v-for="item in items as CommentResult[]" :id="`comment-${item.ID}`" :key="item.ID">
         <MessageItem :message="item" @msgClick="handleMsgClick" @deleteMsg="deleteMsg" />
         <n-divider style="margin: 0" />
       </div>
@@ -27,17 +27,20 @@ import type {
 
 type PMessageItem = CommentResult
 
-const { ID, Category, upDate } = defineProps<{
+const { ID, Category, upDate, initialFrom = '', initialSkip = 0, targetCommentId = '' } = defineProps<{
   ID: string
   Category: CategoryType | 'User'
+  initialFrom?: string
+  initialSkip?: number
+  targetCommentId?: string
   upDate?: number
 }>()
 
 let items = ref<PMessageItem[]>([]) // 前端的消息列表  front-end message list
 const loading = ref(false)
 let noMore = ref(false)
-let skip = ref(0)
-let from: CommentResult['ID'] | null = null
+let skip = ref(initialSkip)
+let from: CommentResult['ID'] | null = initialFrom || null
 const { t } = useI18n()
 
 const emit = defineEmits(['msgClick'])
@@ -160,6 +163,12 @@ const handleLoad = async () => {
     showMessage('warning', t('ui.messages.noMore'), { duration: 1000 })
   }
   await nextTick()
+  if (targetCommentId && items.value.some((item) => item.ID === targetCommentId)) {
+    document.getElementById(`comment-${targetCommentId}`)?.scrollIntoView({
+      block: 'center',
+      behavior: 'smooth',
+    })
+  }
 }
 
 if (Category === 'User') checkLogin()

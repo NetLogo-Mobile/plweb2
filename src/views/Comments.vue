@@ -20,6 +20,9 @@
       <MessagesList
         :Category="routeCategory"
         :ID="route.params.id as string"
+        :initial-from="commentFrom"
+        :initial-skip="commentSkip"
+        :target-comment-id="commentFrom"
         :upDate="upDate"
         @msgClick="handleMsgClick"
       ></MessagesList>
@@ -53,6 +56,14 @@ import { getPath } from '@services/utils'
 const { t } = useI18n()
 const route = useRoute()
 const routeCategory = computed(() => getRouteCategory(route, 'Discussion'))
+const commentFrom = computed(() => {
+  const from = route.query.from
+  return typeof from === 'string' ? from : ''
+})
+const commentSkip = computed(() => {
+  const skip = Number(route.query.skip)
+  return Number.isSafeInteger(skip) && skip >= 0 ? skip : 0
+})
 let isLoading = ref(false)
 let replyID = ref('')
 let upDate = ref(0)
