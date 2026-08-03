@@ -308,6 +308,7 @@ const allWorks = computed(() => [...worksByCategory.Discussion, ...worksByCatego
 const selectedWork = computed(
   () => allWorks.value.find((work) => work.id === selectedId.value) || null,
 )
+const hasLoadedWorks = ref(false)
 
 const dirty = computed(() => {
   const work = selectedWork.value
@@ -323,6 +324,7 @@ const currentTabWorks = computed(() => {
 
 function toggleSidebar() {
   showSidebar.value = !showSidebar.value
+  if (showSidebar.value && !hasLoadedWorks.value) void loadWorks()
 }
 
 function goBack() {
@@ -393,6 +395,7 @@ async function loadWorks() {
   loading.value = true
   try {
     await Promise.all([loadCategory('Discussion'), loadCategory('Experiment')])
+    hasLoadedWorks.value = true
     if (allWorks.value.length > 0) {
       selectWork(allWorks.value[0].id)
     } else {
@@ -532,21 +535,10 @@ async function updateTags() {
   tagModalVisible.value = false
 }
 
-async function loadWorkById(category: string, id: string) {
+async function loadWorkById(category: Category, id: string) {
   loading.value = true
   try {
-    const [work, discResult, expResult] = await Promise.all([
-      fetchEditableWork(category as any, id),
-      fetchEditableWorks(cursorsByCategory.Discussion, PAGE_SIZE),
-      fetchEditableWorks(cursorsByCategory.Experiment, PAGE_SIZE),
-    ])
-
-    cursorsByCategory.Discussion = discResult.cursors
-    cursorsByCategory.Experiment = expResult.cursors
-    worksByCategory.Discussion = discResult.works
-    worksByCategory.Experiment = expResult.works
-    hasMoreByCategory.Discussion = discResult.hasMore
-    hasMoreByCategory.Experiment = expResult.hasMore
+    const work = await fetchEditableWork(category, id)
 
     const seen = new Set(allWorks.value.map((w) => w.id))
     if (!seen.has(work.id)) {
@@ -558,7 +550,6 @@ async function loadWorkById(category: string, id: string) {
     detailLoading.value = false
   } catch (error) {
     showMessage('error', (error as Error).message, { duration: 5000 })
-    loadWorks()
   } finally {
     loading.value = false
   }
@@ -574,7 +565,7 @@ onMounted(() => {
     if (id) {
       loadWorkById(category, id)
     } else {
-      loadWorks()
+      loading.value = false
     }
   } else {
     loading.value = false
