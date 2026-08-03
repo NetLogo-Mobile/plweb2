@@ -9,6 +9,7 @@ import type { NetworkInformation } from './networkInformation'
 let activeNotification: ReturnType<typeof showNotification> | null = null
 let currentState: NetworkState | null = null
 let listenerRegistered = false
+let statusUpdateTimer: number | null = null
 
 function isPoorConnection(connection?: NetworkInformation) {
   if (!connection) return false
@@ -43,11 +44,22 @@ function showNetworkNotification(state: Exclude<NetworkState, 'online'>) {
 
 function updateNetworkStatus() {
   const nextState = getNetworkState()
+
+  if (statusUpdateTimer !== null) {
+    window.clearTimeout(statusUpdateTimer)
+    statusUpdateTimer = null
+  }
   if (nextState === currentState) return
 
-  currentState = nextState
-  closeNotification()
-  if (nextState !== 'online') showNetworkNotification(nextState)
+  statusUpdateTimer = window.setTimeout(() => {
+    statusUpdateTimer = null
+    const stableState = getNetworkState()
+    if (stableState === currentState) return
+
+    currentState = stableState
+    closeNotification()
+    if (stableState !== 'online') showNetworkNotification(stableState)
+  }, 300)
 }
 
 export function unregisterNetworkStatusListener() {
@@ -56,6 +68,8 @@ export function unregisterNetworkStatusListener() {
   window.removeEventListener('online', updateNetworkStatus)
   window.removeEventListener('offline', updateNetworkStatus)
   getNetworkInformation()?.removeEventListener('change', updateNetworkStatus)
+  if (statusUpdateTimer !== null) window.clearTimeout(statusUpdateTimer)
+  statusUpdateTimer = null
   closeNotification()
   currentState = null
 }
