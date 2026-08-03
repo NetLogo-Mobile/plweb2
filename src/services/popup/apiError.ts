@@ -13,66 +13,68 @@ let current: {
   retry?: () => Promise<unknown> | void
 } | null = null
 
+function updateCurrentDialog(title: string, message: string, retry?: () => Promise<unknown> | void) {
+  if (!current) return false
+  current.title.value = title
+  current.message.value = message
+  current.retry = retry
+  return true
+}
+
+async function retryCurrent(close: () => void) {
+  if (!current?.retry) return
+  try {
+    const result = await current.retry()
+    if ((result as Result | null)?.Status === 200) {
+      showMessage('success', (i18n.global.t('ui.retrySuccess') as string) || 'Success')
+      close()
+    } else {
+      showMessage('error', (i18n.global.t('ui.retryFailed') as string) || 'Retry failed', {
+        duration: 3000,
+      })
+    }
+    return result
+  } catch (_error) {
+    showMessage('error', (i18n.global.t('ui.retryFailed') as string) || 'Retry failed', {
+      duration: 3000,
+    })
+  }
+}
+
 export function showAPiError(
   title: string,
   message: string,
   retry?: () => Promise<unknown> | void,
 ) {
-  // If there's already a dialog, update its content and retry handler and reuse it
-  if (current) {
-    current.title.value = title
-    current.message.value = message
-    current.retry = retry
-    return
-  }
+  if (updateCurrentDialog(title, message, retry)) return
 
   const titleRef = ref(title)
   const messageRef = ref(message)
 
   const div = document.createElement('div')
   document.body.appendChild(div)
+  let closed = false
 
   const app = createApp(ApiErrorDialog, {
-    // pass refs so the component can display live updates
     titleRef,
     messageRef,
     confirmLabel: (i18n.global.t('ui.ok') as string) || 'OK',
     cancelLabel: (i18n.global.t('ui.cancel') as string) || 'Cancel',
     confirmingLabel: (i18n.global.t('ui.retrying') as string) || 'Retrying...',
-    onConfirm: async () => {
-      if (!current?.retry) return
-      try {
-        const res = await current.retry()
-        if ((res as Result | null)?.Status === 200) {
-          showMessage('success', (i18n.global.t('ui.retrySuccess') as string) || 'Success')
-          close()
-        } else {
-          showMessage('error', (i18n.global.t('ui.retryFailed') as string) || 'Retry failed', {
-            duration: 3000,
-          })
-        }
-        return res
-      } catch (_e) {
-        showMessage('error', (i18n.global.t('ui.retryFailed') as string) || 'Retry failed', {
-          duration: 3000,
-        })
-      }
-    },
+    onConfirm: () => retryCurrent(close),
     close: close,
   })
 
   app.use(i18n)
-  app.mount(div)
 
   function close() {
-    try {
-      app.unmount()
-      div.remove()
-    } catch (_e) {
-      // ignore
-    }
+    if (closed) return
+    closed = true
+    app.unmount()
+    div.remove()
     if (current && current.close === close) current = null
   }
 
   current = { close, title: titleRef, message: messageRef, retry }
+  app.mount(div)
 }

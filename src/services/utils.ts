@@ -315,61 +315,37 @@ export function decodeHrefToQueryObj(base64Input: string) {
  * @see i18n.ts
  * @returns 格式化后的日期文本 Formatted date text
  */
- 
-export function formatDate(id: string, showRelative?: boolean, type?: string): string {
-  // 1. 提取并转换16进制时间戳
-  // 1. Extract and convert 16-bit timestamp
-  const hexTimestamp = id.substring(0, 8)
-  const timestampSeconds = parseInt(hexTimestamp, 16)
-  const date = new Date(timestampSeconds * 1000)
-  const now = new Date()
-
-  // 2. 处理相对时间 (当 showRelative=true 且日期在3天内)
-  // 2. Handle relative time (when showRelative=true and date is within 3 days)
-  if (showRelative) {
-    const diffDays = differenceInCalendarDays(now, date)
-
-    // 当天的时间处理
-    // Time processing for today
-    if (isSameDay(date, now)) {
-      const diffMinutes = differenceInMinutes(now, date)
-
-      if (diffMinutes < 1) {
-        return i18n.global.t('date.justNow') as string // "刚刚"
-      } else if (diffMinutes < 60) {
-        return i18n.global.t('date.minutesAgo', {
-          minutes: diffMinutes,
-        }) as string // "X分钟前"
-      } else {
-        const diffHours = differenceInHours(now, date)
-        return i18n.global.t('date.hoursAgo', { hours: diffHours }) as string // "X小时前"
-      }
-    }
-    // 昨天
-    // Yesterday
-    else if (diffDays === 1) {
-      return `${i18n.global.t('date.yesterday') as string} ${i18n.global.d(date, 'time')}`
-    }
-    // 前天
-    // Day before yesterday
-    else if (diffDays === 2) {
-      return `${i18n.global.t('date.dayBeforeYesterday') as string} ${i18n.global.d(date, 'time')}`
-    }
+function formatRelativeDate(date: Date, now: Date): string | null {
+  if (isSameDay(date, now)) {
+    const minutes = differenceInMinutes(now, date)
+    if (minutes < 1) return i18n.global.t('date.justNow') as string
+    if (minutes < 60) return i18n.global.t('date.minutesAgo', { minutes }) as string
+    return i18n.global.t('date.hoursAgo', {
+      hours: differenceInHours(now, date),
+    }) as string
   }
+  const days = differenceInCalendarDays(now, date)
+  if (days === 1)
+    return `${i18n.global.t('date.yesterday') as string} ${i18n.global.d(date, 'time')}`
+  if (days === 2)
+    return `${i18n.global.t('date.dayBeforeYesterday') as string} ${i18n.global.d(date, 'time')}`
+  return null
+}
 
-  // 3. 常规日期格式化
-  // 3. Regular date formatting
+function formatAbsoluteDate(date: Date, now: Date, type?: string) {
   if (type) {
     return i18n.global.d(date, type)
-  } else {
-    if (isSameDay(date, now)) {
-      return i18n.global.d(date, 'time')
-    } else if (isThisYear(date)) {
-      return i18n.global.d(date, 'monthDay')
-    } else {
-      return i18n.global.d(date, 'yearMonthDay')
-    }
   }
+  if (isSameDay(date, now)) return i18n.global.d(date, 'time')
+  if (isThisYear(date)) return i18n.global.d(date, 'monthDay')
+  return i18n.global.d(date, 'yearMonthDay')
+}
+
+export function formatDate(id: string, showRelative?: boolean, type?: string): string {
+  const date = new Date(parseInt(id.substring(0, 8), 16) * 1000)
+  const now = new Date()
+  const relative = showRelative ? formatRelativeDate(date, now) : null
+  return relative ?? formatAbsoluteDate(date, now, type)
 }
 
 /**
@@ -377,22 +353,25 @@ export function formatDate(id: string, showRelative?: boolean, type?: string): s
  * @param obj Incoming obkect which may contains key "token|authcode"
  * @returns any
  */
-export function removeToken<T>(obj: T): T {
-  if (obj && typeof obj === 'object') {
-    const record = obj as Record<string, unknown>
-    for (const key in record) {
-      if (Object.prototype.hasOwnProperty.call(record, key)) {
-        if (key === 'token' || key === 'authCode' || key === 'Token' || key === 'AuthCode') {
-          const value = record[key]
-          if (typeof value === 'string') {
-            record[key] = `${value.slice(0, 6)}******`
-          }
-        } else if (typeof record[key] === 'object') {
-          removeToken(record[key])
-        }
-      }
+function maskSensitiveValues(value: object, visited: WeakSet<object>) {
+  if (visited.has(value)) return
+  visited.add(value)
+  const sensitiveKeys = new Set(['token', 'authCode', 'Token', 'AuthCode'])
+  const record = value as Record<string, unknown>
+  for (const [key, nestedValue] of Object.entries(record)) {
+    if (sensitiveKeys.has(key) && typeof nestedValue === 'string') {
+      record[key] = `${nestedValue.slice(0, 6)}******`
+      continue
+    }
+    if (nestedValue && typeof nestedValue === 'object') {
+      maskSensitiveValues(nestedValue, visited)
     }
   }
+}
+
+export function removeToken<T>(obj: T): T {
+  if (!obj || typeof obj !== 'object') return obj
+  maskSensitiveValues(obj, new WeakSet())
   return obj
 }
 

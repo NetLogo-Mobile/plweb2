@@ -118,32 +118,38 @@ document.addEventListener(
 
 function parseCopiedRouteTarget(input: string): { path: string; needLogin: boolean } | null {
   const text = input.trim()
-
-  const workTag = text.match(/<(experiment|discussion)=([a-f0-9]{24})>/i)
-  if (workTag?.[1] && workTag[2]) {
-    const category = workTag[1].toLowerCase() === 'discussion' ? 'Discussion' : 'Experiment'
-    return { path: `/p/${category}/${workTag[2]}`, needLogin: false }
+  const matchers: Array<(value: string) => { path: string; needLogin: boolean } | null> = [
+    matchWorkTag,
+    (value) => matchRoute(value, /#\/p\/(Discussion)\/([a-f0-9]{24})/i, false),
+    matchDiscussionQuery,
+    (value) => matchRoute(value, /\/p\/(Discussion|Experiment)\/([a-f0-9]{24})/i, false),
+    (value) => matchRoute(value, /(?:<user=|\/u\/)([a-f0-9]{24})/i, true),
+  ]
+  for (const matcher of matchers) {
+    const target = matcher(text)
+    if (target) return target
   }
-
-  const discussionHash = text.match(/#\/p\/Discussion\/([a-f0-9]{24})/i)
-  if (discussionHash?.[1]) return { path: `/p/Discussion/${discussionHash[1]}`, needLogin: false }
-
-  const discussionQuery = text.match(/\?[\w-]+-([a-f0-9]{24})\?/i)
-  if (discussionQuery?.[1]) return { path: `/p/Discussion/${discussionQuery[1]}`, needLogin: false }
-
-  const userTag = text.match(/<user=([a-f0-9]{24})>/i)
-  if (userTag?.[1]) return { path: `/u/${userTag[1]}`, needLogin: true }
-
-  // Match direct /p/Discussion/ or /p/Experiment/ or /u/ paths
-  const directPath = text.match(/\/p\/(Discussion|Experiment)\/([a-f0-9]{24})/i)
-  if (directPath?.[1] && directPath[2]) {
-    return { path: `/p/${directPath[1]}/${directPath[2]}`, needLogin: false }
-  }
-
-  const directUser = text.match(/\/u\/([a-f0-9]{24})/i)
-  if (directUser?.[1]) return { path: `/u/${directUser[1]}`, needLogin: true }
-
   return null
+}
+
+function matchWorkTag(text: string) {
+  const match = text.match(/<(experiment|discussion)=([a-f0-9]{24})>/i)
+  if (!match?.[1] || !match[2]) return null
+  const category = match[1].toLowerCase() === 'discussion' ? 'Discussion' : 'Experiment'
+  return { path: `/p/${category}/${match[2]}`, needLogin: false }
+}
+
+function matchRoute(text: string, pattern: RegExp, needLogin: boolean) {
+  const match = text.match(pattern)
+  if (!match) return null
+  const id = match[2] || match[1]
+  const category = match[2] ? match[1] : null
+  return { path: category ? `/p/${category}/${id}` : `/u/${id}`, needLogin }
+}
+
+function matchDiscussionQuery(text: string) {
+  const match = text.match(/\?[\w-]+-([a-f0-9]{24})\?/i)
+  return match?.[1] ? { path: `/p/Discussion/${match[1]}`, needLogin: false } : null
 }
 
 let lastCheckedClipboard = ''

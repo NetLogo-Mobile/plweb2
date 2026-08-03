@@ -23,8 +23,8 @@
               :category="data.Category"
             />
             <Tag
-              v-for="(tag, index) in data.Tags.filter((t) => !!t)"
-              :key="index"
+              v-for="tag in filteredTags"
+              :key="tag"
               :tag="tag"
               :category="data.Category"
             />
@@ -130,8 +130,8 @@
             <div class="right-bottom-container">
               <div class="message-wrapper">
                 <MessageList
-                  v-if="route.params.id"
-                  :ID="route.params.id as string"
+                  v-if="routeSummaryId"
+                  :ID="routeSummaryId"
                   :Category="routeCategory"
                   :upDate="upDate"
                   @msgClick="handleMsgClick"
@@ -159,7 +159,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onActivated, onMounted } from 'vue'
+import { computed, onActivated, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getRouteCategory } from '../router/category'
 import { canEditSummary } from '@services/editor/cloudWorks'
@@ -180,7 +180,12 @@ import { useI18n } from 'vue-i18n'
 import showActionSheet from '@popup/actionSheet.ts'
 import { showMessage } from '@popup/naiveui'
 import storageManager from '@storage/index.ts'
-import type { Category, CommentResult, Summary } from '@services/../pl-serve-type-main/type/main'
+import type {
+  Category,
+  CommentResult,
+  Result,
+  Summary,
+} from '@services/../pl-serve-type-main/type/main'
 
 const comment = ref('')
 const isLoading = ref(false)
@@ -191,8 +196,12 @@ const selectedTab = ref('Intro')
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
-const returnImagePath = ref(getPath('/@base/assets/library/Navigation-Return.png'))
+const returnImagePath = getPath('/@base/assets/library/Navigation-Return.png')
 const routeCategory = computed(() => getRouteCategory(route, 'Experiment'))
+const routeSummaryId = computed(() => {
+  const id = route.params.id
+  return Array.isArray(id) ? id[0] || '' : id || ''
+})
 
 const data = ref<Summary>({
   $type: 'Quantum.Models.Contents.Summary, Quantum Models',
@@ -234,9 +243,10 @@ const data = ref<Summary>({
 })
 
 const defaultCoverUrl = getPath('/@base/assets/messages/Experiment-Default.png')
-let coverUrl = ref(defaultCoverUrl)
-let avatarUrl = ref(getUserUrl(data.value.User))
-let avatarLoaded = ref(false)
+const coverUrl = ref(defaultCoverUrl)
+const avatarUrl = ref(getUserUrl(data.value.User))
+const avatarLoaded = ref(false)
+const filteredTags = computed(() => data.value.Tags.filter(Boolean))
 
 const descriptionSource = computed(() => {
   const description = data.value.Description
@@ -262,14 +272,20 @@ function countReadableWords(source: string) {
 const canEdit = computed(() => canEditSummary(data.value))
 
 function goToEditor() {
-  router.push(`/e/${routeCategory.value}/${route.params.id}?sidebar=0`)
+  router.push(`/e/${routeCategory.value}/${routeSummaryId.value}?sidebar=0`)
 }
 
+let summaryRequestId = 0
+
 async function fetchSummary() {
+  const contentId = routeSummaryId.value
+  const category = routeCategory.value
+  const requestId = ++summaryRequestId
   const res = await getData('/Contents/GetSummary', {
-    ContentID: route.params.id as string,
-    Category: routeCategory.value,
+    ContentID: contentId,
+    Category: category,
   })
+  if (requestId !== summaryRequestId) return
   if (res.Status !== 200) {
     showAPiError(
       t('errors.apiErrorTitle'),
@@ -281,8 +297,8 @@ async function fetchSummary() {
       fetchSummary,
     )
     const _req = removeToken({
-      ContentID: route.params.id as string,
-      Category: routeCategory.value,
+      ContentID: contentId,
+      Category: category,
     })
     const _res = removeToken(res)
     window.$ErrorLogger.captureApiError('POST', '/Contents/GetSummary', res.Status, _res, _req)
@@ -299,12 +315,22 @@ async function fetchSummary() {
     referrerPolicy: 'no-referrer',
     mode: 'no-cors',
   })
+  if (requestId !== summaryRequestId) return
   coverUrl.value = getCoverUrl(res.Data)
 }
 
-onMounted(() => {
-  fetchSummary()
-})
+watch(
+  [routeSummaryId, routeCategory],
+  () => {
+    selectedTab.value = 'Intro'
+    comment.value = ''
+    replyID.value = ''
+    coverUrl.value = defaultCoverUrl
+    avatarLoaded.value = false
+    void fetchSummary()
+  },
+  { immediate: true },
+)
 
 function handleMsgClick(item: CommentResult) {
   replyID.value = item.UserID
@@ -316,7 +342,7 @@ async function handleEnter() {
     comment,
     isLoading,
     routeCategory.value as Category,
-    route.params.id as string,
+    routeSummaryId.value,
     replyID,
     upDate,
   )
@@ -329,7 +355,7 @@ function goBack() {
 function goToExperiment() {
   const category = routeCategory.value.toLowerCase()
   const contentType = category === 'experiment' ? 'experiment' : 'discussion'
-  const target = `physics://chinese/${contentType}/${route.params.id as string}`
+  const target = `physics://chinese/${contentType}/${routeSummaryId.value}`
   window.location.href = target
 }
 
@@ -341,280 +367,166 @@ async function copy(text: string) {
     showMessage('error', t('ui.messages.copyFailed'), { duration: 2000 })
   }
 }
-// eslint-disable-next-line max-lines-per-function
+function summaryRequest() {
+  return getData('/Contents/GetSummary', {
+    ContentID: routeSummaryId.value,
+    Category: routeCategory.value,
+  })
+}
+
+function confirmCoverRequest(image: number) {
+  return getData('/Contents/ConfirmExperiment', {
+    Category: routeCategory.value,
+    SummaryID: routeSummaryId.value,
+    Image: image,
+    Extension: '.png',
+  })
+}
+
+function reportRequestError(
+  path: string,
+  response: Result,
+  request: unknown,
+  retry: () => Promise<unknown> | void,
+) {
+  showAPiError(
+    t('errors.apiErrorTitle'),
+    t('errors.apiErrorMessage', {
+      path,
+      status: response.Status,
+      message: response.Message || '',
+    }),
+    retry,
+  )
+  const result = removeToken(response)
+  window.$ErrorLogger.captureApiError('POST', path, response.Status, result, removeToken(request))
+  console.error(`${path} returned ${response.Status}`, result)
+}
+
+async function confirmCover(image: number) {
+  const request = {
+    Category: routeCategory.value,
+    SummaryID: routeSummaryId.value,
+    Image: image,
+    Extension: '.png',
+  }
+  const response = await confirmCoverRequest(image)
+  if (response.Status === 200) return true
+  reportRequestError('/Contents/ConfirmExperiment', response, request, () =>
+    confirmCoverRequest(image),
+  )
+  return false
+}
+
+async function submitCover(file: File, summary: Summary) {
+  const request = {
+    Request: { FileSize: -Math.abs(file.size), Extension: '.jpg' },
+    Summary: summary,
+  }
+  const response = await getData('/Contents/SubmitExperiment', request)
+  if (response.Status === 200) return response.Data
+  reportRequestError('/Contents/SubmitExperiment', response, request, () =>
+    getData('/Contents/SubmitExperiment', request),
+  )
+  return null
+}
+
+async function uploadCoverFile(file: File, token: { Authorization: string; Policy: string }) {
+  const form = new FormData()
+  form.append('authorization', token.Authorization || '')
+  form.append('policy', token.Policy || '')
+  form.append('file', file, 'cover.jpg')
+  await fetch('https://v0.api.upyun.com/qphysics', { method: 'POST', body: form })
+}
+
+let coverRefreshTimeout: ReturnType<typeof window.setTimeout> | undefined
+
+async function refreshCover() {
+  const response = await summaryRequest()
+  if (response.Status !== 200) {
+    const request = { ContentID: routeSummaryId.value, Category: routeCategory.value }
+    reportRequestError('/Contents/GetSummary', response, request, summaryRequest)
+    return
+  }
+  coverUrl.value = getCoverUrl(response.Data)
+}
+
+async function changeCover(file: File) {
+  const summaryResponse = await summaryRequest()
+  if (summaryResponse.Status !== 200 || !summaryResponse.Data) {
+    const request = { ContentID: routeSummaryId.value, Category: routeCategory.value }
+    reportRequestError('/Contents/GetSummary', summaryResponse, request, summaryRequest)
+    return
+  }
+  const image = (summaryResponse.Data.Image || 0) + 1
+  if (!(await confirmCover(image))) return
+  const submission = await submitCover(file, summaryResponse.Data)
+  if (!submission?.Token) return
+  try {
+    await uploadCoverFile(file, submission.Token)
+    if (!(await confirmCover(image))) return
+  } catch {
+    showMessage('error', t('ui.messages.uploadFailed'), { duration: 2000 })
+    return
+  }
+  showMessage('success', t('ui.messages.uploadSuccess'), { duration: 2000 })
+  window.clearTimeout(coverRefreshTimeout)
+  coverRefreshTimeout = window.setTimeout(refreshCover, 800)
+}
+
+async function onCoverSelected(event: Event) {
+  const file = (event.target as HTMLInputElement | null)?.files?.[0]
+  if (!file) return
+  try {
+    await changeCover(file)
+  } catch {
+    showMessage('error', t('ui.messages.changeCoverFailed'), { duration: 2000 })
+  }
+}
+
+function selectCover() {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = 'image/*'
+  input.onchange = onCoverSelected
+  input.click()
+}
+
+function runSubjectAction(action: string | undefined) {
+  const category = routeCategory.value.toLowerCase()
+  const actions: Record<string, () => void> = {
+    [t('expeSummary.copyID')]: () => void copy(data.value.ID),
+    [t('expeSummary.copyInternalLink')]: () =>
+      void copy(`<${category}=${routeSummaryId.value}>${data.value.Subject}</${category}>`),
+    [t('expeSummary.copyExternalLink')]: () =>
+      void copy(`<external=${window.location.href}>${data.value.Subject}[web]</external>`),
+    [t('expeSummary.changeCover')]: selectCover,
+    [t('expeSummary.editWork')]: goToEditor,
+  }
+  if (action) actions[action]?.()
+}
+
 function copySubject() {
-  const list: { label: string }[] = [
+  const list = [
     { label: t('expeSummary.copyID') },
     { label: t('expeSummary.copyInternalLink') },
     { label: t('expeSummary.copyExternalLink') },
   ]
-  if (data.value.User.ID === storageManager.getObj('userInfo')?.value?.ID) {
+  if (data.value.User.ID === storageManager.getObj('userInfo').value?.ID)
     list.push({ label: t('expeSummary.changeCover') })
-  }
-  if (canEdit.value) {
-    list.push({ label: t('expeSummary.editWork') })
-  }
-  // eslint-disable-next-line max-lines-per-function
-  showActionSheet(list, (idx) => {
-    const action = list[idx]?.label
-    if (action === t('expeSummary.copyID')) {
-      copy(data.value.ID)
-    } else if (action === t('expeSummary.copyInternalLink')) {
-      copy(
-        `<${routeCategory.value.toLowerCase()}=${route.params.id}>${data.value.Subject}</${routeCategory.value.toLowerCase()}>`,
-      )
-    } else if (action === t('expeSummary.copyExternalLink')) {
-      copy(`<external=${window.location.href}>${data.value.Subject}[web]</external>`)
-    } else if (action === t('expeSummary.changeCover')) {
-      try {
-        // ask user to select an image
-        const input = document.createElement('input')
-        input.type = 'file'
-        input.accept = 'image/*'
-        // eslint-disable-next-line max-lines-per-function
-        input.onchange = async (e: Event) => {
-          try {
-            const target = e.target as HTMLInputElement | null
-            const file = target?.files?.[0]
-            if (!file) return
-            const summaryRes = await getData('/Contents/GetSummary', {
-              ContentID: route.params.id as string,
-              Category: routeCategory.value,
-            })
-            if (summaryRes.Status !== 200) {
-              showAPiError(
-                t('errors.apiErrorTitle'),
-                t('errors.apiErrorMessage', {
-                  path: '/Contents/GetSummary',
-                  status: summaryRes.Status,
-                  message: summaryRes?.Message || '',
-                }),
-                async () => {
-                  return getData('/Contents/GetSummary', {
-                    ContentID: route.params.id as string,
-                    Category: routeCategory.value,
-                  })
-                },
-              )
-              const _req = removeToken({
-                ContentID: route.params.id,
-                Category: routeCategory.value,
-              })
-              const _res = removeToken(summaryRes)
-              window.$ErrorLogger.captureApiError(
-                'POST',
-                '/Contents/GetSummary',
-                summaryRes.Status,
-                _res,
-                _req,
-              )
-              console.error(`/Contents/GetSummary returned ${summaryRes.Status}`, _res)
-              return
-            }
-            if (!summaryRes.Data) return
-            const imageIndex = (summaryRes.Data.Image || 0) + 1
-            const confirmRes = await getData('/Contents/ConfirmExperiment', {
-              Category: routeCategory.value,
-              SummaryID: route.params.id as string,
-              Image: imageIndex,
-              Extension: '.png',
-            })
-            if (confirmRes.Status !== 200) {
-              showAPiError(
-                t('errors.apiErrorTitle'),
-                t('errors.apiErrorMessage', {
-                  path: '/Contents/ConfirmExperiment',
-                  status: confirmRes.Status,
-                  message: confirmRes?.Message || '',
-                }),
-                async () => {
-                  return getData('/Contents/ConfirmExperiment', {
-                    Category: routeCategory.value,
-                    SummaryID: route.params.id as string,
-                    Image: imageIndex,
-                    Extension: '.png',
-                  })
-                },
-              )
-              const _req = removeToken({
-                Category: routeCategory.value,
-                SummaryID: route.params.id,
-                Image: imageIndex,
-                Extension: '.png',
-              })
-              const _res = removeToken(confirmRes)
-              window.$ErrorLogger.captureApiError(
-                'POST',
-                '/Contents/ConfirmExperiment',
-                confirmRes.Status,
-                _res,
-                _req,
-              )
-              console.error(`/Contents/ConfirmExperiment returned ${confirmRes.Status}`, _res)
-              return
-            }
-            const submitRes = await getData('/Contents/SubmitExperiment', {
-              Request: {
-                FileSize: 0 - Math.abs(file.size),
-                Extension: '.jpg',
-              },
-              Summary: summaryRes.Data,
-            })
-            if (submitRes.Status !== 200) {
-              showAPiError(
-                t('errors.apiErrorTitle'),
-                t('errors.apiErrorMessage', {
-                  path: '/Contents/SubmitExperiment',
-                  status: submitRes.Status,
-                  message: submitRes?.Message || '',
-                }),
-                async () => {
-                  return getData('/Contents/SubmitExperiment', {
-                    Request: {
-                      FileSize: 0 - Math.abs(file.size),
-                      Extension: '.jpg',
-                    },
-                    Summary: summaryRes.Data,
-                  })
-                },
-              )
-              const _req = removeToken({
-                Request: {
-                  FileSize: 0 - Math.abs(file.size),
-                  Extension: '.jpg',
-                },
-                Summary: summaryRes.Data,
-              })
-              const _res = removeToken(submitRes)
-              window.$ErrorLogger.captureApiError(
-                'POST',
-                '/Contents/SubmitExperiment',
-                submitRes.Status,
-                _res,
-                _req,
-              )
-              console.error(`/Contents/SubmitExperiment returned ${submitRes.Status}`, _res)
-              return
-            }
-            try {
-              const form = new FormData()
-              form.append('authorization', submitRes.Data?.Token?.Authorization || '')
-              form.append('policy', submitRes.Data?.Token?.Policy || '')
-              form.append('file', file, 'cover.jpg')
-              await fetch('https://v0.api.upyun.com/qphysics', {
-                method: 'POST',
-                body: form,
-              })
-              const confirmRes2 = await getData('/Contents/ConfirmExperiment', {
-                Category: routeCategory.value,
-                SummaryID: route.params.id as string,
-                Image: imageIndex,
-                Extension: '.png',
-              })
-              if (confirmRes2.Status !== 200) {
-                showAPiError(
-                  t('errors.apiErrorTitle'),
-                  t('errors.apiErrorMessage', {
-                    path: '/Contents/ConfirmExperiment',
-                    status: confirmRes2.Status,
-                    message: confirmRes2?.Message || '',
-                  }),
-                  async () => {
-                    return getData('/Contents/ConfirmExperiment', {
-                      Category: routeCategory.value,
-                      SummaryID: route.params.id as string,
-                      Image: imageIndex,
-                      Extension: '.png',
-                    })
-                  },
-                )
-                const _req = removeToken({
-                  Category: routeCategory.value,
-                  SummaryID: route.params.id,
-                  Image: imageIndex,
-                  Extension: '.png',
-                })
-                const _res = removeToken(confirmRes2)
-                window.$ErrorLogger.captureApiError(
-                  'POST',
-                  '/Contents/ConfirmExperiment',
-                  confirmRes2.Status,
-                  _res,
-                  _req,
-                )
-                console.error(`/Contents/ConfirmExperiment returned ${confirmRes2.Status}`, _res)
-                return
-              }
-            } catch (_upErr) {
-              showMessage('error', t('ui.messages.uploadFailed'), {
-                duration: 2000,
-              })
-              return
-            }
-            showMessage('success', t('ui.messages.uploadSuccess'), {
-              duration: 2000,
-            })
-            // refresh current cover (using existing utility function)
-            setTimeout(async () => {
-              const refreshed = await getData('/Contents/GetSummary', {
-                ContentID: route.params.id as string,
-                Category: routeCategory.value,
-              })
-              if (refreshed.Status !== 200) {
-                showAPiError(
-                  t('errors.apiErrorTitle'),
-                  t('errors.apiErrorMessage', {
-                    path: '/Contents/GetSummary',
-                    status: refreshed.Status,
-                    message: refreshed?.Message || '',
-                  }),
-                  async () => {
-                    return getData('/Contents/GetSummary', {
-                      ContentID: route.params.id as string,
-                      Category: routeCategory.value,
-                    })
-                  },
-                )
-                const _req = removeToken({
-                  ContentID: route.params.id,
-                  Category: routeCategory.value,
-                })
-                const _res = removeToken(refreshed)
-                window.$ErrorLogger.captureApiError(
-                  'POST',
-                  '/Contents/GetSummary',
-                  refreshed.Status,
-                  _res,
-                  _req,
-                )
-                console.error(`/Contents/GetSummary returned ${refreshed.Status}`, _res)
-                return
-              }
-              coverUrl.value = getCoverUrl(refreshed.Data)
-            }, 800)
-          } catch (_err) {
-            showMessage('error', t('ui.messages.changeCoverFailed'), {
-              duration: 2000,
-            })
-          }
-        }
-        input.click()
-      } catch (_error) {
-        showMessage('error', t('errors.unknownError'), {
-          duration: 2000,
-        })
-      }
-    } else if (action === t('expeSummary.editWork')) {
-      goToEditor()
-    }
-  })
+  if (canEdit.value) list.push({ label: t('expeSummary.editWork') })
+  showActionSheet(list, (index) => runSubjectAction(list[index]?.label))
 }
 
 onActivated(() => {
   window.$Logger.logPageView({
-    pageLink: `/${routeCategory.value}/${route.params.id}/`,
+    pageLink: `/${routeCategory.value}/${routeSummaryId.value}/`,
     timeStamp: Date.now(),
   })
+})
+
+onUnmounted(() => {
+  window.clearTimeout(coverRefreshTimeout)
 })
 </script>
 

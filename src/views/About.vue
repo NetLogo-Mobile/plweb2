@@ -10,7 +10,7 @@
     </div>
 
     <!-- search bar -->
-    <div id="searchBar" ref="searchBarRef" class="search-bar" :class="{ active: searchActive }">
+    <div id="searchBar" class="search-bar" :class="{ active: searchActive }">
       <div id="searchLogoPlaceholder" ref="searchLogoPlaceholderRef" class="search-logo">
         <!-- Search context will be dynamically inserted here -->
       </div>
@@ -28,7 +28,6 @@
     <!-- pl-card -->
     <div
       id="banknoteCard"
-      ref="banknoteCardRef"
       class="banknote-card"
       :class="{ show: banknoteShow }"
     >
@@ -111,8 +110,8 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue'
+<script setup lang="ts">
+import { onMounted, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import sysConfig from '../config/system.config'
 import storageManager from '@storage/index'
@@ -121,11 +120,9 @@ const { t } = useI18n()
 
 const userId = storageManager.getObj('userInfo').value?.ID
 
-const charContainerRef = ref(null)
-const searchBarRef = ref(null)
-const searchLogoPlaceholderRef = ref(null)
-const stageRef = ref(null)
-const banknoteCardRef = ref(null)
+const charContainerRef = ref<HTMLElement | null>(null)
+const searchLogoPlaceholderRef = ref<HTMLElement | null>(null)
+const stageRef = ref<HTMLElement | null>(null)
 
 const typedText = ref('')
 const searchActive = ref(false)
@@ -143,8 +140,12 @@ const typingPhrases = [
   'about.type8',
 ]
 
-function buildTypingQueue() {
-  const queue = []
+type TypingStep =
+  | { text: string; action: 'type' | 'backspace' }
+  | { text: string; action: 'wait'; duration: number }
+
+function buildTypingQueue(): TypingStep[] {
+  const queue: TypingStep[] = []
   for (const key of typingPhrases) {
     const text = t(key)
     const isBoom = key === 'about.type6'
@@ -155,7 +156,29 @@ function buildTypingQueue() {
   return queue
 }
 
-function runTypingEffect(callback) {
+const timeoutIds = new Set<ReturnType<typeof window.setTimeout>>()
+const intervalIds = new Set<ReturnType<typeof window.setInterval>>()
+
+function scheduleTimeout(callback: () => void, delay: number) {
+  const id = window.setTimeout(() => {
+    timeoutIds.delete(id)
+    callback()
+  }, delay)
+  timeoutIds.add(id)
+}
+
+function scheduleInterval(callback: () => void, delay: number) {
+  const id = window.setInterval(callback, delay)
+  intervalIds.add(id)
+  return id
+}
+
+function stopInterval(id: ReturnType<typeof window.setInterval>) {
+  window.clearInterval(id)
+  intervalIds.delete(id)
+}
+
+function runTypingEffect(callback?: () => void) {
   const typingQueue = buildTypingQueue()
   let step = 0
   function executeNext() {
@@ -166,28 +189,28 @@ function runTypingEffect(callback) {
     const current = typingQueue[step]
     if (current.action === 'type') {
       let i = 0
-      const interval = setInterval(() => {
+      const interval = scheduleInterval(() => {
         typedText.value += current.text[i]
         i++
         if (i >= current.text.length) {
-          clearInterval(interval)
+          stopInterval(interval)
           step++
-          setTimeout(executeNext, 200)
+          scheduleTimeout(executeNext, 200)
         }
       }, 60)
     } else if (current.action === 'backspace') {
       let text = typedText.value
-      const interval = setInterval(() => {
+      const interval = scheduleInterval(() => {
         text = text.substring(0, text.length - 1)
         typedText.value = text
         if (text.length === 0) {
-          clearInterval(interval)
+          stopInterval(interval)
           step++
-          setTimeout(executeNext, 300)
+          scheduleTimeout(executeNext, 300)
         }
       }, 30)
     } else if (current.action === 'wait') {
-      setTimeout(() => {
+      scheduleTimeout(() => {
         step++
         executeNext()
       }, current.duration)
@@ -196,38 +219,50 @@ function runTypingEffect(callback) {
   executeNext()
 }
 
+function startMorphing(charContainer: HTMLElement | null) {
+  if (!charContainer) return
+  charContainer.classList.remove('bouncing')
+  charContainer.classList.add('morphing')
+}
+
+function moveLogoToSearch(
+  searchLogoPlaceholder: HTMLElement | null,
+  charContainer: HTMLElement | null,
+) {
+  if (searchLogoPlaceholder && charContainer) searchLogoPlaceholder.appendChild(charContainer)
+  searchActive.value = true
+}
+
+function finishIntro(stage: HTMLElement | null) {
+  if (stage) stage.classList.add('stage-up')
+  banknoteShow.value = true
+  sloganShow.value = true
+  scheduleTimeout(() => {
+    searchActive.value = false
+  }, 200)
+}
+
+function startTyping(stage: HTMLElement | null) {
+  runTypingEffect(() => {
+    scheduleTimeout(() => finishIntro(stage), 500)
+  })
+}
+
 onMounted(() => {
   const charContainer = charContainerRef.value
   const searchLogoPlaceholder = searchLogoPlaceholderRef.value
   const stage = stageRef.value
 
-  // Innitial dots
-  setTimeout(() => {
-    if (charContainer) charContainer.classList.remove('bouncing')
-    // Turn dots into "PL" shape
-    if (charContainer) charContainer.classList.add('morphing')
-  }, 2500)
+  scheduleTimeout(() => startMorphing(charContainer), 2500)
+  scheduleTimeout(() => moveLogoToSearch(searchLogoPlaceholder, charContainer), 4200)
+  scheduleTimeout(() => startTyping(stage), 5200)
+})
 
-  // Move "PL" into search bar and expand it
-  setTimeout(() => {
-    if (searchLogoPlaceholder && charContainer) searchLogoPlaceholder.appendChild(charContainer)
-    searchActive.value = true
-  }, 4200)
-
-  // Run typing effect
-  setTimeout(() => {
-    runTypingEffect(() => {
-      // Show pl-card
-      setTimeout(() => {
-        if (stage) stage.classList.add('stage-up')
-        banknoteShow.value = true
-        sloganShow.value = true
-        setTimeout(() => {
-          searchActive.value = false
-        }, 200)
-      }, 500)
-    })
-  }, 5200)
+onUnmounted(() => {
+  timeoutIds.forEach((id) => window.clearTimeout(id))
+  intervalIds.forEach((id) => window.clearInterval(id))
+  timeoutIds.clear()
+  intervalIds.clear()
 })
 
 function openGithubLink() {

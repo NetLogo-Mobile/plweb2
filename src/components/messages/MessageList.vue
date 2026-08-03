@@ -40,7 +40,9 @@ let skip = ref(0)
 let from: CommentResult['ID'] | null = null
 const { t } = useI18n()
 
-const emit = defineEmits(['msgClick'])
+const emit = defineEmits<{
+  msgClick: [message: CommentResult]
+}>()
 
 async function fetchComments(options?: { from?: CommentResult['ID'] | null; skip?: number }) {
   return getData('/Messages/GetComments', {
@@ -97,69 +99,60 @@ function handleMsgClick(message: CommentResult) {
   emit('msgClick', message)
 }
 
-const handleLoad = async () => {
-  if (
-    // CheckLogin without popup for the sake of avoiding API Handling errors
-    checkLogin(false) === false &&
-    Category === 'User'
-  ) {
-    return
-  }
-  if (loading.value || noMore.value === true) return
-  loading.value = true
-  const getMessagesResponse = await fetchComments({
-    from,
-    skip: skip.value || 0,
+function reportLoadError(response: Awaited<ReturnType<typeof fetchComments>>) {
+  showAPiError(
+    t('errors.apiErrorTitle'),
+    t('errors.apiErrorMessage', {
+      path: '/Messages/GetComments',
+      status: response.Status,
+      message: response.Message || '',
+    }),
+    () => fetchComments({ from, skip: skip.value || 0 }),
+  )
+  const request = removeToken({
+    TargetID: ID,
+    TargetType: Category,
+    CommentID: from || '',
+    Take: 20,
+    Skip: skip.value || 0,
   })
+  const result = removeToken(response)
+  window.$ErrorLogger.captureApiError(
+    'POST',
+    '/Messages/GetComments',
+    response.Status,
+    result,
+    request,
+  )
+  console.error(`/Messages/GetComments returned ${response.Status}`, result)
+}
 
-  if (getMessagesResponse.Status !== 200 || !getMessagesResponse.Data) {
-    showAPiError(
-      t('errors.apiErrorTitle'),
-      t('errors.apiErrorMessage', {
-        path: '/Messages/GetComments',
-        status: getMessagesResponse.Status,
-        message: getMessagesResponse?.Message || '',
-      }),
-      async () => {
-        return fetchComments({
-          from,
-          skip: skip.value || 0,
-        })
-      },
-    )
-    const _req = removeToken({
-      TargetID: ID,
-      TargetType: Category,
-      CommentID: from || '',
-      Take: 20,
-      Skip: skip.value || 0,
-    })
-    const _res = removeToken(getMessagesResponse)
-    window.$ErrorLogger.captureApiError(
-      'POST',
-      '/Messages/GetComments',
-      getMessagesResponse.Status,
-      _res,
-      _req,
-    )
-    console.error(`/Messages/GetComments returned ${getMessagesResponse.Status}`, _res)
-    loading.value = false
-    return
-  }
-
-  const messages = getMessagesResponse.Data.Comments
-  const _length = messages.length
+function appendMessages(messages: CommentResult[]) {
+  const receivedCount = messages.length
   if (from) messages.shift()
-  from = messages[messages.length - 1]?.ID ?? null
-
-  items.value = [...items.value, ...messages]
-  loading.value = false
+  from = messages.at(-1)?.ID ?? null
+  items.value.push(...messages)
   skip.value += 20
-  if (_length < 20) {
-    noMore.value = true
-    showMessage('warning', t('ui.messages.noMore'), { duration: 1000 })
+  if (receivedCount >= 20) return
+  noMore.value = true
+  showMessage('warning', t('ui.messages.noMore'), { duration: 1000 })
+}
+
+const handleLoad = async () => {
+  if (Category === 'User' && !checkLogin(false)) return
+  if (loading.value || noMore.value) return
+  loading.value = true
+  try {
+    const response = await fetchComments({ from, skip: skip.value || 0 })
+    if (response.Status !== 200 || !response.Data) {
+      reportLoadError(response)
+      return
+    }
+    appendMessages(response.Data.Comments)
+    await nextTick()
+  } finally {
+    loading.value = false
   }
-  await nextTick()
 }
 
 if (Category === 'User') checkLogin()
