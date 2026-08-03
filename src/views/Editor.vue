@@ -387,14 +387,19 @@ async function loadCategory(category: Category) {
 }
 
 async function loadWorks() {
+  if (loading.value) return
   if (!checkLogin(true)) {
     isLoggedIn.value = false
     return
   }
+  const preservedWork = selectedWork.value
   isLoggedIn.value = true
   loading.value = true
   try {
     await Promise.all([loadCategory('Discussion'), loadCategory('Experiment')])
+    if (preservedWork && !allWorks.value.some((work) => work.id === preservedWork.id)) {
+      worksByCategory[preservedWork.category].unshift(preservedWork)
+    }
     hasLoadedWorks.value = true
     if (allWorks.value.length === 0) selectedId.value = ''
   } catch (error) {
@@ -532,10 +537,14 @@ async function updateTags() {
   tagModalVisible.value = false
 }
 
+let directLoadTicket = 0
+
 async function loadWorkById(category: Category, id: string) {
+  const ticket = ++directLoadTicket
   loading.value = true
   try {
     const work = await fetchEditableWork(category, id)
+    if (ticket !== directLoadTicket) return
 
     const seen = new Set(allWorks.value.map((w) => w.id))
     if (!seen.has(work.id)) {
@@ -546,9 +555,10 @@ async function loadWorkById(category: Category, id: string) {
     applyWork(work)
     detailLoading.value = false
   } catch (error) {
+    if (ticket !== directLoadTicket) return
     showMessage('error', (error as Error).message, { duration: 5000 })
   } finally {
-    loading.value = false
+    if (ticket === directLoadTicket) loading.value = false
   }
 }
 
