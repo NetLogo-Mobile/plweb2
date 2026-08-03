@@ -396,11 +396,7 @@ async function loadWorks() {
   try {
     await Promise.all([loadCategory('Discussion'), loadCategory('Experiment')])
     hasLoadedWorks.value = true
-    if (allWorks.value.length > 0) {
-      selectWork(allWorks.value[0].id)
-    } else {
-      selectedId.value = ''
-    }
+    if (allWorks.value.length === 0) selectedId.value = ''
   } catch (error) {
     showMessage('error', (error as Error).message, { duration: 4000 })
   } finally {
@@ -410,6 +406,7 @@ async function loadWorks() {
 
 async function loadMoreWorks(category: Category) {
   const key = category
+  if (!showSidebar.value || loading.value) return
   if (loadingMoreByCategory[key] || !hasMoreByCategory[key]) return
   loadingMoreByCategory[key] = true
   try {
