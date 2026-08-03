@@ -19,15 +19,19 @@
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { getData } from '@services/api/getData'
-import type { ListBlock } from '@services/../pl-serve-type-main/type/main'
+import type {
+  Category,
+  ListBlock,
+  TopicBlock,
+} from '@services/../pl-serve-type-main/type/main'
 
 const router = useRouter()
 const loading = ref(true)
 const error = ref('')
-const blocks = ref<ListBlock[]>([])
+const blocks = ref<Array<ListBlock | TopicBlock>>([])
 
-function edit(category: string, id: string) {
-  void router.push({ name: 'Editor', params: { category, id } })
+function edit(category: Category | undefined, id: string) {
+  void router.push({ name: 'Editor', params: { category: category || 'Discussion', id } })
 }
 
 onMounted(async () => {
