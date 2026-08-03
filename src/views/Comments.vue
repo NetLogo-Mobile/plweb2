@@ -18,6 +18,7 @@
   <div class="content">
     <div class="list">
       <MessagesList
+        :key="commentListKey"
         :Category="routeCategory"
         :ID="route.params.id as string"
         :initial-from="commentFrom"
@@ -42,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, watch } from 'vue'
 import MessagesList from '../components/messages/MessageList.vue'
 import { useRoute } from 'vue-router'
 import { getRouteCategory } from '../router/category'
@@ -69,19 +70,32 @@ const commentTake = computed(() => {
   const take = Number(route.query.take)
   return Number.isSafeInteger(take) && take > 0 && take <= 50 ? take : 20
 })
+const commentListKey = computed(() =>
+  [routeCategory.value, route.params.id, commentFrom.value, commentTake.value, commentSkip.value].join(
+    ':',
+  ),
+)
 let isLoading = ref(false)
 let replyID = ref('')
 let upDate = ref(0)
 const title = ref('')
 let comment = ref('') // 输入的内容 Input content
 
-onMounted(async () => {
-  const parsedName = await parse(route.params.name as string)
-  title.value = t('comments.title', {
-    name: parsedName,
-    category: routeCategory.value === 'User' ? t('comments.home') : t('comments.area'),
-  })
-})
+let titleTicket = 0
+
+watch(
+  [() => route.params.name, routeCategory],
+  async () => {
+    const ticket = ++titleTicket
+    const parsedName = await parse(String(route.params.name || ''))
+    if (ticket !== titleTicket) return
+    title.value = t('comments.title', {
+      name: parsedName,
+      category: routeCategory.value === 'User' ? t('comments.home') : t('comments.area'),
+    })
+  },
+  { immediate: true },
+)
 
 const goBack = () => {
   window.history.back()
