@@ -27,14 +27,24 @@ import type {
 
 type PMessageItem = CommentResult
 
-const { ID, Category, upDate, initialFrom = '', initialSkip = 0, targetCommentId = '' } = defineProps<{
+const {
+  ID,
+  Category,
+  upDate,
+  initialFrom = '',
+  initialTake = 20,
+  initialSkip = 0,
+  targetCommentId = '',
+} = defineProps<{
   ID: string
   Category: CategoryType | 'User'
   initialFrom?: string
+  initialTake?: number
   initialSkip?: number
   targetCommentId?: string
   upDate?: number
 }>()
+const pageSize = Math.min(50, Math.max(1, initialTake))
 
 let items = ref<PMessageItem[]>([]) // 前端的消息列表  front-end message list
 const loading = ref(false)
@@ -50,7 +60,7 @@ async function fetchComments(options?: { from?: CommentResult['ID'] | null; skip
     TargetID: ID,
     TargetType: Category,
     CommentID: options?.from || '',
-    Take: 20,
+    Take: pageSize,
     Skip: options?.skip || 0,
   })
 }
@@ -134,7 +144,7 @@ const handleLoad = async () => {
       TargetID: ID,
       TargetType: Category,
       CommentID: from || '',
-      Take: 20,
+      Take: pageSize,
       Skip: skip.value || 0,
     })
     const _res = removeToken(getMessagesResponse)
@@ -157,8 +167,8 @@ const handleLoad = async () => {
 
   items.value = [...items.value, ...messages]
   loading.value = false
-  skip.value += 20
-  if (_length < 20) {
+  skip.value += pageSize
+  if (_length < pageSize) {
     noMore.value = true
     showMessage('warning', t('ui.messages.noMore'), { duration: 1000 })
   }

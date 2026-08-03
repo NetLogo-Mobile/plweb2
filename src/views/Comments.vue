@@ -21,6 +21,7 @@
         :Category="routeCategory"
         :ID="route.params.id as string"
         :initial-from="commentFrom"
+        :initial-take="commentTake"
         :initial-skip="commentSkip"
         :target-comment-id="commentFrom"
         :upDate="upDate"
@@ -63,6 +64,10 @@ const commentFrom = computed(() => {
 const commentSkip = computed(() => {
   const skip = Number(route.query.skip)
   return Number.isSafeInteger(skip) && skip >= 0 ? skip : 0
+})
+const commentTake = computed(() => {
+  const take = Number(route.query.take)
+  return Number.isSafeInteger(take) && take > 0 && take <= 50 ? take : 20
 })
 let isLoading = ref(false)
 let replyID = ref('')
