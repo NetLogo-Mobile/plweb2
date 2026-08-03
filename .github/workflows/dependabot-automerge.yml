@@ -1,7 +1,7 @@
 name: Dependabot auto-merge
 on:
   pull_request:
-    types: [opened, synchronize, reopened, closed]
+    types: [opened, synchronize, reopened]
 
 concurrency:
   group: dependabot-automerge-${{ github.event.pull_request.number }}
@@ -10,14 +10,11 @@ concurrency:
 permissions:
   contents: write
   pull-requests: write
-  actions: write
 
 jobs:
   dependabot:
     runs-on: ubuntu-latest
-    if: >-
-      github.event.action != 'closed' &&
-      github.event.pull_request.user.login == 'dependabot[bot]'
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
     steps:
       - name: Dependabot metadata
         id: metadata
@@ -38,17 +35,3 @@ jobs:
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
           GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
-
-  deploy-after-dependabot-merge:
-    runs-on: ubuntu-latest
-    if: >-
-      github.event.action == 'closed' &&
-      github.event.pull_request.merged == true &&
-      github.event.pull_request.user.login == 'dependabot[bot]' &&
-      github.event.pull_request.base.ref == 'main' &&
-      !contains(github.event.pull_request.title, 'pltxt2htm')
-    steps:
-      - name: Trigger deployment
-        run: gh workflow run build.yml --ref main
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
