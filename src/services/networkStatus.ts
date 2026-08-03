@@ -1,10 +1,9 @@
 import i18n from '@i18n/index'
 import { showNotification } from '@popup/naiveui'
 import { getNetworkInformation } from './networkInformation'
+import type { NetworkInformation } from './networkInformation'
 
 type NetworkState = 'online' | 'poor' | 'offline'
-
-import type { NetworkInformation } from './networkInformation'
 
 let activeNotification: ReturnType<typeof showNotification> | null = null
 let currentState: NetworkState | null = null

@@ -90,20 +90,7 @@ export function registerNetworkListener() {
     connection.addEventListener('change', () => {
       coverImgSuffix = getCoverImgSuffix()
       avatarImgSuffix = getAvatarImgSuffix()
-      if(connection.saveData || ['2g', '3g'].includes(connection.effectiveType)) {
-        showDialog('warning', {
-          title: i18n.global.t('networkStatus.poor.title'),
-          content: i18n.global.t('networkStatus.poor.message')
-        })
-      }
     })
-    window.addEventListener('offline', () => {
-      showDialog('warning', {
-        title: i18n.global.t('networkStatus.offline.title'),
-        content: i18n.global.t('networkStatus.offline.message')
-      })
-    })
-
   }
 }
 
