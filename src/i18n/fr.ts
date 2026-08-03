@@ -33,11 +33,13 @@ export default {
   networkStatus: {
     offline: {
       title: 'Vous êtes hors ligne',
-      message: 'Aucune connexion réseau n’est disponible. Les données en cache seront affichées lorsque cela est possible.',
+      message:
+        'Aucune connexion réseau n’est disponible. Les données en cache seront affichées lorsque cela est possible.',
     },
     poor: {
       title: 'Connexion réseau faible',
-      message: 'La connexion est lente ou l’économiseur de données est activé. Des données en cache peuvent être affichées.',
+      message:
+        'La connexion est lente ou l’économiseur de données est activé. Des données en cache peuvent être affichées.',
     },
   },
   user: {
@@ -209,10 +211,16 @@ export default {
     type8: 'Vous ne recevrez aucun succès',
   },
   footer: {
+    myLab: 'Mon laboratoire',
     home: 'Accueil',
     blackHole: 'Trou noir',
     friends: 'Amis',
     notifications: 'Notifications',
+  },
+  myLab: {
+    edit: 'Modifier',
+    empty: 'Aucune œuvre dans votre laboratoire.',
+    loadFailed: 'Impossible de charger le laboratoire.',
   },
   ui: {
     messages: {
