@@ -10,9 +10,25 @@
         <span>{{ showSidebar ? '✕' : '☰' }}</span>
       </button>
       <button class="toolbar-icon back-button" type="button" @click="goBack">‹</button>
-      <h1>{{ t('mdEditor.title') }}</h1>
+      <n-input
+        v-if="selectedWork && !detailLoading"
+        v-model:value="editSubject"
+        :placeholder="t('mdEditor.subjectPlaceholder')"
+        class="header-subject-input"
+      />
+      <h1 v-else>{{ t('mdEditor.title') }}</h1>
+      <n-button
+        v-if="selectedWork && !detailLoading"
+        type="primary"
+        size="small"
+        :loading="saving"
+        :disabled="!dirty"
+        @click="saveCurrentWork"
+      >
+        {{ t('mdEditor.publish') }}
+      </n-button>
       <button
-        v-if="!hideWorkSidebar"
+        v-else-if="!hideWorkSidebar"
         class="primary-button"
         type="button"
         :disabled="!isLoggedIn"
@@ -95,17 +111,6 @@
       </aside>
 
       <section class="editor-main" :class="{ 'editor-full': hideWorkSidebar }">
-        <div v-if="selectedWork && !detailLoading" class="editor-toolbar">
-          <n-input
-            v-model:value="editSubject"
-            :placeholder="t('mdEditor.subjectPlaceholder')"
-            class="subject-input"
-          />
-          <n-button type="primary" :loading="saving" :disabled="!dirty" @click="saveCurrentWork">
-            {{ t('mdEditor.publish') }}
-          </n-button>
-        </div>
-
         <div v-if="selectedWork && !detailLoading" class="editor-card">
           <MdEditor
             v-model="editMarkdown"
@@ -853,14 +858,9 @@ setupTabObserver(expSentinelRef, expListRef, 'Experiment')
   margin: 12px 2vw;
 }
 
-.editor-toolbar {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.subject-input {
+.header-subject-input {
   flex: 1;
+  min-width: 0;
 }
 
 .editor-card {
