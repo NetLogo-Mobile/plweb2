@@ -1,1 +1,0 @@
-import{M as e,Xr as t,fr as n,hr as r,jr as i,qr as a,u as o,yr as s}from"./index-BICfYxXG.js";var c={style:{"text-align":`center`,"margin-top":`50px`}},l=[`src`],u=s({__name:`NotFound`,setup(s){let{t:u}=e();return(e,s)=>(i(),r(`div`,c,[n(`h1`,null,t(a(u)(`notfound.title`)),1),n(`img`,{src:a(o)(`/@base/assets/messages/Message-Default.png`)},null,8,l)]))}});export{u as default};
