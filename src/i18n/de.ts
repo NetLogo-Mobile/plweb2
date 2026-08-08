@@ -33,11 +33,13 @@ export default {
   networkStatus: {
     offline: {
       title: 'Sie sind offline',
-      message: 'Es ist keine Netzwerkverbindung verfügbar. Wenn möglich, werden Daten aus dem Cache angezeigt.',
+      message:
+        'Es ist keine Netzwerkverbindung verfügbar. Wenn möglich, werden Daten aus dem Cache angezeigt.',
     },
     poor: {
       title: 'Schlechte Netzwerkverbindung',
-      message: 'Die Verbindung ist langsam oder der Datensparmodus ist aktiv. Möglicherweise werden Daten aus dem Cache angezeigt.',
+      message:
+        'Die Verbindung ist langsam oder der Datensparmodus ist aktiv. Möglicherweise werden Daten aus dem Cache angezeigt.',
     },
   },
   user: {
@@ -209,10 +211,19 @@ export default {
     type8: 'Du wirst keinen Erfolg erhalten',
   },
   footer: {
+    myLab: 'Mein Labor',
     home: 'Startseite',
     blackHole: 'Schwarzes Loch',
     friends: 'Freunde',
     notifications: 'Benachrichtigungen',
+  },
+  myLab: {
+    title: 'Mein Labor',
+    edit: 'Bearbeiten',
+    view: 'Ansehen',
+    empty: 'Noch keine Werke im Labor.',
+    loadFailed: 'Labor konnte nicht geladen werden.',
+    loginRequired: 'Melde dich an, um dein Labor anzusehen.',
   },
   ui: {
     messages: {

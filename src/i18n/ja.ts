@@ -37,7 +37,8 @@ export default {
     },
     poor: {
       title: 'ネットワーク接続が不安定です',
-      message: '接続が遅いかデータセーバーが有効です。キャッシュされたデータを表示する場合があります。',
+      message:
+        '接続が遅いかデータセーバーが有効です。キャッシュされたデータを表示する場合があります。',
     },
   },
   user: {
@@ -209,10 +210,19 @@ export default {
     type8: '実績はもらえません',
   },
   footer: {
+    myLab: 'マイラボ',
     home: 'ホーム',
     blackHole: 'ブラックホール',
     friends: '友人',
     notifications: '通知',
+  },
+  myLab: {
+    title: 'マイラボ',
+    edit: '編集',
+    view: '表示',
+    empty: 'ラボにはまだ作品がありません。',
+    loadFailed: 'ラボを読み込めませんでした。',
+    loginRequired: 'ラボを表示するにはログインしてください。',
   },
   ui: {
     messages: {

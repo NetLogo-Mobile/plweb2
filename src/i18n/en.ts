@@ -208,10 +208,19 @@ export default {
     type8: 'You will not receive an achievement',
   },
   footer: {
+    myLab: 'My Lab',
     home: 'Home',
     blackHole: 'Black Hole',
     friends: 'Friends',
     notifications: 'Notifications',
+  },
+  myLab: {
+    title: 'My Lab',
+    edit: 'Edit',
+    view: 'View',
+    empty: 'No works in your lab yet.',
+    loadFailed: 'Unable to load your lab.',
+    loginRequired: 'Sign in to view your lab.',
   },
   ui: {
     messages: {
