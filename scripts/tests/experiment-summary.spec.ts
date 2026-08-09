@@ -22,6 +22,47 @@ import {
   TEST_USER_ID,
 } from './test-helpers'
 
+function createSummary(description: string[]) {
+  return {
+    $type: 'Quantum.Models.Contents.Summary, Quantum Models',
+    Type: 0,
+    ContentID: TEST_EXPERIMENT_ID,
+    ID: TEST_EXPERIMENT_ID,
+    Category: TEST_CATEGORY,
+    Subject: 'Test Discussion Topic',
+    LocalizedSubject: null,
+    Description: description,
+    LocalizedDescription: null,
+    Tags: ['physics', 'test'],
+    Image: 1,
+    ImageRegion: 1,
+    Version: 0,
+    Language: 'Chinese',
+    Visits: 10,
+    Stars: 10,
+    Supports: 0,
+    Remixes: 2,
+    Comments: 5,
+    Price: 0,
+    Popularity: 0,
+    UpdateDate: Date.now(),
+    Visibility: 0,
+    SortingDate: Date.now(),
+    CreationDate: Date.now(),
+    Multilingual: false,
+    User: {
+      ID: TEST_USER_ID,
+      Nickname: 'TestUser',
+      Signature: 'Hello from test',
+      Avatar: 1,
+      AvatarRegion: 1,
+      Decoration: 0,
+      Verification: 'user',
+    },
+    Coauthors: [],
+  }
+}
+
 test.describe('作品详情页 (ExperimentSummary)', () => {
 
   test('应正常加载作品详情页', async ({ page }) => {
@@ -104,44 +145,7 @@ test.describe('作品详情页 (ExperimentSummary)', () => {
           Message: 'OK',
           // Data 本身就是 Summary 对象，不要嵌套在 Data.Summary 里
           // See: ExperimentSummary.vue fetchSummary() → data.value = res.Data
-          Data: {
-            $type: 'Quantum.Models.Contents.Summary, Quantum Models',
-            Type: 0,
-            ContentID: TEST_EXPERIMENT_ID,
-            ID: TEST_EXPERIMENT_ID,
-            Category: TEST_CATEGORY,
-            Subject: 'Test Discussion Topic',
-            LocalizedSubject: null,
-            Description: ['Test description'],
-            LocalizedDescription: null,
-            Tags: ['physics', 'test'],
-            Image: 1,
-            ImageRegion: 1,
-            Version: 0,
-            Language: 'Chinese',
-            Visits: 10,
-            Stars: 10,
-            Supports: 0,
-            Remixes: 2,
-            Comments: 5,
-            Price: 0,
-            Popularity: 0,
-            UpdateDate: Date.now(),
-            Visibility: 0,
-            SortingDate: Date.now(),
-            CreationDate: Date.now(),
-            Multilingual: false,
-            User: {
-              ID: TEST_USER_ID,
-              Nickname: 'TestUser',
-              Signature: 'Hello from test',
-              Avatar: 1,
-              AvatarRegion: 1,
-              Decoration: 0,
-              Verification: 'user',
-            },
-            Coauthors: [],
-          },
+          Data: createSummary(['Test description']),
         }),
       })
     })
@@ -151,6 +155,37 @@ test.describe('作品详情页 (ExperimentSummary)', () => {
     await page.waitForTimeout(1500)
 
     expect(getSummaryCalled).toBeTruthy()
+  })
+
+  test('实验介绍应显示公式根号', async ({ page }) => {
+    await injectLoginStateWithoutNavigation(page)
+    const transparentPixel = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+      'base64',
+    )
+    await page.route(/\/(?:users\/avatars|experiments\/images)\//, async (route) => {
+      await route.fulfill({ status: 200, contentType: 'image/png', body: transparentPixel })
+    })
+    await page.route('**/api/Contents/GetSummary', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          Status: 200,
+          Message: 'OK',
+          Data: createSummary([String.raw`根号公式：$\sqrt{x}$`]),
+        }),
+      })
+    })
+
+    await page.goto(`/#/p/${TEST_CATEGORY}/${TEST_EXPERIMENT_ID}`)
+
+    const radical = page.locator('.intro .katex .sqrt svg')
+    await expect(radical).toHaveCount(1)
+    await expect(radical).toBeVisible({ timeout: 10000 })
+    const bounds = await radical.boundingBox()
+    expect(bounds).not.toBeNull()
+    expect(bounds!.height).toBeGreaterThan(5)
   })
 
   test('详情页应正确处理 API 错误', async ({ page }) => {
