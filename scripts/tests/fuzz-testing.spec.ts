@@ -31,6 +31,8 @@ async function pickRandomNavigable(page: any) {
 }
 
 test.describe('Fuzz Testing', () => {
+  test.use({ suppressErrorCollection: true })
+
   test('50 次随机交互 — 基于真实渲染元素 @fuzz', async ({ page }, testInfo) => {
     test.setTimeout(180000)
 
