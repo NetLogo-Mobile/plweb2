@@ -13,8 +13,19 @@
 </template>
 
 <script setup lang="ts">
+import { onUnmounted } from 'vue'
 import showUserCard from '@popup/userProfileDialog.ts'
+import { showLoginModel } from '@popup/index'
+import Emitter from '@services/eventEmitter.ts'
 import CookieNotice from './components/utils/CookieNotice.vue'
+
+function handleLoginRequired() {
+  void showLoginModel()
+}
+
+Emitter.on('loginRequired', handleLoginRequired)
+onUnmounted(() => Emitter.off('loginRequired', handleLoginRequired))
+
 function handleClick(event: MouseEvent) {
   const target = event.target as HTMLElement
   if (target.classList.contains('RUser')) {
