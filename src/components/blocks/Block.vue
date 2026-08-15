@@ -3,8 +3,8 @@
     <div class="head">
       <!-- title的i18n应当是服务器返回自动i处理的 -->
       <!-- The title should be processed automatically by the server for i18n -->
-      <div id="title">{{ props.block.Header }}</div>
-      <router-link id="more" :to="`/l/${EncodeAPITargetLink(props.block.TargetLink)}`">
+      <div class="title">{{ props.block.Header }}</div>
+      <router-link class="more" :to="`/l/${EncodeAPITargetLink(props.block.TargetLink)}`">
         <div>{{ $t('worklist.more') }}</div>
       </router-link>
     </div>
@@ -36,10 +36,10 @@ const displayCount = computed(() => props.maxProjectsPerBlock ?? maxDefault.valu
 <style scoped>
 .outer {
   height: 100%;
-  border-radius: 8px;
+  border-radius: var(--surface-radius);
   background-color: white;
   box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
-  padding: 10px;
+  padding: clamp(0.5rem, 1vw, 0.8rem);
 }
 
 .head {
@@ -47,23 +47,23 @@ const displayCount = computed(() => props.maxProjectsPerBlock ?? maxDefault.valu
 }
 
 .head {
-  font-size: 15px;
+  font-size: clamp(0.9rem, 1vw, 1rem);
   color: #007bff;
   width: 100%;
-  padding: 8px;
+  padding: 0.5em;
 }
 
-#title {
+.title {
   align-self: flex-start;
   font-weight: bold;
 }
 
-#more {
+.more {
   text-decoration: none;
   color: #007bff;
   align-self: flex-end;
   margin-left: auto;
-  margin-right: 20px;
+  margin-right: 0.5em;
 }
 
 .div {
