@@ -1,7 +1,7 @@
 <template>
   <InfiniteScroll :has-more="!noMore" :initial-items="items" :marginTop="0" @load="handleLoad">
     <template #default="{ items }">
-      <div v-for="item in items as CommentResult[]" :key="item.ID">
+      <div v-for="item in items as CommentResult[]" :id="`comment-${item.ID}`" :key="item.ID">
         <MessageItem :message="item" @msgClick="handleMsgClick" @deleteMsg="deleteMsg" />
         <n-divider style="margin: 0" />
       </div>
@@ -27,17 +27,30 @@ import type {
 
 type PMessageItem = CommentResult
 
-const { ID, Category, upDate } = defineProps<{
+const {
+  ID,
+  Category,
+  upDate,
+  initialFrom = '',
+  initialTake = 20,
+  initialSkip = 0,
+  targetCommentId = '',
+} = defineProps<{
   ID: string
   Category: CategoryType | 'User'
+  initialFrom?: string
+  initialTake?: number
+  initialSkip?: number
+  targetCommentId?: string
   upDate?: number
 }>()
+const pageSize = Math.min(50, Math.max(1, initialTake))
 
 let items = ref<PMessageItem[]>([]) // 前端的消息列表  front-end message list
 const loading = ref(false)
 let noMore = ref(false)
-let skip = ref(0)
-let from: CommentResult['ID'] | null = null
+let skip = ref(initialSkip)
+let from: CommentResult['ID'] | null = initialFrom || null
 const { t } = useI18n()
 
 const emit = defineEmits(['msgClick'])
@@ -47,7 +60,7 @@ async function fetchComments(options?: { from?: CommentResult['ID'] | null; skip
     TargetID: ID,
     TargetType: Category,
     CommentID: options?.from || '',
-    Take: 20,
+    Take: pageSize,
     Skip: options?.skip || 0,
   })
 }
@@ -131,7 +144,7 @@ const handleLoad = async () => {
       TargetID: ID,
       TargetType: Category,
       CommentID: from || '',
-      Take: 20,
+      Take: pageSize,
       Skip: skip.value || 0,
     })
     const _res = removeToken(getMessagesResponse)
@@ -149,17 +162,23 @@ const handleLoad = async () => {
 
   const messages = getMessagesResponse.Data.Comments
   const _length = messages.length
-  if (from) messages.shift()
+  if (from && from !== initialFrom) messages.shift()
   from = messages[messages.length - 1]?.ID ?? null
 
   items.value = [...items.value, ...messages]
   loading.value = false
-  skip.value += 20
-  if (_length < 20) {
+  skip.value += pageSize
+  if (_length < pageSize) {
     noMore.value = true
     showMessage('warning', t('ui.messages.noMore'), { duration: 1000 })
   }
   await nextTick()
+  if (targetCommentId && items.value.some((item) => item.ID === targetCommentId)) {
+    document.getElementById(`comment-${targetCommentId}`)?.scrollIntoView({
+      block: 'center',
+      behavior: 'smooth',
+    })
+  }
 }
 
 if (Category === 'User') checkLogin()

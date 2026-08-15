@@ -96,7 +96,7 @@ function showComment() {
     if (!targetId || !targetName) return
 
     window.open(
-      `${getPath('/@root')}/c/${category}/${encodeURIComponent(targetId)}/${encodeURIComponent(targetName)}`,
+      `${getPath('/@root')}/c/${category}/${encodeURIComponent(targetId)}/${encodeURIComponent(targetName)}?from=${encodeURIComponent(fields.CommentID)}&take=20&skip=0`,
       '_self',
     )
   }
