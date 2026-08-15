@@ -1,0 +1,1 @@
+import{Jr as e,Mr as t,N as n,Zr as r,br as i,gr as a,pr as o,u as s}from"./index-DSC8lh7T.js";var c={style:{"text-align":`center`,"margin-top":`50px`}},l=[`src`],u=i({__name:`NotFound`,setup(i){let{t:u}=n();return(n,i)=>(t(),a(`div`,c,[o(`h1`,null,r(e(u)(`notfound.title`)),1),o(`img`,{src:e(s)(`/@base/assets/messages/Message-Default.png`)},null,8,l)]))}});export{u as default};
