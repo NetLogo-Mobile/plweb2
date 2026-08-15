@@ -663,8 +663,7 @@ onActivated(() => {
   overflow-wrap: anywhere;
 }
 
-.intro :deep(img),
-.intro :deep(svg) {
+.intro :deep(img) {
   max-width: 100%;
   height: auto;
 }
