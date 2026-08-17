@@ -13,19 +13,8 @@
 </template>
 
 <script setup lang="ts">
-import { onUnmounted } from 'vue'
 import showUserCard from '@popup/userProfileDialog.ts'
-import { showLoginModel } from '@popup/index'
-import Emitter from '@services/eventEmitter.ts'
 import CookieNotice from './components/utils/CookieNotice.vue'
-
-function handleLoginRequired() {
-  void showLoginModel()
-}
-
-Emitter.on('loginRequired', handleLoginRequired)
-onUnmounted(() => Emitter.off('loginRequired', handleLoginRequired))
-
 function handleClick(event: MouseEvent) {
   const target = event.target as HTMLElement
   if (target.classList.contains('RUser')) {
@@ -35,20 +24,10 @@ function handleClick(event: MouseEvent) {
 </script>
 
 <style>
-:root {
-  --header-height: clamp(3.25rem, 6dvh, 4rem);
-  --footer-height: clamp(3.5rem, 7dvh, 4.25rem);
-  --page-gutter: clamp(0.75rem, 2vw, 2rem);
-  --content-max-width: 96rem;
-  --surface-radius: clamp(0.5rem, 0.8vw, 0.875rem);
-}
-
 html,
 body {
   height: 100dvh !important;
   overflow: hidden;
-  margin: 0;
-  background: #f7f8fa;
 }
 
 #app {

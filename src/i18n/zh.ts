@@ -24,7 +24,8 @@ export default {
   },
   cookieNotice: {
     title: 'Cookie 提示',
-    message: '我们使用 Cookie ！',
+    message:
+      '我们使用 Cookie ！',
     dismiss: '知道了',
   },
   networkStatus: {
@@ -204,19 +205,10 @@ export default {
     type8: '你不会获得任何成就',
   },
   footer: {
-    myLab: '我的实验室',
     home: '首页',
     blackHole: '黑洞',
     friends: '好友',
     notifications: '通知',
-  },
-  myLab: {
-    title: '我的实验室',
-    edit: '编辑',
-    view: '查看',
-    empty: '实验室中还没有作品。',
-    loadFailed: '无法加载我的实验室。',
-    loginRequired: '请先登录以查看我的实验室。',
   },
   ui: {
     messages: {

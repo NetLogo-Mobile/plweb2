@@ -33,22 +33,13 @@
         </svg>
         <span>{{ $t('footer.blackHole') }}</span>
       </router-link>
-      <router-link to="/lab">
-        <svg
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-          ></path>
+      <!-- <router-link to="/my-lab">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round"
+            stroke-linejoin="round" stroke-width="2"></path>
         </svg>
-        <span>{{ $t('footer.myLab') }}</span>
-      </router-link>
+        <span>我的</span>
+      </router-link> -->
       <router-link to="/f">
         <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -112,7 +103,7 @@ onUnmounted(() => {
 
 <style scoped>
 footer {
-  height: calc(var(--footer-height) + env(safe-area-inset-bottom));
+  height: 50px;
   position: fixed;
   bottom: 0;
   left: 0;
@@ -127,8 +118,8 @@ nav {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  height: var(--footer-height);
-  max-width: 72rem;
+  height: 50px;
+  max-width: 1024px;
   margin: 0 auto;
   padding: 0 4px;
 }
@@ -146,14 +137,14 @@ nav a {
 }
 
 nav a svg {
-  width: clamp(1.2rem, 2.5dvh, 1.5rem);
-  height: clamp(1.2rem, 2.5dvh, 1.5rem);
+  width: 20px;
+  height: 20px;
 }
 
 nav a span {
-  font-size: clamp(0.7rem, 1.5dvh, 0.8rem);
+  font-size: 12px;
   font-weight: 500;
-  margin-top: 0.2rem;
+  margin-top: 4px;
 }
 
 .notification-icon-wrapper {

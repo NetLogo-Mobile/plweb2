@@ -4,7 +4,6 @@
   <div style="height: 100%">
     <div
       class="container"
-      :class="{ 'container-full': !block.AuxiliaryText }"
       :style="{
         backgroundImage: block.Summaries[0]
           ? `url(${getCoverUrl(block.Summaries[0]!)}), url(${defaultCoverUrl})`
@@ -22,7 +21,6 @@
     <!-- activity的内容和APP端不一致，但是我们不在这里处理，将会在API层面修改服务器端响应在渲染，参见getData.ts -->
     <!-- The content of activity is different from the app version, but we won't handle it here. Instead, we will modify the server response at the API level, see getData.ts -->
     <div
-      v-if="block.AuxiliaryText"
       class="activity"
       :style="{
         backgroundImage: `url(${getPath('/@base/assets/support.png')})`,
@@ -60,16 +58,11 @@ const handleContainerClick = () => {
 <style scoped>
 .container {
   position: relative;
-  border-radius: var(--surface-radius);
+  border-radius: 8px;
   color: #fff;
   height: calc(100% - 95px);
   display: flex;
   flex-direction: column;
-}
-
-.container-full {
-  height: 100%;
-  min-height: clamp(13.5rem, 36dvh, 25rem);
 }
 
 .container::before {
@@ -88,9 +81,9 @@ const handleContainerClick = () => {
 
 .title {
   text-align: center;
-  margin-bottom: 0.6em;
+  margin-bottom: 10px; /* 添加底边距使标题与 box 之间有些间距 */
   text-align: left;
-  padding-left: 0.8em;
+  padding-left: 20px;
   z-index: 2;
 }
 
@@ -99,24 +92,24 @@ const handleContainerClick = () => {
   display: flex;
   flex-direction: column;
   margin: auto 0 0; /* 顶部 margin 设置为 auto 推动 box 到底部 */
-  gap: 0.25rem;
+  gap: 5px;
   background-color: rgba(0, 0, 0, 0.3);
 }
 
 .activity {
-  height: clamp(4rem, 9dvh, 5rem);
+  height: 75px;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: left;
-  margin-top: 1rem;
-  border-radius: var(--surface-radius);
+  margin-top: 20px;
+  border-radius: 10px;
 }
 
 .activity-text {
   color: white;
   text-align: left;
-  padding-left: 1em;
+  padding-left: 20px;
   font-weight: normal;
 }
 

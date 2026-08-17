@@ -2,11 +2,7 @@ import { createApp } from 'vue'
 import loginModel from '../../components/popup/loginModel.vue'
 import i18n from '@i18n/index'
 
-let loginModalOpen = false
-
 export default async function showLoginModel() {
-  if (loginModalOpen) return
-  loginModalOpen = true
   const div = document.createElement('div')
   Object.assign(div.style, {
     position: 'fixed',
@@ -24,7 +20,6 @@ export default async function showLoginModel() {
     close: () => {
       app.unmount()
       div.remove()
-      loginModalOpen = false
     },
   })
   app.use(i18n)
