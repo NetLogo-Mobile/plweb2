@@ -89,39 +89,24 @@ function showAccountSwitcher() {
 
 <style scoped>
 .header-container {
-  height: var(--header-height);
+  height: 50px;
   top: 0;
-  padding: 0 var(--page-gutter);
+  padding: 0 0 0 20px;
   font-size: small;
   background-color: white;
   width: 100%;
-  max-width: var(--content-max-width);
-  margin: 0 auto;
   z-index: 100;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-sizing: border-box;
 }
 
 .buttons {
   display: flex;
   align-items: center;
   cursor: pointer;
-  gap: clamp(0.65rem, 1.2vw, 1rem);
-  flex: 0 0 auto;
-}
-
-.header-button {
-  display: grid;
-  min-width: 2.5rem;
-  min-height: 2.5rem;
-  padding: 0;
-  color: inherit;
-  cursor: pointer;
-  background: transparent;
-  border: 0;
-  place-items: center;
+  padding-right: 20px;
+  gap: 10px;
 }
 
 .div {

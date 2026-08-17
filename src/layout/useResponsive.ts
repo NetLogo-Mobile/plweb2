@@ -17,7 +17,7 @@ function getViewportHeight() {
 
 function getBlockItemsPerRow(w: number) {
   if (w >= breakpoints.wide) return 4
-  if (w >= breakpoints.desktop) return 3
+  if (w >= breakpoints.laptop) return 3
   if (w >= breakpoints.tablet) return 2
   return 1
 }

@@ -15,22 +15,15 @@ import type { Device, Result, ResultOf, Users } from '../../pl-serve-type-main/t
 
 
 
-const AUTH_FAILURE_PATTERN =
-  /(?:^|[._\s-])(auth(?:entication|orization)?|credential|login|session|token)(?:$|[._\s-])/iu
-
-function isAuthenticationFailure(npath: string, message: string | undefined, hasToken: boolean) {
-  if (!hasToken) return false
-  return npath === '/Users/Authenticate' || AUTH_FAILURE_PATTERN.test(message || '')
-}
-
-function handleAuthenticationFailure(npath: string, source: 'http' | 'body' = 'http') {
+function handle403(npath: string, source: 'http' | 'body' = 'http') {
   sm.remove('userAuthInfo')
-  sm.remove('userInfo')
   window.$ErrorLogger.addBreadcrumb(
     'auth',
     `token cleared due to 403${source === 'body' ? ' body' : ''} on ${npath}`,
   )
-  Emitter.emit('loginRequired')
+  if (sm.getObj('userInfo').value?.Nickname == null) {
+    Emitter.emit('loginRequired')
+  }
 }
 
 const OFFLINE_CACHE_PATHS = new Set([
@@ -121,21 +114,17 @@ async function getDataImpl(
         })
       }
       window.$ErrorLogger.captureApiError('POST', npath, response.status, undefined, body)
-      let errorData: Result | undefined
       try {
-        errorData = (await response.json()) as Result
+        await response.json()
       } catch {
         // Ignore malformed error payloads.
       }
-      if (
-        response.status === 403 &&
-        isAuthenticationFailure(npath, errorData?.Message, Boolean(token))
-      ) {
-        handleAuthenticationFailure(npath, 'http')
+      if (response.status === 403) {
+        handle403(npath, 'http')
       }
       return {
         Status: response.status,
-        Message: errorData?.Message || 'Network Error',
+        Message: 'Network Error',
         Data: null,
       } as unknown as Result
     }
@@ -158,8 +147,8 @@ async function getDataImpl(
       }
     } else {
       window.$ErrorLogger.captureApiError('POST', path, data.Status, data, body)
-      if (data.Status === 403 && isAuthenticationFailure(npath, data.Message, Boolean(token))) {
-        handleAuthenticationFailure(npath, 'body')
+      if (data.Status === 403) {
+        handle403(npath, 'body')
       }
     }
 
@@ -253,7 +242,6 @@ export async function login(
       } catch {
         // Ignore malformed error payloads.
       }
-      if (response.status === 403 && is_token) handleAuthenticationFailure('/Users/Authenticate')
       return {
         Status: response.status,
         Message: '',
@@ -267,8 +255,6 @@ export async function login(
       if (isRealLogin) {
         updateNotificationUnread(data.Data?.Statistic)
       }
-    } else if (data.Status === 403 && is_token) {
-      handleAuthenticationFailure('/Users/Authenticate', 'body')
     }
 
     if (isRealLogin && data.Token) {

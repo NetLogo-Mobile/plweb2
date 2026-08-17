@@ -159,6 +159,10 @@ Emitter.on('userLogin', (res) => {
   }
 })
 
+Emitter.on('loginRequired', () => {
+  showLoginModel()
+})
+
 // It is astonishing that server respond with projects data when login with (null,null)
 // And responed with user data when login with token/password
 // Fourtunately, both data has the same structure
@@ -208,25 +212,22 @@ function showModalFn() {
 .user {
   display: flex;
   align-items: center;
-  min-width: 0;
 }
 
 .avatar {
-  width: clamp(2.25rem, 5dvh, 2.75rem);
-  height: clamp(2.25rem, 5dvh, 2.75rem);
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  flex: 0 0 auto;
 }
 
 .user-info {
-  padding-left: clamp(0.4rem, 1vw, 0.75rem);
-  min-width: 0;
+  flex-grow: 1;
+  padding-left: 10px;
 }
 
 .username {
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  text-align: center;
 }
 
 .level {
@@ -237,38 +238,29 @@ function showModalFn() {
 .resources {
   display: flex;
   align-items: center;
-  gap: clamp(0.35rem, 1vw, 0.8rem);
 }
 
 .resource {
   display: flex;
   align-items: center;
+  margin-left: 10px;
 }
 
 .icon {
-  width: 1.25rem;
-  height: 1.25rem;
-  margin-right: 0.25rem;
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+  margin-left: 5px;
 }
 
 .gems {
-  height: 1.55rem;
-  width: 1.55rem;
+  height: 28px;
+  width: 28px;
 }
 /* Header end */
 
 .block {
   height: 100%;
-}
-
-@media (max-width: 420px) {
-  .level {
-    font-size: 0.72rem;
-  }
-
-  .resources {
-    font-size: 0.8rem;
-  }
 }
 
 .div {
