@@ -26,12 +26,6 @@ export interface UserAuthInfo {
   ID?: string
 }
 
-export interface SavedAccount {
-  user: UserInfo
-  auth: UserAuthInfo
-  updatedAt: number
-}
-
 export interface RequestHistoryPayload {
   userId: string
   records: Record<string, number[]>
@@ -48,7 +42,6 @@ export interface StorageSchema {
   apiResponseCache: Record<string, unknown>
   userIDAndAvatarIDMap: AvatarCache
   userAuthInfo: UserAuthInfo
-  savedAccounts: SavedAccount[]
   cookieConsent: boolean
 }
 

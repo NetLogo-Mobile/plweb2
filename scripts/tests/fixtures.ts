@@ -6,7 +6,6 @@ const NOISE_KEYWORDS = [
   'service-worker',
   'sw.ts',
   '404',
-  'Failed to load resource: the server responded with a status of',
   'CORS',
   'oss-cn-hongkong.aliyuncs.com',
   'ERR_ABORTED',
