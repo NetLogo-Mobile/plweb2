@@ -19,11 +19,10 @@
   "dependencies": {
     "@fingerprintjs/fingerprintjs": "^5.0.1",
     "date-fns": "^4.1.0",
-    "dompurify": "^3.4.13",
     "highlight.js": "^11.11.1",
     "katex": "^0.16.45",
     "md-editor-v3": "^6.5.0",
-    "mermaid": "^11.16.1",
+    "mermaid": "^11.15.0",
     "prettier": "^3.6.2",
     "vue": "^3.5.24",
     "vue-i18n": "^11.1.12",

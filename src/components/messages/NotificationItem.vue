@@ -89,14 +89,22 @@ const msg_icon_url = computed(() => {
 // Jump to the context of the conversation, and later it will directly jump to the index where this sentence is located
 function showComment() {
   if (props.notification.msg_type === 3) {
-    const fields = props.notification.Fields
-    const category = fields?.Discussion ? 'Discussion' : fields?.Experiment ? 'Experiment' : 'User'
-    const targetId = fields?.ExperimentID || fields?.DiscussionID || fields?.UserID
-    const targetName = fields?.Discussion || fields?.Experiment || fields?.User
-    if (!targetId || !targetName) return
-
     window.open(
-      `${getPath('/@root')}/c/${category}/${encodeURIComponent(targetId)}/${encodeURIComponent(targetName)}`,
+      `${getPath('/@root')}/c/${
+        props.notification.Fields?.Discussion
+          ? 'Discussion'
+          : props.notification.Fields?.Experiment
+            ? 'Experiment'
+            : 'User'
+      }/${
+        props.notification.Fields?.ExperimentID ||
+        props.notification.Fields?.DiscussionID ||
+        props.notification.Fields?.UserID
+      }/${
+        props.notification.Fields?.Discussion ||
+        props.notification.Fields?.Experiment ||
+        props.notification.Fields.User
+      }`,
       '_self',
     )
   }
