@@ -225,10 +225,9 @@ export default {
     },
     tabs: {
       ongoing: '進行中',
-      cases: '公開記録',
-      proposals: '公共議案',
-      votes: '匿名投票',
-      archive: 'アーカイブ',
+      public: '公共事項',
+      oversight: '運営監査',
+      featured: '注目の決議',
     },
     kinds: { case: '記録', proposal: '議案' },
     status: { open: '進行中', resolved: '決議済み' },
@@ -240,6 +239,7 @@ export default {
     loadFailed: '民主ウォールの読み込みに失敗しました',
     retry: '再試行',
     vote: {
+      sectionTitle: '匿名投票とコミュニティ決議',
       anonymous: '匿名投票',
       single: '単一選択',
       multiple: '複数選択',

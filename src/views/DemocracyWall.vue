@@ -36,38 +36,39 @@
           <n-tab-pane name="ongoing" :tab="tabTitle('ongoing', ongoingEntries.length)">
             <EntryGrid :entries="ongoingEntries" :loading="entryLoading" @retry="loadEntries" />
           </n-tab-pane>
-          <n-tab-pane name="cases" :tab="tabTitle('cases', caseEntries.length)">
+          <n-tab-pane name="public" :tab="tabTitle('public', publicAffairsCount)">
+            <EntryGrid :entries="proposalEntries" :loading="entryLoading" @retry="loadEntries" />
+            <section class="vote-section" :aria-labelledby="'public-vote-heading'">
+              <h2 id="public-vote-heading">{{ t('democracy.vote.sectionTitle') }}</h2>
+              <div v-if="voteLoading" class="state-box">
+                <n-spin size="large" />
+              </div>
+              <div v-else-if="voteError" class="state-box">
+                <n-empty :description="t('democracy.vote.loadFailed')">
+                  <template #extra>
+                    <n-button @click="loadVotes">{{ t('democracy.retry') }}</n-button>
+                  </template>
+                </n-empty>
+              </div>
+              <div v-else-if="voteContext.activities.length" class="vote-grid">
+                <AnonymousVoteCard
+                  v-for="activity in voteContext.activities"
+                  :key="activity.ID"
+                  :activity="activity"
+                  :status="statusFor(activity.ID)"
+                  :statistic="voteContext.statistic"
+                  @updated="onVoteUpdated"
+                />
+              </div>
+              <div v-else class="state-box">
+                <n-empty :description="t('democracy.vote.empty')" />
+              </div>
+            </section>
+          </n-tab-pane>
+          <n-tab-pane name="oversight" :tab="tabTitle('oversight', caseEntries.length)">
             <EntryGrid :entries="caseEntries" :loading="entryLoading" @retry="loadEntries" />
           </n-tab-pane>
-          <n-tab-pane name="proposals" :tab="tabTitle('proposals', proposalEntries.length)">
-            <EntryGrid :entries="proposalEntries" :loading="entryLoading" @retry="loadEntries" />
-          </n-tab-pane>
-          <n-tab-pane name="votes" :tab="tabTitle('votes', voteContext.activities.length)">
-            <div v-if="voteLoading" class="state-box">
-              <n-spin size="large" />
-            </div>
-            <div v-else-if="voteError" class="state-box">
-              <n-empty :description="t('democracy.vote.loadFailed')">
-                <template #extra>
-                  <n-button @click="loadVotes">{{ t('democracy.retry') }}</n-button>
-                </template>
-              </n-empty>
-            </div>
-            <div v-else-if="voteContext.activities.length" class="vote-grid">
-              <AnonymousVoteCard
-                v-for="activity in voteContext.activities"
-                :key="activity.ID"
-                :activity="activity"
-                :status="statusFor(activity.ID)"
-                :statistic="voteContext.statistic"
-                @updated="onVoteUpdated"
-              />
-            </div>
-            <div v-else class="state-box">
-              <n-empty :description="t('democracy.vote.empty')" />
-            </div>
-          </n-tab-pane>
-          <n-tab-pane name="archive" :tab="tabTitle('archive', resolvedEntries.length)">
+          <n-tab-pane name="featured" :tab="tabTitle('featured', resolvedEntries.length)">
             <EntryGrid :entries="resolvedEntries" :loading="entryLoading" @retry="loadEntries" />
           </n-tab-pane>
         </n-tabs>
@@ -121,6 +122,9 @@ const proposalEntries = computed(() =>
   entries.value.filter((entry) => entry.kind === 'proposal' && entry.status === 'open'),
 )
 const resolvedEntries = computed(() => entries.value.filter((entry) => entry.status === 'resolved'))
+const publicAffairsCount = computed(
+  () => proposalEntries.value.length + voteContext.value.activities.length,
+)
 
 function tabTitle(key: string, count: number) {
   return `${t(`democracy.tabs.${key}`)} ${count}`
@@ -375,6 +379,18 @@ main {
 
 :deep(.n-tabs-tab) {
   white-space: nowrap;
+}
+
+.vote-section {
+  margin-top: 0.9rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e4ebf0;
+}
+
+.vote-section h2 {
+  margin: 0 0 0.7rem 0.15rem;
+  color: #263d4d;
+  font-size: 1.05rem;
 }
 
 :deep(.entry-grid),

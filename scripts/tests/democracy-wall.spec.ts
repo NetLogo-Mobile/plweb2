@@ -134,7 +134,7 @@ test.describe('民主墙', () => {
     await expect(page.getByText('关于公开指控处理流程的卷宗')).toBeVisible()
     await expect(page.getByText('Editor')).toBeVisible()
 
-    await page.getByText('匿名投票 1', { exact: true }).click()
+    await page.getByText('公共事务 1', { exact: true }).click()
     await expect(page.getByText('条例修订投票')).toBeVisible()
     await expect(page.getByRole('button', { name: /同意修订/ })).toBeVisible()
   })

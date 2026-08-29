@@ -223,10 +223,9 @@ export default {
     },
     tabs: {
       ongoing: 'Ongoing',
-      cases: 'Public dockets',
-      proposals: 'Proposals',
-      votes: 'Anonymous votes',
-      archive: 'Archive',
+      public: 'Public affairs',
+      oversight: 'Governance oversight',
+      featured: 'Featured decisions',
     },
     kinds: {
       case: 'Docket',
@@ -244,6 +243,7 @@ export default {
     loadFailed: 'Failed to load Democracy Wall content',
     retry: 'Retry',
     vote: {
+      sectionTitle: 'Anonymous votes and community decisions',
       anonymous: 'Anonymous vote',
       single: 'Single choice',
       multiple: 'Multiple choice',

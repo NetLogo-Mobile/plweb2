@@ -218,10 +218,9 @@ export default {
     },
     tabs: {
       ongoing: '进行中',
-      cases: '公开卷宗',
-      proposals: '公共议案',
-      votes: '匿名投票',
-      archive: '决议归档',
+      public: '公共事务',
+      oversight: '管理监察',
+      featured: '精选决议',
     },
     kinds: {
       case: '卷宗',
@@ -239,6 +238,7 @@ export default {
     loadFailed: '读取民主墙内容失败',
     retry: '重试',
     vote: {
+      sectionTitle: '匿名投票与社区决议',
       anonymous: '匿名投票',
       single: '单选',
       multiple: '多选',

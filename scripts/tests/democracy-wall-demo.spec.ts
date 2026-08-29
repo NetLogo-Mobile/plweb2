@@ -21,7 +21,7 @@ test.describe('民主墙离线演示', () => {
   })
 
   test('匿名投票可刷新保留并重置', async ({ page }) => {
-    await page.getByText('匿名投票 2', { exact: true }).click()
+    await page.getByText('公共事务 4', { exact: true }).click()
     const choice = page.getByRole('button', { name: /同意 72 小时/ })
 
     await expect(choice).toBeEnabled()
@@ -30,7 +30,7 @@ test.describe('民主墙离线演示', () => {
 
     await page.reload()
     await waitForPageReady(page)
-    await page.getByText('匿名投票 2', { exact: true }).click()
+    await page.getByText('公共事务 4', { exact: true }).click()
     await expect(page.getByRole('button', { name: /同意 72 小时/ })).toBeDisabled()
 
     await page.getByRole('button', { name: '重置投票' }).click()

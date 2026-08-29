@@ -226,10 +226,9 @@ export default {
     },
     tabs: {
       ongoing: 'En cours',
-      cases: 'Dossiers publics',
-      proposals: 'Propositions',
-      votes: 'Votes anonymes',
-      archive: 'Archives',
+      public: 'Affaires publiques',
+      oversight: 'Contrôle de la gouvernance',
+      featured: 'Décisions sélectionnées',
     },
     kinds: { case: 'Dossier', proposal: 'Proposition' },
     status: { open: 'En cours', resolved: 'Décidé' },
@@ -241,6 +240,7 @@ export default {
     loadFailed: 'Impossible de charger le mur démocratique',
     retry: 'Réessayer',
     vote: {
+      sectionTitle: 'Votes anonymes et décisions communautaires',
       anonymous: 'Vote anonyme',
       single: 'Choix unique',
       multiple: 'Choix multiple',

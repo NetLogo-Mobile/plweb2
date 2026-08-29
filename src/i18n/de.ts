@@ -226,10 +226,9 @@ export default {
     },
     tabs: {
       ongoing: 'Laufend',
-      cases: 'Öffentliche Akten',
-      proposals: 'Vorschläge',
-      votes: 'Anonyme Stimmen',
-      archive: 'Archiv',
+      public: 'Öffentliche Angelegenheiten',
+      oversight: 'Verwaltungsaufsicht',
+      featured: 'Ausgewählte Entscheidungen',
     },
     kinds: { case: 'Akte', proposal: 'Vorschlag' },
     status: { open: 'Laufend', resolved: 'Entschieden' },
@@ -241,6 +240,7 @@ export default {
     loadFailed: 'Demokratie-Wand konnte nicht geladen werden',
     retry: 'Erneut versuchen',
     vote: {
+      sectionTitle: 'Anonyme Abstimmungen und Gemeinschaftsentscheidungen',
       anonymous: 'Anonyme Abstimmung',
       single: 'Einzelauswahl',
       multiple: 'Mehrfachauswahl',
