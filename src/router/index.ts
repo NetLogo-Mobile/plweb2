@@ -21,6 +21,12 @@ const routes: RouteRecordRaw[] = [
     meta: { keepAlive: true },
   },
   {
+    path: '/d',
+    name: 'democracy',
+    component: () => import('../views/DemocracyWall.vue'),
+    meta: { keepAlive: true },
+  },
+  {
     path: '/p/:category/:id',
     name: 'ExperimentSummary',
     component: () => import('../views/ExperimentSummary.vue'),
@@ -60,6 +66,7 @@ const routes: RouteRecordRaw[] = [
   // To maintain compatibility with old versions, we add some redirects for old paths
   { path: '/black-hole', redirect: '/b' },
   { path: '/notifications', redirect: '/n' },
+  { path: '/democracy', redirect: '/d' },
 
   {
     path: '/e/:category?/:id?',

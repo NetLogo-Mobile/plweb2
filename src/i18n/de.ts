@@ -33,11 +33,13 @@ export default {
   networkStatus: {
     offline: {
       title: 'Sie sind offline',
-      message: 'Es ist keine Netzwerkverbindung verfügbar. Wenn möglich, werden Daten aus dem Cache angezeigt.',
+      message:
+        'Es ist keine Netzwerkverbindung verfügbar. Wenn möglich, werden Daten aus dem Cache angezeigt.',
     },
     poor: {
       title: 'Schlechte Netzwerkverbindung',
-      message: 'Die Verbindung ist langsam oder der Datensparmodus ist aktiv. Möglicherweise werden Daten aus dem Cache angezeigt.',
+      message:
+        'Die Verbindung ist langsam oder der Datensparmodus ist aktiv. Möglicherweise werden Daten aus dem Cache angezeigt.',
     },
   },
   user: {
@@ -208,9 +210,54 @@ export default {
     type7: 'Nur ein Scherz....',
     type8: 'Du wirst keinen Erfolg erhalten',
   },
+  democracy: {
+    title: 'Demokratie-Wand',
+    subtitle: 'Offene, prüfbare und nachvollziehbare Gemeinschaftsentscheidungen',
+    eyebrow: 'GEMEINSCHAFTSVERWALTUNG',
+    heroTitle: 'Jede Entscheidung öffentlich dokumentieren',
+    heroDescription:
+      'Untersuchungsteams prüfen Fakten, die Gemeinschaft hinterfragt Akten und die vorhandenen Berechtigungs- und anonymen Abstimmungssysteme tragen die Entscheidung.',
+    workflowLabel: 'Entscheidungsablauf',
+    workflow: {
+      submit: 'Einreichen',
+      investigate: 'Untersuchen',
+      question: 'Hinterfragen',
+      decide: 'Entscheiden',
+    },
+    tabs: {
+      ongoing: 'Laufend',
+      cases: 'Öffentliche Akten',
+      proposals: 'Vorschläge',
+      votes: 'Anonyme Stimmen',
+      archive: 'Archiv',
+    },
+    kinds: { case: 'Akte', proposal: 'Vorschlag' },
+    status: { open: 'Laufend', resolved: 'Entschieden' },
+    comments: '{count} Fragen',
+    visits: '{count} Aufrufe',
+    metrics: 'Aktendaten',
+    untitled: 'Unbenannter Eintrag',
+    empty: 'In dieser Kategorie gibt es noch keine öffentlichen Inhalte',
+    loadFailed: 'Demokratie-Wand konnte nicht geladen werden',
+    retry: 'Erneut versuchen',
+    vote: {
+      anonymous: 'Anonyme Abstimmung',
+      single: 'Einzelauswahl',
+      multiple: 'Mehrfachauswahl',
+      option: 'Option {number}',
+      cast: 'Diese Option wählen',
+      loginOrIneligible: 'Anmelden, um die Stimmberechtigung zu prüfen',
+      privacy: 'Das vorhandene anonyme Abstimmungssystem schützt die Identität',
+      success: 'Stimme abgegeben',
+      failed: 'Abstimmung fehlgeschlagen. Bitte später erneut versuchen',
+      empty: 'Derzeit gibt es keine aktive anonyme Abstimmung',
+      loadFailed: 'Anonyme Abstimmungen konnten nicht geladen werden',
+    },
+  },
   footer: {
     home: 'Startseite',
     blackHole: 'Schwarzes Loch',
+    democracy: 'Demokratie',
     friends: 'Freunde',
     notifications: 'Benachrichtigungen',
   },

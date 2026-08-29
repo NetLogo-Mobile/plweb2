@@ -33,11 +33,13 @@ export default {
   networkStatus: {
     offline: {
       title: 'Vous êtes hors ligne',
-      message: 'Aucune connexion réseau n’est disponible. Les données en cache seront affichées lorsque cela est possible.',
+      message:
+        'Aucune connexion réseau n’est disponible. Les données en cache seront affichées lorsque cela est possible.',
     },
     poor: {
       title: 'Connexion réseau faible',
-      message: 'La connexion est lente ou l’économiseur de données est activé. Des données en cache peuvent être affichées.',
+      message:
+        'La connexion est lente ou l’économiseur de données est activé. Des données en cache peuvent être affichées.',
     },
   },
   user: {
@@ -208,9 +210,54 @@ export default {
     type7: 'Je plaisante....',
     type8: 'Vous ne recevrez aucun succès',
   },
+  democracy: {
+    title: 'Mur démocratique',
+    subtitle: 'Une gouvernance communautaire ouverte, vérifiable et traçable',
+    eyebrow: 'GOUVERNANCE COMMUNAUTAIRE',
+    heroTitle: 'Conserver une trace publique de chaque décision',
+    heroDescription:
+      "Les groupes d'enquête vérifient les faits, la communauté questionne les dossiers et les systèmes existants de permissions et de vote anonyme portent la décision.",
+    workflowLabel: 'Processus de gouvernance',
+    workflow: {
+      submit: 'Soumettre',
+      investigate: 'Enquêter',
+      question: 'Questionner',
+      decide: 'Décider',
+    },
+    tabs: {
+      ongoing: 'En cours',
+      cases: 'Dossiers publics',
+      proposals: 'Propositions',
+      votes: 'Votes anonymes',
+      archive: 'Archives',
+    },
+    kinds: { case: 'Dossier', proposal: 'Proposition' },
+    status: { open: 'En cours', resolved: 'Décidé' },
+    comments: '{count} questions',
+    visits: '{count} vues',
+    metrics: 'Données du dossier',
+    untitled: 'Entrée sans titre',
+    empty: "Aucun contenu public dans cette catégorie pour l'instant",
+    loadFailed: 'Impossible de charger le mur démocratique',
+    retry: 'Réessayer',
+    vote: {
+      anonymous: 'Vote anonyme',
+      single: 'Choix unique',
+      multiple: 'Choix multiple',
+      option: 'Option {number}',
+      cast: 'Choisir cette option',
+      loginOrIneligible: 'Connectez-vous pour vérifier le droit de vote',
+      privacy: "Le système de vote anonyme existant protège l'identité des votants",
+      success: 'Vote enregistré',
+      failed: 'Le vote a échoué. Réessayez plus tard',
+      empty: "Aucun vote anonyme n'est en cours",
+      loadFailed: 'Impossible de charger les votes anonymes',
+    },
+  },
   footer: {
     home: 'Accueil',
     blackHole: 'Trou noir',
+    democracy: 'Démocratie',
     friends: 'Amis',
     notifications: 'Notifications',
   },
