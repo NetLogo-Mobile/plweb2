@@ -253,6 +253,27 @@ export default {
       empty: "Aucun vote anonyme n'est en cours",
       loadFailed: 'Impossible de charger les votes anonymes',
     },
+    demo: {
+      badge: 'Démo hors ligne',
+      title: 'Les données locales de démonstration sont actives',
+      description:
+        'Les dossiers, propositions et votes restent dans ce navigateur et ne sont pas envoyés.',
+      reset: 'Réinitialiser les votes',
+      detailTitle: 'Dossier public',
+      rule: 'Base réglementaire',
+      confirmedFacts: 'Faits confirmés',
+      timeline: 'Chronologie',
+      finding: 'Conclusion préliminaire',
+      publicQuestions: 'Questions publiques',
+      missing: 'Ce dossier de démonstration est introuvable',
+      back: 'Retour au mur démocratique',
+      fallbackRule:
+        "Règle de démo : une proposition publie sa justification, sa portée et sa date d'effet.",
+      fallbackFact: 'Cette page présente la structure du dossier avec des données locales.',
+      fallbackTimeline: 'Dossier de démonstration publié',
+      fallbackFinding: 'Cet élément accepte des questions ou figure dans les archives.',
+      fallbackQuestion: 'Quel est son effet sur les règles et les décisions antérieures ?',
+    },
   },
   footer: {
     home: 'Accueil',

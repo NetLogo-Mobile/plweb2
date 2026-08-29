@@ -23,7 +23,11 @@
     </div>
 
     <footer class="entry-footer">
-      <router-link class="author" :to="`/u/${entry.summary.User.ID}`">
+      <component
+        :is="demoMode ? 'div' : 'router-link'"
+        class="author"
+        :to="demoMode ? undefined : `/u/${entry.summary.User.ID}`"
+      >
         <img :src="avatarUrl" alt="" />
         <span>{{ entry.summary.User.Nickname }}</span>
         <Tag
@@ -31,7 +35,7 @@
           category="User"
           :tag="`C-${entry.summary.User.Verification}`"
         />
-      </router-link>
+      </component>
       <div class="metrics" :aria-label="t('democracy.metrics')">
         <span>{{ t('democracy.comments', { count: entry.summary.Comments }) }}</span>
         <span>{{ t('democracy.visits', { count: entry.summary.Visits }) }}</span>
@@ -47,11 +51,13 @@ import Tag from '@components/utils/TagLarger.vue'
 import { formatDate, getUserUrl } from '@services/utils'
 import type { DemocracyEntry } from '@services/democracyWall'
 
-const props = defineProps<{ entry: DemocracyEntry }>()
+const props = defineProps<{ entry: DemocracyEntry; demoMode?: boolean }>()
 const { t, locale } = useI18n()
 
-const targetPath = computed(
-  () => `/p/${props.entry.summary.Category || 'Discussion'}/${props.entry.summary.ID}`,
+const targetPath = computed(() =>
+  props.demoMode
+    ? `/d/demo/${props.entry.summary.ID}?demo=1`
+    : `/p/${props.entry.summary.Category || 'Discussion'}/${props.entry.summary.ID}`,
 )
 const avatarUrl = computed(() => getUserUrl(props.entry.summary.User))
 const localizedSubject = computed(

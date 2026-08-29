@@ -27,6 +27,12 @@ const routes: RouteRecordRaw[] = [
     meta: { keepAlive: true },
   },
   {
+    path: '/d/demo/:id',
+    name: 'democracy-demo-detail',
+    component: () => import('../views/DemocracyDemoDetail.vue'),
+    meta: { keepAlive: false },
+  },
+  {
     path: '/p/:category/:id',
     name: 'ExperimentSummary',
     component: () => import('../views/ExperimentSummary.vue'),

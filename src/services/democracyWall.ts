@@ -1,5 +1,11 @@
 import { getData, login } from '@api/getData'
 import storageManager from '@storage/index'
+import {
+  castDemocracyDemoVote,
+  DEMOCRACY_DEMO_SUMMARIES,
+  getDemocracyDemoSync,
+  isDemocracyDemoMode,
+} from './democracyWallDemo'
 import type {
   Activity,
   ActivityStatus,
@@ -42,6 +48,10 @@ export function toDemocracyEntry(summary: Summary): DemocracyEntry {
 }
 
 export async function fetchDemocracyEntries(): Promise<DemocracyEntry[]> {
+  if (isDemocracyDemoMode()) {
+    return DEMOCRACY_DEMO_SUMMARIES.map(toDemocracyEntry)
+  }
+
   const response = await getData('/Contents/QueryExperiments', {
     Query: {
       Category: 'Discussion',
@@ -75,6 +85,10 @@ function isVoteActivity(activity: Activity) {
 }
 
 export async function fetchDemocracyVoteContext(): Promise<DemocracyVoteContext> {
+  if (isDemocracyDemoMode()) {
+    return mergeDemocracyVoteContext({ activities: [], statuses: [] }, getDemocracyDemoSync())
+  }
+
   const auth = storageManager.getObj('userAuthInfo').value
   const response =
     auth?.token && auth.authCode
@@ -93,6 +107,18 @@ export async function fetchDemocracyVoteContext(): Promise<DemocracyVoteContext>
     },
     sync,
   )
+}
+
+export async function submitDemocracyVote(activity: Activity, index: number, statistic: Statistic) {
+  if (isDemocracyDemoMode()) {
+    return { Status: 200, Message: '', Data: castDemocracyDemoVote(activity, index) } as const
+  }
+
+  return getData('/Users/ReceiveBonus', {
+    ActivityID: activity.ID,
+    Index: index,
+    Statistic: statistic,
+  })
 }
 
 export function mergeDemocracyVoteContext(

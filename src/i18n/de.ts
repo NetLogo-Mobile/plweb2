@@ -253,6 +253,27 @@ export default {
       empty: 'Derzeit gibt es keine aktive anonyme Abstimmung',
       loadFailed: 'Anonyme Abstimmungen konnten nicht geladen werden',
     },
+    demo: {
+      badge: 'Offline-Demo',
+      title: 'Lokale Demonstrationsdaten sind aktiv',
+      description:
+        'Akten, Vorschläge und Stimmen bleiben in diesem Browser und werden nicht gesendet.',
+      reset: 'Stimmen zurücksetzen',
+      detailTitle: 'Öffentliche Akte',
+      rule: 'Regelgrundlage',
+      confirmedFacts: 'Bestätigte Fakten',
+      timeline: 'Zeitablauf',
+      finding: 'Vorläufiges Ergebnis',
+      publicQuestions: 'Öffentliche Fragen',
+      missing: 'Diese Demonstrationsakte wurde nicht gefunden',
+      back: 'Zurück zur Demokratie-Wand',
+      fallbackRule: 'Demoregel: Ein Vorschlag nennt Begründung, Umfang und Inkrafttreten.',
+      fallbackFact: 'Diese Seite zeigt die Aktenstruktur mit lokalen Demonstrationsdaten.',
+      fallbackTimeline: 'Demonstrationsakte veröffentlicht',
+      fallbackFinding: 'Dieser Eintrag nimmt Fragen an oder wurde bereits archiviert.',
+      fallbackQuestion:
+        'Wie wirkt sich dieser Vorschlag auf Regeln und frühere Entscheidungen aus?',
+    },
   },
   footer: {
     home: 'Startseite',

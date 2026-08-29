@@ -49,9 +49,10 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { getData } from '@api/getData'
 import { showLoginModel } from '@popup/index'
 import { showMessage } from '@popup/naiveui'
+import { submitDemocracyVote } from '@services/democracyWall'
+import { isDemocracyDemoMode } from '@services/democracyWallDemo'
 import { checkLogin } from '@services/utils'
 import type { Activity, ActivityStatus, Statistic, Sync } from '../../pl-serve-type-main/type/main'
 
@@ -116,7 +117,7 @@ function canVote(index: number) {
 }
 
 async function vote(index: number) {
-  if (!checkLogin(false)) {
+  if (!isDemocracyDemoMode() && !checkLogin(false)) {
     showLoginModel()
     return
   }
@@ -124,11 +125,7 @@ async function vote(index: number) {
 
   votingIndex.value = index
   try {
-    const response = await getData('/Users/ReceiveBonus', {
-      ActivityID: props.activity.ID,
-      Index: index,
-      Statistic: props.statistic,
-    })
+    const response = await submitDemocracyVote(props.activity, index, props.statistic)
     if (response.Status === 200) {
       emit('updated', response.Data ?? undefined)
       showMessage('success', t('democracy.vote.success'), { duration: 1600 })

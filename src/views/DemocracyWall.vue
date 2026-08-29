@@ -4,10 +4,19 @@
       <div class="page-heading">
         <h1>{{ t('democracy.title') }}</h1>
         <span>{{ t('democracy.subtitle') }}</span>
+        <b v-if="demoMode" class="demo-chip">{{ t('democracy.demo.badge') }}</b>
       </div>
     </Header>
 
     <main>
+      <section v-if="demoMode" class="demo-banner">
+        <div>
+          <strong>{{ t('democracy.demo.title') }}</strong>
+          <span>{{ t('democracy.demo.description') }}</span>
+        </div>
+        <n-button size="small" @click="resetDemo">{{ t('democracy.demo.reset') }}</n-button>
+      </section>
+
       <section class="hero" aria-labelledby="democracy-intro-title">
         <div>
           <p class="eyebrow">{{ t('democracy.eyebrow') }}</p>
@@ -84,9 +93,11 @@ import {
   type DemocracyEntry,
   type DemocracyVoteContext,
 } from '@services/democracyWall'
+import { isDemocracyDemoMode, resetDemocracyDemoVotes } from '@services/democracyWallDemo'
 import type { Sync } from '../pl-serve-type-main/type/main'
 
 const { t } = useI18n()
+const demoMode = isDemocracyDemoMode()
 const activeTab = ref('ongoing')
 const entries = ref<DemocracyEntry[]>([])
 const entryLoading = ref(true)
@@ -147,6 +158,11 @@ function onVoteUpdated(sync?: Sync) {
   voteContext.value = mergeDemocracyVoteContext(voteContext.value, sync)
 }
 
+function resetDemo() {
+  resetDemocracyDemoVotes()
+  void loadVotes()
+}
+
 const EntryGrid = defineComponent({
   name: 'DemocracyEntryGrid',
   props: {
@@ -179,7 +195,9 @@ const EntryGrid = defineComponent({
       return h(
         'div',
         { class: 'entry-grid' },
-        props.entries.map((entry) => h(DemocracyEntryCard, { key: entry.summary.ID, entry })),
+        props.entries.map((entry) =>
+          h(DemocracyEntryCard, { key: entry.summary.ID, entry, demoMode }),
+        ),
       )
     }
   },
@@ -220,6 +238,15 @@ onMounted(() => {
   white-space: nowrap;
 }
 
+.demo-chip {
+  flex: 0 0 auto;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  background: #fff1c7;
+  color: #8b5b00;
+  font-size: 0.72rem;
+}
+
 main {
   height: calc(100dvh - 100px);
   overflow-y: auto;
@@ -228,9 +255,33 @@ main {
 }
 
 .hero,
-.wall-panel {
+.wall-panel,
+.demo-banner {
   width: min(1180px, 100%);
   margin: 0 auto;
+}
+
+.demo-banner {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #ead18b;
+  border-radius: 0.8rem;
+  background: #fff9e8;
+  color: #694d10;
+}
+
+.demo-banner div {
+  display: flex;
+  gap: 0.35rem;
+  flex-direction: column;
+}
+
+.demo-banner span {
+  font-size: 0.82rem;
 }
 
 .hero {
