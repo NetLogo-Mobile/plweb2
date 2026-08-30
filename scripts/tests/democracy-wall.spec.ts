@@ -133,6 +133,14 @@ test.describe('民主墙', () => {
     await expect(page.getByRole('heading', { name: '民主墙' })).toBeVisible()
     await expect(page.getByText('关于公开指控处理流程的卷宗')).toBeVisible()
     await expect(page.getByText('Editor')).toBeVisible()
+    await expect(page.getByRole('link', { name: '查看详情' }).first()).toHaveAttribute(
+      'href',
+      '#/p/Discussion/66a84559744ed757b46f8917',
+    )
+    await expect(page.getByRole('link', { name: '参与质询' }).first()).toHaveAttribute(
+      'href',
+      /#\/c\/Discussion\/66a84559744ed757b46f8917\//,
+    )
 
     await page.getByText('公共事务 1', { exact: true }).click()
     await expect(page.getByText('条例修订投票')).toBeVisible()

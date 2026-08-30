@@ -224,6 +224,13 @@ export default {
       question: 'Questionner',
       decide: 'Décider',
     },
+    scopes: {
+      label: 'Périmètre du mur démocratique',
+      current: 'Affaires actuelles',
+      history: 'Affaires historiques',
+      currentDescription: 'Affaires en phase de questions, de vote ou de contrôle.',
+      historyDescription: 'Consulter les dossiers, décisions et modifications terminés.',
+    },
     tabs: {
       ongoing: 'En cours',
       public: 'Affaires publiques',
@@ -235,6 +242,10 @@ export default {
     comments: '{count} questions',
     visits: '{count} vues',
     metrics: 'Données du dossier',
+    actions: {
+      view: 'Voir le détail',
+      question: 'Participer aux questions',
+    },
     untitled: 'Entrée sans titre',
     empty: "Aucun contenu public dans cette catégorie pour l'instant",
     loadFailed: 'Impossible de charger le mur démocratique',

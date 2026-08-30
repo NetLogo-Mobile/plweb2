@@ -17,32 +17,52 @@
         <n-button size="small" @click="resetDemo">{{ t('democracy.demo.reset') }}</n-button>
       </section>
 
-      <section class="hero" aria-labelledby="democracy-intro-title">
-        <div>
-          <p class="eyebrow">{{ t('democracy.eyebrow') }}</p>
-          <h2 id="democracy-intro-title">{{ t('democracy.heroTitle') }}</h2>
-          <p>{{ t('democracy.heroDescription') }}</p>
-        </div>
-        <ol class="workflow" :aria-label="t('democracy.workflowLabel')">
-          <li v-for="(step, index) in workflowSteps" :key="step">
-            <b>{{ index + 1 }}</b>
-            <span>{{ step }}</span>
-          </li>
-        </ol>
-      </section>
+      <nav class="scope-switch" :aria-label="t('democracy.scopes.label')">
+        <button
+          type="button"
+          :class="{ active: activeScope === 'current' }"
+          @click="activeScope = 'current'"
+        >
+          <span>{{ t('democracy.scopes.current') }}</span>
+          <small>{{ entries.length }}</small>
+        </button>
+        <button
+          type="button"
+          :class="{ active: activeScope === 'history' }"
+          @click="activeScope = 'history'"
+        >
+          <span>{{ t('democracy.scopes.history') }}</span>
+          <small>{{ historyEntries.length }}</small>
+        </button>
+      </nav>
 
-      <section class="wall-panel">
+      <section v-if="activeScope === 'current'" class="content-panel">
+        <header class="panel-heading">
+          <div>
+            <h2>{{ t('democracy.scopes.current') }}</h2>
+            <p>{{ t('democracy.scopes.currentDescription') }}</p>
+          </div>
+        </header>
+
         <n-tabs v-model:value="activeTab" type="line" animated>
           <n-tab-pane name="ongoing" :tab="tabTitle('ongoing', ongoingEntries.length)">
-            <EntryGrid :entries="ongoingEntries" :loading="entryLoading" @retry="loadEntries" />
+            <EntryGrid
+              :entries="ongoingEntries"
+              :loading="entryLoading"
+              :error="entryError"
+              @retry="loadEntries"
+            />
           </n-tab-pane>
           <n-tab-pane name="public" :tab="tabTitle('public', publicAffairsCount)">
-            <EntryGrid :entries="proposalEntries" :loading="entryLoading" @retry="loadEntries" />
-            <section class="vote-section" :aria-labelledby="'public-vote-heading'">
+            <EntryGrid
+              :entries="proposalEntries"
+              :loading="entryLoading"
+              :error="entryError"
+              @retry="loadEntries"
+            />
+            <section class="vote-section" aria-labelledby="public-vote-heading">
               <h2 id="public-vote-heading">{{ t('democracy.vote.sectionTitle') }}</h2>
-              <div v-if="voteLoading" class="state-box">
-                <n-spin size="large" />
-              </div>
+              <div v-if="voteLoading" class="state-box"><n-spin size="large" /></div>
               <div v-else-if="voteError" class="state-box">
                 <n-empty :description="t('democracy.vote.loadFailed')">
                   <template #extra>
@@ -66,12 +86,37 @@
             </section>
           </n-tab-pane>
           <n-tab-pane name="oversight" :tab="tabTitle('oversight', caseEntries.length)">
-            <EntryGrid :entries="caseEntries" :loading="entryLoading" @retry="loadEntries" />
+            <EntryGrid
+              :entries="caseEntries"
+              :loading="entryLoading"
+              :error="entryError"
+              @retry="loadEntries"
+            />
           </n-tab-pane>
-          <n-tab-pane name="featured" :tab="tabTitle('featured', resolvedEntries.length)">
-            <EntryGrid :entries="resolvedEntries" :loading="entryLoading" @retry="loadEntries" />
+          <n-tab-pane name="featured" :tab="tabTitle('featured', featuredEntries.length)">
+            <EntryGrid
+              :entries="featuredEntries"
+              :loading="entryLoading"
+              :error="entryError"
+              @retry="loadEntries"
+            />
           </n-tab-pane>
         </n-tabs>
+      </section>
+
+      <section v-else class="content-panel history-panel">
+        <header class="panel-heading">
+          <div>
+            <h2>{{ t('democracy.scopes.history') }}</h2>
+            <p>{{ t('democracy.scopes.historyDescription') }}</p>
+          </div>
+        </header>
+        <EntryGrid
+          :entries="historyEntries"
+          :loading="historyLoading"
+          :error="historyError"
+          @retry="loadHistory"
+        />
       </section>
     </main>
 
@@ -89,6 +134,7 @@ import DemocracyEntryCard from '@components/democracy/DemocracyEntryCard.vue'
 import AnonymousVoteCard from '@components/democracy/AnonymousVoteCard.vue'
 import {
   fetchDemocracyEntries,
+  fetchDemocracyHistoryEntries,
   fetchDemocracyVoteContext,
   mergeDemocracyVoteContext,
   type DemocracyEntry,
@@ -99,20 +145,17 @@ import type { Sync } from '../pl-serve-type-main/type/main'
 
 const { t } = useI18n()
 const demoMode = isDemocracyDemoMode()
+const activeScope = ref<'current' | 'history'>('current')
 const activeTab = ref('ongoing')
 const entries = ref<DemocracyEntry[]>([])
+const historyEntries = ref<DemocracyEntry[]>([])
 const entryLoading = ref(true)
 const entryError = ref(false)
+const historyLoading = ref(true)
+const historyError = ref(false)
 const voteLoading = ref(true)
 const voteError = ref(false)
 const voteContext = ref<DemocracyVoteContext>({ activities: [], statuses: [] })
-
-const workflowSteps = computed(() => [
-  t('democracy.workflow.submit'),
-  t('democracy.workflow.investigate'),
-  t('democracy.workflow.question'),
-  t('democracy.workflow.decide'),
-])
 
 const ongoingEntries = computed(() => entries.value.filter((entry) => entry.status === 'open'))
 const caseEntries = computed(() =>
@@ -121,7 +164,7 @@ const caseEntries = computed(() =>
 const proposalEntries = computed(() =>
   entries.value.filter((entry) => entry.kind === 'proposal' && entry.status === 'open'),
 )
-const resolvedEntries = computed(() => entries.value.filter((entry) => entry.status === 'resolved'))
+const featuredEntries = computed(() => entries.value.filter((entry) => entry.featured))
 const publicAffairsCount = computed(
   () => proposalEntries.value.length + voteContext.value.activities.length,
 )
@@ -139,6 +182,18 @@ async function loadEntries() {
     entryError.value = true
   } finally {
     entryLoading.value = false
+  }
+}
+
+async function loadHistory() {
+  historyLoading.value = true
+  historyError.value = false
+  try {
+    historyEntries.value = await fetchDemocracyHistoryEntries()
+  } catch {
+    historyError.value = true
+  } finally {
+    historyLoading.value = false
   }
 }
 
@@ -170,19 +225,15 @@ function resetDemo() {
 const EntryGrid = defineComponent({
   name: 'DemocracyEntryGrid',
   props: {
-    entries: {
-      type: Array as PropType<DemocracyEntry[]>,
-      required: true,
-    },
+    entries: { type: Array as PropType<DemocracyEntry[]>, required: true },
     loading: Boolean,
+    error: Boolean,
   },
   emits: ['retry'],
   setup(props, { emit }) {
     return () => {
-      if (props.loading) {
-        return h('div', { class: 'state-box' }, [h(NSpin, { size: 'large' })])
-      }
-      if (entryError.value) {
+      if (props.loading) return h('div', { class: 'state-box' }, [h(NSpin, { size: 'large' })])
+      if (props.error) {
         return h('div', { class: 'state-box' }, [
           h(
             NEmpty,
@@ -208,19 +259,16 @@ const EntryGrid = defineComponent({
 })
 
 onMounted(() => {
-  void Promise.allSettled([loadEntries(), loadVotes()])
-  window.$Logger.logPageView({
-    pageLink: '/Democracy/',
-    timeStamp: Date.now(),
-  })
+  void Promise.allSettled([loadEntries(), loadHistory(), loadVotes()])
+  window.$Logger.logPageView({ pageLink: '/Democracy/', timeStamp: Date.now() })
 })
 </script>
 
 <style scoped>
 .democracy-page {
   min-height: 100dvh;
-  background: #f3f6f8;
-  color: #253746;
+  background: #f3f3f3;
+  color: #333;
 }
 
 .page-heading {
@@ -237,32 +285,32 @@ onMounted(() => {
 
 .page-heading span {
   overflow: hidden;
-  color: #7a8791;
+  color: #777;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .demo-chip {
-  flex: 0 0 auto;
-  padding: 0.2rem 0.5rem;
-  border-radius: 999px;
-  background: #fff1c7;
-  color: #8b5b00;
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.3rem;
+  background: #e7f4fb;
+  color: #0185c5;
   font-size: 0.72rem;
 }
 
 main {
   height: calc(100dvh - 100px);
   overflow-y: auto;
-  padding: clamp(0.75rem, 2vw, 1.5rem);
+  padding: 12px;
   scrollbar-width: thin;
 }
 
-.hero,
-.wall-panel,
-.demo-banner {
+.demo-banner,
+.scope-switch,
+.content-panel {
   width: min(1180px, 100%);
-  margin: 0 auto;
+  margin-right: auto;
+  margin-left: auto;
 }
 
 .demo-banner {
@@ -270,106 +318,95 @@ main {
   gap: 1rem;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.75rem;
-  padding: 0.75rem 1rem;
-  border: 1px solid #ead18b;
-  border-radius: 0.8rem;
-  background: #fff9e8;
-  color: #694d10;
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border-left: 4px solid #0185c5;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
 .demo-banner div {
   display: flex;
-  gap: 0.35rem;
+  gap: 0.2rem;
   flex-direction: column;
 }
 
 .demo-banner span {
-  font-size: 0.82rem;
+  color: #777;
+  font-size: 0.8rem;
 }
 
-.hero {
+.scope-switch {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 1.15fr);
-  gap: clamp(1rem, 3vw, 2.5rem);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 10px;
+  padding: 4px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.scope-switch button {
+  display: flex;
+  gap: 0.55rem;
   align-items: center;
-  padding: clamp(1.1rem, 3vw, 2rem);
-  border-radius: 1.2rem;
-  overflow: hidden;
-  background:
-    radial-gradient(circle at 95% 10%, rgba(108, 201, 227, 0.28), transparent 34%),
-    linear-gradient(135deg, #123c58, #126c88);
+  justify-content: center;
+  padding: 0.65rem 1rem;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #666;
+  cursor: pointer;
+}
+
+.scope-switch button.active {
+  background: #0185c5;
   color: #fff;
 }
 
-.eyebrow {
-  margin: 0 0 0.35rem;
-  color: #a7e4f2;
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+.scope-switch button:focus-visible {
+  outline: 2px solid #6ec1e8;
+  outline-offset: 1px;
 }
 
-.hero h2 {
-  margin: 0;
-  font-size: clamp(1.45rem, 4vw, 2.45rem);
-  line-height: 1.2;
+.scope-switch small {
+  min-width: 1.3rem;
+  padding: 0.05rem 0.35rem;
+  border-radius: 999px;
+  background: rgba(128, 128, 128, 0.15);
 }
 
-.hero p:last-child {
-  max-width: 42rem;
-  margin: 0.75rem 0 0;
-  color: #d9edf3;
-  line-height: 1.65;
-}
-
-.workflow {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.5rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.workflow li {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 0.5rem;
-  align-items: center;
-  text-align: center;
-}
-
-.workflow li:not(:last-child)::after {
-  width: 50%;
-  height: 1px;
-  align-self: flex-end;
-  margin-top: -2.45rem;
-  margin-right: -29%;
-  background: rgba(255, 255, 255, 0.35);
-  content: '';
-}
-
-.workflow b {
-  display: grid;
-  width: 2.2rem;
-  height: 2.2rem;
-  place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.workflow span {
-  font-size: 0.78rem;
-}
-
-.wall-panel {
-  margin-top: clamp(0.75rem, 2vw, 1.2rem);
-  padding: clamp(0.75rem, 2vw, 1.2rem);
-  border-radius: 1.2rem;
+.content-panel {
+  padding: 14px;
+  border-radius: 10px;
   background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.panel-heading h2,
+.panel-heading p {
+  margin: 0;
+}
+
+.panel-heading h2 {
+  color: #333;
+  font-size: 1.15rem;
+}
+
+.panel-heading p {
+  margin-top: 0.25rem;
+  color: #777;
+  font-size: 0.82rem;
 }
 
 :deep(.n-tabs-nav-scroll-wrapper) {
@@ -382,36 +419,32 @@ main {
 }
 
 .vote-section {
-  margin-top: 0.9rem;
-  padding-top: 1rem;
-  border-top: 1px solid #e4ebf0;
+  margin-top: 10px;
+  padding-top: 12px;
+  border-top: 1px solid #eee;
 }
 
 .vote-section h2 {
-  margin: 0 0 0.7rem 0.15rem;
-  color: #263d4d;
-  font-size: 1.05rem;
+  margin: 0 0 10px;
+  color: #444;
+  font-size: 1rem;
 }
 
 :deep(.entry-grid),
 .vote-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(0.75rem, 2vw, 1.2rem);
-  padding: 0.35rem 0.15rem 1rem;
+  gap: 12px;
+  padding: 4px 0 10px;
 }
 
 :deep(.state-box) {
   display: grid;
-  min-height: 16rem;
+  min-height: 14rem;
   place-items: center;
 }
 
 @media (max-width: 820px) {
-  .hero {
-    grid-template-columns: 1fr;
-  }
-
   :deep(.entry-grid),
   .vote-grid {
     grid-template-columns: 1fr;
@@ -424,21 +457,19 @@ main {
   }
 
   main {
-    padding: 0.6rem;
+    padding: 8px;
   }
 
-  .hero,
-  .wall-panel {
-    border-radius: 0.9rem;
+  .demo-banner {
+    align-items: flex-start;
   }
 
-  .workflow {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    row-gap: 1rem;
+  .content-panel {
+    padding: 10px;
   }
 
-  .workflow li::after {
-    display: none;
+  .panel-heading p {
+    line-height: 1.45;
   }
 }
 </style>

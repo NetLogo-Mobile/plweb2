@@ -216,6 +216,13 @@ export default {
       question: '质询',
       decide: '决议',
     },
+    scopes: {
+      label: '民主墙事务范围',
+      current: '当前事务',
+      history: '历史事务',
+      currentDescription: '查看正在质询、表决和接受管理监察的社区事务。',
+      historyDescription: '查询已经完成处理的卷宗、决议和修订记录。',
+    },
     tabs: {
       ongoing: '进行中',
       public: '公共事务',
@@ -233,6 +240,10 @@ export default {
     comments: '{count} 条质询',
     visits: '{count} 次阅读',
     metrics: '卷宗数据',
+    actions: {
+      view: '查看详情',
+      question: '参与质询',
+    },
     untitled: '未命名议题',
     empty: '当前分类暂无公开内容',
     loadFailed: '读取民主墙内容失败',

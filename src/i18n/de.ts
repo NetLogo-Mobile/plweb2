@@ -224,6 +224,13 @@ export default {
       question: 'Hinterfragen',
       decide: 'Entscheiden',
     },
+    scopes: {
+      label: 'Bereich der Demokratie-Wand',
+      current: 'Aktuelle Vorgänge',
+      history: 'Historische Vorgänge',
+      currentDescription: 'Vorgänge in Befragung, Abstimmung oder Verwaltungsaufsicht.',
+      historyDescription: 'Abgeschlossene Akten, Entscheidungen und Änderungen einsehen.',
+    },
     tabs: {
       ongoing: 'Laufend',
       public: 'Öffentliche Angelegenheiten',
@@ -235,6 +242,10 @@ export default {
     comments: '{count} Fragen',
     visits: '{count} Aufrufe',
     metrics: 'Aktendaten',
+    actions: {
+      view: 'Details ansehen',
+      question: 'Frage stellen',
+    },
     untitled: 'Unbenannter Eintrag',
     empty: 'In dieser Kategorie gibt es noch keine öffentlichen Inhalte',
     loadFailed: 'Demokratie-Wand konnte nicht geladen werden',

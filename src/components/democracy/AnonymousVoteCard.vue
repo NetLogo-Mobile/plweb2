@@ -146,11 +146,11 @@ async function vote(index: number) {
   min-width: 0;
   flex-direction: column;
   gap: 1rem;
-  padding: clamp(1rem, 2vw, 1.5rem);
-  border: 1px solid #d9e5ef;
-  border-radius: 1rem;
-  background: linear-gradient(145deg, #fff 20%, #f2f8fc);
-  box-shadow: 0 0.3rem 1.4rem rgba(13, 60, 91, 0.08);
+  padding: 14px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
 }
 
 header,
@@ -185,7 +185,7 @@ h3 {
 .vote-mode {
   flex: 0 0 auto;
   padding: 0.28rem 0.6rem;
-  border-radius: 999px;
+  border-radius: 4px;
   background: #e5f1fa;
   color: #24658d;
   font-size: 0.75rem;
@@ -209,7 +209,7 @@ h3 {
   gap: 0.5rem;
   padding: 0.8rem 0.9rem;
   border: 1px solid #cfdae3;
-  border-radius: 0.75rem;
+  border-radius: 6px;
   background: #fff;
   color: #334654;
   text-align: left;

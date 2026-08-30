@@ -37,10 +37,17 @@
         />
       </component>
       <div class="metrics" :aria-label="t('democracy.metrics')">
-        <span>{{ t('democracy.comments', { count: entry.summary.Comments }) }}</span>
+        <router-link :to="commentsPath">
+          {{ t('democracy.comments', { count: entry.summary.Comments }) }}
+        </router-link>
         <span>{{ t('democracy.visits', { count: entry.summary.Visits }) }}</span>
       </div>
     </footer>
+
+    <div class="entry-actions">
+      <router-link :to="targetPath">{{ t('democracy.actions.view') }}</router-link>
+      <router-link :to="commentsPath">{{ t('democracy.actions.question') }}</router-link>
+    </div>
   </article>
 </template>
 
@@ -58,6 +65,18 @@ const targetPath = computed(() =>
   props.demoMode
     ? `/d/demo/${props.entry.summary.ID}?demo=1`
     : `/p/${props.entry.summary.Category || 'Discussion'}/${props.entry.summary.ID}`,
+)
+const commentsPath = computed(() =>
+  props.demoMode
+    ? targetPath.value
+    : {
+        name: 'Comments',
+        params: {
+          category: props.entry.summary.Category || 'Discussion',
+          id: props.entry.summary.ID,
+          name: localizedSubject.value,
+        },
+      },
 )
 const avatarUrl = computed(() => getUserUrl(props.entry.summary.User))
 const localizedSubject = computed(
@@ -89,11 +108,11 @@ const visibleTags = computed(() =>
   min-width: 0;
   flex-direction: column;
   gap: 0.75rem;
-  padding: clamp(1rem, 2vw, 1.4rem);
-  border: 1px solid #dce4ec;
-  border-radius: 1rem;
+  padding: 14px;
+  border: 1px solid #eee;
+  border-radius: 8px;
   background: #fff;
-  box-shadow: 0 0.3rem 1.2rem rgba(26, 47, 68, 0.07);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
 }
 
 .entry-topline {
@@ -112,7 +131,7 @@ const visibleTags = computed(() =>
 .entry-kind,
 .entry-status {
   padding: 0.2rem 0.55rem;
-  border-radius: 999px;
+  border-radius: 4px;
   font-weight: 650;
 }
 
@@ -137,7 +156,7 @@ const visibleTags = computed(() =>
 }
 
 .entry-title {
-  color: #1d2d3d;
+  color: #333;
   font-size: clamp(1.05rem, 2vw, 1.3rem);
   font-weight: 700;
   line-height: 1.35;
@@ -152,7 +171,7 @@ const visibleTags = computed(() =>
   display: -webkit-box;
   margin: 0;
   overflow: hidden;
-  color: #56616d;
+  color: #666;
   font-size: 0.92rem;
   line-height: 1.6;
   -webkit-box-orient: vertical;
@@ -205,6 +224,39 @@ const visibleTags = computed(() =>
   gap: 0.7rem;
   color: #7b858e;
   font-size: 0.78rem;
+}
+
+.metrics a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.metrics a:hover {
+  color: #0185c5;
+}
+
+.entry-actions {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: flex-end;
+}
+
+.entry-actions a {
+  padding: 0.38rem 0.75rem;
+  border: 1px solid #d7dce1;
+  border-radius: 0.35rem;
+  color: #555;
+  font-size: 0.8rem;
+  text-decoration: none;
+}
+
+.entry-actions a:last-child {
+  border-color: #0185c5;
+  color: #0185c5;
+}
+
+.entry-actions a:hover {
+  background: #f2f7fa;
 }
 
 @media (max-width: 420px) {

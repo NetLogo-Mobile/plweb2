@@ -223,6 +223,13 @@ export default {
       question: '質疑',
       decide: '決議',
     },
+    scopes: {
+      label: '民主ウォールの案件範囲',
+      current: '現在の案件',
+      history: '過去の案件',
+      currentDescription: '質疑、投票、運営監査中のコミュニティ案件を表示します。',
+      historyDescription: '処理済みの記録、決議、改訂履歴を確認します。',
+    },
     tabs: {
       ongoing: '進行中',
       public: '公共事項',
@@ -234,6 +241,10 @@ export default {
     comments: '質疑 {count} 件',
     visits: '閲覧 {count} 回',
     metrics: '記録データ',
+    actions: {
+      view: '詳細を見る',
+      question: '質疑に参加',
+    },
     untitled: '無題の項目',
     empty: 'この分類にはまだ公開コンテンツがありません',
     loadFailed: '民主ウォールの読み込みに失敗しました',

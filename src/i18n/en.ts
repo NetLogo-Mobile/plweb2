@@ -221,6 +221,13 @@ export default {
       question: 'Question',
       decide: 'Decide',
     },
+    scopes: {
+      label: 'Democracy Wall matter scope',
+      current: 'Current matters',
+      history: 'Historical matters',
+      currentDescription: 'View community matters under questioning, voting, or oversight.',
+      historyDescription: 'Review completed dockets, decisions, and amendment records.',
+    },
     tabs: {
       ongoing: 'Ongoing',
       public: 'Public affairs',
@@ -238,6 +245,10 @@ export default {
     comments: '{count} questions',
     visits: '{count} views',
     metrics: 'Docket metrics',
+    actions: {
+      view: 'View details',
+      question: 'Join questions',
+    },
     untitled: 'Untitled item',
     empty: 'There is no public content in this category yet',
     loadFailed: 'Failed to load Democracy Wall content',

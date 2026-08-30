@@ -20,6 +20,15 @@ test.describe('民主墙离线演示', () => {
     await expect(page.getByText('卷宗引用的条例版本是否在事件发生时已生效？')).toBeVisible()
   })
 
+  test('在当前事务和历史事务之间切换', async ({ page }) => {
+    await expect(page.getByRole('button', { name: /当前事务 4/ })).toBeVisible()
+    await page.getByRole('button', { name: /历史事务 3/ }).click()
+
+    await expect(page.getByRole('heading', { name: '历史事务' })).toBeVisible()
+    await expect(page.getByText('历史事务：社区公开记录保留规则')).toBeVisible()
+    await expect(page.getByText('历史事务：志愿调查团回避办法试行记录')).toBeVisible()
+  })
+
   test('匿名投票可刷新保留并重置', async ({ page }) => {
     await page.getByText('公共事务 4', { exact: true }).click()
     const choice = page.getByRole('button', { name: /同意 72 小时/ })
