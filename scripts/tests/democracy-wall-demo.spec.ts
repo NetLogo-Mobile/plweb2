@@ -27,6 +27,18 @@ test.describe('民主墙离线演示', () => {
     await expect(page.getByRole('heading', { name: '历史事务' })).toBeVisible()
     await expect(page.getByText('历史事务：社区公开记录保留规则')).toBeVisible()
     await expect(page.getByText('历史事务：志愿调查团回避办法试行记录')).toBeVisible()
+    await expect(page.getByRole('link', { name: '参与质询' })).toHaveCount(0)
+    await expect(page.getByRole('link', { name: '查看详情' })).toHaveCount(3)
+  })
+
+  test('公共事务内置进行中投票，精选决议内置投票结果', async ({ page }) => {
+    await page.getByText('公共事务 4', { exact: true }).click()
+    await expect(page.getByText('卷宗质询期决议')).toBeVisible()
+    await expect(page.getByRole('heading', { name: '匿名投票与社区决议' })).toHaveCount(0)
+
+    await page.getByText('精选决议 2', { exact: true }).click()
+    await expect(page.getByText('条例版本保留决议结果')).toBeVisible()
+    await expect(page.getByRole('button', { name: /通过修订/ })).toBeDisabled()
   })
 
   test('匿名投票可刷新保留并重置', async ({ page }) => {

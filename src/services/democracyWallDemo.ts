@@ -255,6 +255,43 @@ const DEMO_VOTES: Activity[] = [
     TargetText: {} as never,
     Version: 1,
   },
+  {
+    Contents: [{ Chinese: '是否通过条例修订版本，并保留所有历史版本供社区查阅？' } as never],
+    FinishDate: '2026-08-15T23:59:59+08:00',
+    ID: '66d10000000000000000b003',
+    InterfaceModel: 'Vote-Single',
+    InternalLink: null,
+    IsAttendance: false,
+    IsDaily: false,
+    IsDevelopment: true,
+    IsTutorial: false,
+    Items: [
+      {
+        Bonuses: { Gold: 0, Experience: 0, Diamond: 0 },
+        Condition: '',
+        Counter: 126,
+        Counters: {},
+        Description: '通过修订',
+        Local: false,
+      },
+      {
+        Bonuses: { Gold: 0, Experience: 0, Diamond: 0 },
+        Condition: '',
+        Counter: 18,
+        Counters: {},
+        Description: '退回修改',
+        Local: false,
+      },
+    ],
+    Languages: [],
+    Platforms: [],
+    Priority: 3,
+    StartDate: '2026-08-08T00:00:00+08:00',
+    Subject: { Chinese: '条例版本保留决议结果' } as never,
+    TargetLink: {} as never,
+    TargetText: {} as never,
+    Version: 1,
+  },
 ]
 
 export function isDemocracyDemoMode() {
@@ -282,10 +319,13 @@ function buildDemoVotes(store = readVoteStore()) {
 function buildDemoStatuses(store = readVoteStore()): ActivityStatus[] {
   return DEMO_VOTES.map((activity) => ({
     ActivityID: activity.ID,
-    Avails: activity.Items.map((_, index) => index),
+    Avails:
+      new Date(activity.FinishDate).getTime() <= Date.now()
+        ? []
+        : activity.Items.map((_, index) => index),
     Counters: activity.Items.map(() => 0),
     Expiration: activity.FinishDate,
-    Finished: false,
+    Finished: new Date(activity.FinishDate).getTime() <= Date.now(),
     Gains: store[activity.ID]?.gains ?? [],
     LastModified: new Date().toISOString(),
   }))

@@ -37,7 +37,10 @@
         />
       </component>
       <div class="metrics" :aria-label="t('democracy.metrics')">
-        <router-link :to="commentsPath">
+        <span v-if="readOnly">{{
+          t('democracy.comments', { count: entry.summary.Comments })
+        }}</span>
+        <router-link v-else :to="commentsPath">
           {{ t('democracy.comments', { count: entry.summary.Comments }) }}
         </router-link>
         <span>{{ t('democracy.visits', { count: entry.summary.Visits }) }}</span>
@@ -46,7 +49,9 @@
 
     <div class="entry-actions">
       <router-link :to="targetPath">{{ t('democracy.actions.view') }}</router-link>
-      <router-link :to="commentsPath">{{ t('democracy.actions.question') }}</router-link>
+      <router-link v-if="!readOnly" :to="commentsPath">
+        {{ t('democracy.actions.question') }}
+      </router-link>
     </div>
   </article>
 </template>
@@ -58,7 +63,7 @@ import Tag from '@components/utils/TagLarger.vue'
 import { formatDate, getUserUrl } from '@services/utils'
 import type { DemocracyEntry } from '@services/democracyWall'
 
-const props = defineProps<{ entry: DemocracyEntry; demoMode?: boolean }>()
+const props = defineProps<{ entry: DemocracyEntry; demoMode?: boolean; readOnly?: boolean }>()
 const { t, locale } = useI18n()
 
 const targetPath = computed(() =>

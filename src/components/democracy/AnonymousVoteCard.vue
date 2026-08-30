@@ -101,6 +101,7 @@ function hasChosen(index: number) {
 
 function shouldShowResult(index: number) {
   if (!props.status) return true
+  if (props.status.Finished) return true
   if (hasChosen(index)) return true
   return props.activity.InterfaceModel === 'Vote-Single' && props.status.Gains.length > 0
 }
@@ -111,7 +112,7 @@ function percentage(index: number) {
 }
 
 function canVote(index: number) {
-  if (!props.status || !props.statistic || hasChosen(index)) return false
+  if (!props.status || !props.statistic || props.status.Finished || hasChosen(index)) return false
   if (props.activity.InterfaceModel === 'Vote-Single' && props.status.Gains.length > 0) return false
   return true
 }

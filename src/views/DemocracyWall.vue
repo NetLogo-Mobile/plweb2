@@ -60,30 +60,22 @@
               :error="entryError"
               @retry="loadEntries"
             />
-            <section class="vote-section" aria-labelledby="public-vote-heading">
-              <h2 id="public-vote-heading">{{ t('democracy.vote.sectionTitle') }}</h2>
-              <div v-if="voteLoading" class="state-box"><n-spin size="large" /></div>
-              <div v-else-if="voteError" class="state-box">
-                <n-empty :description="t('democracy.vote.loadFailed')">
-                  <template #extra>
-                    <n-button @click="loadVotes">{{ t('democracy.retry') }}</n-button>
-                  </template>
-                </n-empty>
-              </div>
-              <div v-else-if="voteContext.activities.length" class="vote-grid">
-                <AnonymousVoteCard
-                  v-for="activity in voteContext.activities"
-                  :key="activity.ID"
-                  :activity="activity"
-                  :status="statusFor(activity.ID)"
-                  :statistic="voteContext.statistic"
-                  @updated="onVoteUpdated"
-                />
-              </div>
-              <div v-else class="state-box">
-                <n-empty :description="t('democracy.vote.empty')" />
-              </div>
-            </section>
+            <div v-if="voteLoading" class="embedded-state"><n-spin size="small" /></div>
+            <div v-else-if="voteError" class="embedded-state">
+              <n-button size="small" @click="loadVotes">
+                {{ t('democracy.vote.loadFailed') }} · {{ t('democracy.retry') }}
+              </n-button>
+            </div>
+            <div v-else-if="activeVoteActivities.length" class="vote-grid embedded-votes">
+              <AnonymousVoteCard
+                v-for="activity in activeVoteActivities"
+                :key="activity.ID"
+                :activity="activity"
+                :status="statusFor(activity.ID)"
+                :statistic="voteContext.statistic"
+                @updated="onVoteUpdated"
+              />
+            </div>
           </n-tab-pane>
           <n-tab-pane name="oversight" :tab="tabTitle('oversight', caseEntries.length)">
             <EntryGrid
@@ -93,13 +85,23 @@
               @retry="loadEntries"
             />
           </n-tab-pane>
-          <n-tab-pane name="featured" :tab="tabTitle('featured', featuredEntries.length)">
+          <n-tab-pane name="featured" :tab="tabTitle('featured', featuredCount)">
             <EntryGrid
               :entries="featuredEntries"
               :loading="entryLoading"
               :error="entryError"
               @retry="loadEntries"
             />
+            <div v-if="resolvedVoteActivities.length" class="vote-grid embedded-votes">
+              <AnonymousVoteCard
+                v-for="activity in resolvedVoteActivities"
+                :key="activity.ID"
+                :activity="activity"
+                :status="statusFor(activity.ID)"
+                :statistic="voteContext.statistic"
+                @updated="onVoteUpdated"
+              />
+            </div>
           </n-tab-pane>
         </n-tabs>
       </section>
@@ -115,6 +117,7 @@
           :entries="historyEntries"
           :loading="historyLoading"
           :error="historyError"
+          read-only
           @retry="loadHistory"
         />
       </section>
@@ -165,8 +168,17 @@ const proposalEntries = computed(() =>
   entries.value.filter((entry) => entry.kind === 'proposal' && entry.status === 'open'),
 )
 const featuredEntries = computed(() => entries.value.filter((entry) => entry.featured))
+const activeVoteActivities = computed(() =>
+  voteContext.value.activities.filter((activity) => !statusFor(activity.ID)?.Finished),
+)
+const resolvedVoteActivities = computed(() =>
+  voteContext.value.activities.filter((activity) => statusFor(activity.ID)?.Finished),
+)
 const publicAffairsCount = computed(
-  () => proposalEntries.value.length + voteContext.value.activities.length,
+  () => proposalEntries.value.length + activeVoteActivities.value.length,
+)
+const featuredCount = computed(
+  () => featuredEntries.value.length + resolvedVoteActivities.value.length,
 )
 
 function tabTitle(key: string, count: number) {
@@ -228,6 +240,7 @@ const EntryGrid = defineComponent({
     entries: { type: Array as PropType<DemocracyEntry[]>, required: true },
     loading: Boolean,
     error: Boolean,
+    readOnly: Boolean,
   },
   emits: ['retry'],
   setup(props, { emit }) {
@@ -251,7 +264,12 @@ const EntryGrid = defineComponent({
         'div',
         { class: 'entry-grid' },
         props.entries.map((entry) =>
-          h(DemocracyEntryCard, { key: entry.summary.ID, entry, demoMode }),
+          h(DemocracyEntryCard, {
+            key: entry.summary.ID,
+            entry,
+            demoMode,
+            readOnly: props.readOnly,
+          }),
         ),
       )
     }
@@ -418,24 +436,23 @@ main {
   white-space: nowrap;
 }
 
-.vote-section {
-  margin-top: 10px;
-  padding-top: 12px;
-  border-top: 1px solid #eee;
-}
-
-.vote-section h2 {
-  margin: 0 0 10px;
-  color: #444;
-  font-size: 1rem;
-}
-
 :deep(.entry-grid),
 .vote-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   padding: 4px 0 10px;
+}
+
+.embedded-votes {
+  margin-top: -10px;
+}
+
+.embedded-state {
+  display: flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
 }
 
 :deep(.state-box) {
