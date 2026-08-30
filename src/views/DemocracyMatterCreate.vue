@@ -115,7 +115,7 @@ const pageTitle = computed(() =>
   t(mode.value === 'formal' ? 'democracy.create.formalTitle' : 'democracy.create.anonymousTitle'),
 )
 const deniedMessage = computed(() =>
-  t(mode.value === 'formal' ? 'democracy.create.formalDenied' : 'democracy.create.loginRequired'),
+  t(mode.value === 'formal' ? 'democracy.create.formalDenied' : 'democracy.create.anonymousDenied'),
 )
 
 function goBack() {

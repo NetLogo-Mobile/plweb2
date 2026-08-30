@@ -236,7 +236,6 @@ export default {
       public: 'Öffentliche Angelegenheiten',
       oversight: 'Verwaltungsaufsicht',
       suggestions: 'Anonyme Vorschläge',
-      featured: 'Ausgewählte Entscheidungen',
     },
     kinds: { case: 'Akte', proposal: 'Vorschlag' },
     status: { open: 'Laufend', resolved: 'Entschieden' },
@@ -255,9 +254,10 @@ export default {
       anonymousAuthor: 'Anonyme Person',
       anonymousNotice:
         'Ihre Kontodaten bleiben öffentlich verborgen. Missbrauch kann nach den Community-Regeln bearbeitet werden.',
-      formalDenied:
-        'Ein formeller Vorgang erfordert Redaktions- oder Administratorrechte. Anonyme Vorschläge bleiben möglich.',
-      loginRequired: 'Angemeldete Mitglieder können anonyme Vorschläge einreichen.',
+      formalDenied: 'Ein formeller Vorgang erfordert Redaktions- oder Administratorrechte.',
+      loginRequired: 'Angemeldete Oldtimer können anonyme Vorschläge einreichen.',
+      anonymousDenied:
+        'Anonyme Vorschläge sind berechtigten Oldtimern vorbehalten. Konten mit entzogenem Zugriff können nichts einreichen.',
       kind: 'Kategorie',
       subject: 'Titel',
       subjectPlaceholder: 'Fassen Sie das Thema kurz zusammen',

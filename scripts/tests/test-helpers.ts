@@ -32,13 +32,16 @@ export async function injectLoginState(page: Page) {
   await page.goto('/')
 }
 
-export async function injectLoginStateWithoutNavigation(page: Page) {
-  await page.addInitScript(() => {
+export async function injectLoginStateWithoutNavigation(
+  page: Page,
+  overrides: { userId?: string; verification?: string } = {},
+) {
+  await page.addInitScript((loginOverrides) => {
     const authInfo = {
       value: {
         token: 'pKexl3M9jB1iWX2tyCPh6udYmEOFUnRz',
         authCode: 'RaQwt53Jnr9CSuUTH1kjsxqB40cV2fFD',
-        userId: '6666ff550b5f97d6e49d12d7',
+        userId: loginOverrides.userId || '6666ff550b5f97d6e49d12d7',
       },
       time: Date.now(),
       maxAgeMs: 30 * 24 * 60 * 60 * 1000,
@@ -47,11 +50,11 @@ export async function injectLoginStateWithoutNavigation(page: Page) {
 
     const userInfo = {
       value: {
-        ID: '6666ff550b5f97d6e49d12d7',
+        ID: loginOverrides.userId || '6666ff550b5f97d6e49d12d7',
         Nickname: 'TestUser',
         Avatar: 1,
         AvatarRegion: 1,
-        Verification: 'user',
+        Verification: loginOverrides.verification || 'user',
         Gold: 100,
         Diamond: 50,
         Level: 5,
@@ -84,7 +87,7 @@ export async function injectLoginStateWithoutNavigation(page: Page) {
       maxAgeMs: 365 * 24 * 60 * 60 * 1000,
     }
     localStorage.setItem('cookieConsent', JSON.stringify(cookieConsent))
-  })
+  }, overrides)
 }
 
 export async function waitForPageReady(page: Page, options?: { timeout?: number }) {

@@ -233,7 +233,6 @@ export default {
       public: 'Public affairs',
       oversight: 'Governance oversight',
       suggestions: 'Anonymous suggestions',
-      featured: 'Featured decisions',
     },
     kinds: {
       case: 'Docket',
@@ -258,9 +257,10 @@ export default {
       anonymousAuthor: 'Anonymous contributor',
       anonymousNotice:
         'Your account identity stays hidden on public pages. Moderators may still address abuse under community rules.',
-      formalDenied:
-        'Starting a formal matter requires editor or administrator access. You can still suggest anonymously.',
-      loginRequired: 'Signed-in community members can submit anonymous suggestions.',
+      formalDenied: 'Starting a formal matter requires editor or administrator access.',
+      loginRequired: 'Signed-in Oldtimers can submit anonymous suggestions.',
+      anonymousDenied:
+        'Anonymous suggestions are limited to eligible Oldtimers. Accounts with revoked access cannot submit.',
       kind: 'Matter category',
       subject: 'Title',
       subjectPlaceholder: 'Summarize the matter for community discussion',

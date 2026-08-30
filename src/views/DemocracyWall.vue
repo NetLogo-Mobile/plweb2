@@ -88,14 +88,6 @@
               @retry="loadEntries"
             />
           </n-tab-pane>
-          <n-tab-pane name="featured" :tab="tabTitle('featured', featuredEntries.length)">
-            <EntryGrid
-              :entries="featuredEntries"
-              :loading="entryLoading"
-              :error="entryError"
-              @retry="loadEntries"
-            />
-          </n-tab-pane>
         </n-tabs>
       </section>
 
@@ -167,7 +159,6 @@ const proposalEntries = computed(() =>
 const anonymousSuggestionEntries = computed(() =>
   entries.value.filter((entry) => entry.anonymousSuggestion && entry.status === 'open'),
 )
-const featuredEntries = computed(() => entries.value.filter((entry) => entry.featured))
 const publicAffairsCount = computed(() => proposalEntries.value.length)
 
 function tabTitle(key: string, count: number) {

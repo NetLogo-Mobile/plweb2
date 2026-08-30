@@ -21,7 +21,7 @@ test.describe('民主墙离线演示', () => {
   })
 
   test('在当前事务和历史事务之间切换', async ({ page }) => {
-    await expect(page.getByRole('button', { name: /当前事务 4/ })).toBeVisible()
+    await expect(page.getByRole('button', { name: /当前事务 3/ })).toBeVisible()
     await page.getByRole('button', { name: /历史事务 3/ }).click()
 
     await expect(page.getByRole('heading', { name: '历史事务' })).toBeVisible()
@@ -42,8 +42,8 @@ test.describe('民主墙离线演示', () => {
     await page.getByText('2. 投票阶段', { exact: true }).click()
     await expect(page.getByText('卷宗质询期决议')).toBeVisible()
 
-    await page.goto('/#/d?demo=1')
-    await page.getByText('精选决议 1', { exact: true }).click()
+    await page.goto('/#/d?demo=1&scope=history')
+    await page.getByRole('button', { name: /历史事务 3/ }).click()
     await page.getByRole('link', { name: '已决议：条例修订必须保留旧版本' }).first().click()
     await page.getByText('2. 投票阶段', { exact: true }).click()
     await expect(page.getByText('条例版本保留决议结果')).toBeVisible()
@@ -81,7 +81,7 @@ test.describe('民主墙离线创建事务', () => {
     await waitForPageReady(page)
   })
 
-  test('普通用户匿名提议并进入独立板块', async ({ page }) => {
+  test('演示用户匿名提议并进入独立板块', async ({ page }) => {
     await page.getByRole('link', { name: '匿名提议' }).click()
     await expect(page.getByRole('heading', { name: '提交匿名提议' })).toBeVisible()
 

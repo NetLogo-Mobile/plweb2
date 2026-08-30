@@ -235,7 +235,6 @@ export default {
       public: '公共事項',
       oversight: '運営監査',
       suggestions: '匿名提案',
-      featured: '注目の決議',
     },
     kinds: { case: '記録', proposal: '議案' },
     status: { open: '進行中', resolved: '決議済み' },
@@ -254,8 +253,10 @@ export default {
       anonymousAuthor: '匿名提案者',
       anonymousNotice:
         '公開ページではアカウント情報が隠されます。乱用はコミュニティ規則に従って対応されます。',
-      formalDenied: '正式案件の開始には編集者または管理者権限が必要です。匿名提案は利用できます。',
-      loginRequired: 'ログイン済みの一般ユーザーは匿名提案を送信できます。',
+      formalDenied: '正式案件の開始には編集者または管理者権限が必要です。',
+      loginRequired: 'ログイン済みの Oldtimer は匿名提案を送信できます。',
+      anonymousDenied:
+        '匿名提案は資格のある Oldtimer のみ利用できます。資格を取り消されたアカウントは送信できません。',
       kind: '案件区分',
       subject: 'タイトル',
       subjectPlaceholder: '話し合う事項を一文でまとめてください',

@@ -111,7 +111,7 @@ const activitiesResponse = {
 
 test.describe('民主墙', () => {
   test.beforeEach(async ({ page }) => {
-    await injectLoginStateWithoutNavigation(page)
+    await injectLoginStateWithoutNavigation(page, { verification: 'Oldtimer' })
     await page.route('**/api/Contents/QueryExperiments', async (route) => {
       await route.fulfill({
         contentType: 'application/json',
@@ -143,6 +143,7 @@ test.describe('民主墙', () => {
     await waitForPageReady(page)
 
     await expect(page.getByRole('heading', { name: '民主墙' })).toBeVisible()
+    await expect(page.getByText('精选决议', { exact: true })).toHaveCount(0)
     await expect(page.getByText('关于公开指控处理流程的卷宗')).toBeVisible()
     await expect(page.getByText('Editor')).toBeVisible()
     await expect(page.getByRole('link', { name: '查看详情' }).first()).toHaveAttribute(
@@ -160,7 +161,7 @@ test.describe('民主墙', () => {
     await expect(page.getByRole('button', { name: /同意修订/ })).toBeVisible()
   })
 
-  test('普通用户通过社区接口提交匿名提议', async ({ page }) => {
+  test('Oldtimer 通过社区接口提交匿名提议', async ({ page }) => {
     let submission: Record<string, any> | undefined
     await page.route('**/api/Contents/SubmitExperiment', async (route) => {
       submission = route.request().postDataJSON()
@@ -188,5 +189,19 @@ test.describe('民主墙', () => {
     await expect.poll(() => submission?.Summary?.Anonymous).toBe(true)
     expect(submission?.Summary?.Tags).toEqual(['民主墙', '匿名提议', '公共议案', '待审核'])
     await expect(page).toHaveURL(/#\/d\/matter\/66a84559744ed757b46f8999$/)
+  })
+
+  test('撤销名单中的 Oldtimer 无法匿名提议', async ({ page }) => {
+    await page.goto('/#/d')
+    await waitForPageReady(page)
+    await page.evaluate(() => {
+      const stored = JSON.parse(localStorage.getItem('userInfo') || '{}')
+      stored.value.ID = '5ea1934c8116c49429d3e405'
+      stored.value.Verification = 'Oldtimer'
+      localStorage.setItem('userInfo', JSON.stringify(stored))
+    })
+    await page.goto('/#/d/new?mode=anonymous')
+    await expect(page.getByText(/被撤销资格的账号无法提交/)).toBeVisible()
+    await expect(page.getByRole('button', { name: '提交到民主墙' })).toBeDisabled()
   })
 })

@@ -20,14 +20,13 @@ export const DEMOCRACY_WALL_TAG = '民主墙'
 
 const CASE_TAGS = new Set(['公开卷宗', '调查卷宗', '公开案件', '管理监察'])
 const RESOLVED_TAGS = new Set(['已决议', '已归档'])
-const FEATURED_TAGS = new Set(['精选', '精选决议'])
+const ANONYMOUS_SUGGESTION_REVOKED_USER_IDS = new Set(['5ea1934c8116c49429d3e405'])
 
 export type DemocracyEntryKind = 'case' | 'proposal'
 export type DemocracyEntryStatus = 'open' | 'resolved'
 
 export interface DemocracyEntry {
   anonymousSuggestion: boolean
-  featured: boolean
   kind: DemocracyEntryKind
   status: DemocracyEntryStatus
   summary: Summary
@@ -53,7 +52,9 @@ export function getDemocracyCreationAccess() {
   return {
     canInitiate:
       isDemocracyDemoMode() || INITIATOR_VERIFICATIONS.has(String(user?.Verification || '')),
-    canSuggestAnonymously: isDemocracyDemoMode() || Boolean(user?.ID),
+    canSuggestAnonymously:
+      isDemocracyDemoMode() ||
+      (user?.Verification === 'Oldtimer' && !ANONYMOUS_SUGGESTION_REVOKED_USER_IDS.has(user.ID)),
   }
 }
 
@@ -65,7 +66,6 @@ export function toDemocracyEntry(summary: Summary): DemocracyEntry {
   const tags = summary.Tags ?? []
   return {
     anonymousSuggestion: tags.includes('匿名提议'),
-    featured: hasAnyTag(tags, FEATURED_TAGS),
     kind: hasAnyTag(tags, CASE_TAGS) ? 'case' : 'proposal',
     status: hasAnyTag(tags, RESOLVED_TAGS) ? 'resolved' : 'open',
     summary,
@@ -105,12 +105,12 @@ export async function fetchDemocracyEntries(): Promise<DemocracyEntry[]> {
   if (isDemocracyDemoMode()) {
     return getDemocracyDemoSummaries()
       .map(toDemocracyEntry)
-      .filter((entry) => entry.status === 'open' || entry.featured)
+      .filter((entry) => entry.status === 'open')
   }
 
   return (await queryDemocracySummaries([DEMOCRACY_WALL_TAG], 48))
     .map(toDemocracyEntry)
-    .filter((entry) => entry.status === 'open' || entry.featured)
+    .filter((entry) => entry.status === 'open')
 }
 
 export async function fetchDemocracyHistoryEntries(): Promise<DemocracyEntry[]> {

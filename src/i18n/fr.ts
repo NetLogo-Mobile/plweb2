@@ -236,7 +236,6 @@ export default {
       public: 'Affaires publiques',
       oversight: 'Contrôle de la gouvernance',
       suggestions: 'Propositions anonymes',
-      featured: 'Décisions sélectionnées',
     },
     kinds: { case: 'Dossier', proposal: 'Proposition' },
     status: { open: 'En cours', resolved: 'Décidé' },
@@ -255,9 +254,10 @@ export default {
       anonymousAuthor: 'Membre anonyme',
       anonymousNotice:
         'Votre identité reste masquée publiquement. Les abus peuvent être traités selon les règles communautaires.',
-      formalDenied:
-        'Une affaire formelle exige les droits éditeur ou administrateur. La proposition anonyme reste disponible.',
-      loginRequired: 'Les membres connectés peuvent envoyer des propositions anonymes.',
+      formalDenied: 'Une affaire formelle exige les droits éditeur ou administrateur.',
+      loginRequired: 'Les Oldtimers connectés peuvent envoyer des propositions anonymes.',
+      anonymousDenied:
+        'Les propositions anonymes sont réservées aux Oldtimers éligibles. Les comptes révoqués ne peuvent pas en envoyer.',
       kind: 'Catégorie',
       subject: 'Titre',
       subjectPlaceholder: 'Résumez le sujet à discuter',
