@@ -232,6 +232,7 @@ export default {
       ongoing: 'Ongoing',
       public: 'Public affairs',
       oversight: 'Governance oversight',
+      suggestions: 'Anonymous suggestions',
       featured: 'Featured decisions',
     },
     kinds: {
@@ -248,6 +249,27 @@ export default {
     actions: {
       view: 'View details',
       question: 'Join questions',
+    },
+    create: {
+      formalAction: 'Start a matter',
+      anonymousAction: 'Suggest anonymously',
+      formalTitle: 'Start a community matter',
+      anonymousTitle: 'Submit an anonymous suggestion',
+      anonymousAuthor: 'Anonymous contributor',
+      anonymousNotice:
+        'Your account identity stays hidden on public pages. Moderators may still address abuse under community rules.',
+      formalDenied:
+        'Starting a formal matter requires editor or administrator access. You can still suggest anonymously.',
+      loginRequired: 'Signed-in community members can submit anonymous suggestions.',
+      kind: 'Matter category',
+      subject: 'Title',
+      subjectPlaceholder: 'Summarize the matter for community discussion',
+      description: 'Facts and suggestion',
+      descriptionPlaceholder:
+        'Describe the context, known facts, desired outcome, and possible approach',
+      submit: 'Submit to the democracy wall',
+      success: 'Matter submitted',
+      failed: 'Submission failed. Try again later.',
     },
     matter: {
       title: 'Matter details',

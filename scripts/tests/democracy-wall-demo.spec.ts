@@ -73,3 +73,49 @@ test.describe('民主墙离线演示', () => {
     await expect(page.getByRole('button', { name: /同意 72 小时/ })).toBeEnabled()
   })
 })
+
+test.describe('民主墙离线创建事务', () => {
+  test.beforeEach(async ({ page }) => {
+    await injectLoginStateWithoutNavigation(page)
+    await page.goto('/#/d?demo=1')
+    await waitForPageReady(page)
+  })
+
+  test('普通用户匿名提议并进入独立板块', async ({ page }) => {
+    await page.getByRole('link', { name: '匿名提议' }).click()
+    await expect(page.getByRole('heading', { name: '提交匿名提议' })).toBeVisible()
+
+    await page.getByLabel('标题').fill('建议增加社区条例修订预告期')
+    await page
+      .getByLabel('事实与建议')
+      .fill('建议条例修订在投票前公开七天，让普通用户有时间阅读并提出修改意见。')
+    await page.getByRole('button', { name: '提交到民主墙' }).click()
+
+    await expect(page.getByRole('heading', { name: '事务详情' })).toBeVisible()
+    await expect(page.getByText('建议增加社区条例修订预告期')).toBeVisible()
+    await expect(page.getByText('匿名提议者')).toBeVisible()
+
+    await page.goto('/#/d?demo=1')
+    await page.getByText('匿名提议 1', { exact: true }).click()
+    await expect(page.getByText('建议增加社区条例修订预告期')).toBeVisible()
+    await expect(page.getByText('TestUser')).toHaveCount(0)
+  })
+
+  test('具备权限的用户可以发起正式事务', async ({ page }) => {
+    await page.getByRole('link', { name: '发起事务' }).click()
+    await expect(page.getByRole('heading', { name: '发起社区事务' })).toBeVisible()
+    await page.getByText('管理监察', { exact: true }).click()
+    await page.getByLabel('标题').fill('调查团成员回避申明核查')
+    await page
+      .getByLabel('事实与建议')
+      .fill('请核查本次调查团成员已公开的关系申明，并在质询期内补充遗漏信息。')
+    await page.getByRole('button', { name: '提交到民主墙' }).click()
+
+    await expect(page.getByText('调查团成员回避申明核查')).toBeVisible()
+    await expect(page.getByText('认证编辑·演示用户')).toBeVisible()
+
+    await page.goto('/#/d?demo=1')
+    await page.getByText('管理监察 2', { exact: true }).click()
+    await expect(page.getByRole('link', { name: '调查团成员回避申明核查' }).last()).toBeVisible()
+  })
+})

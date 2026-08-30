@@ -159,4 +159,34 @@ test.describe('民主墙', () => {
     await expect(page.getByText('条例修订投票')).toBeVisible()
     await expect(page.getByRole('button', { name: /同意修订/ })).toBeVisible()
   })
+
+  test('普通用户通过社区接口提交匿名提议', async ({ page }) => {
+    let submission: Record<string, any> | undefined
+    await page.route('**/api/Contents/SubmitExperiment', async (route) => {
+      submission = route.request().postDataJSON()
+      const summary = submission?.Summary
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          Status: 200,
+          Message: '',
+          Data: { Summary: { ...summary, ID: '66a84559744ed757b46f8999' } },
+        }),
+      })
+    })
+    await page.goto('/#/d')
+    await waitForPageReady(page)
+
+    await expect(page.getByRole('link', { name: '发起事务' })).toHaveCount(0)
+    await page.getByRole('link', { name: '匿名提议' }).click()
+    await page.getByLabel('标题').fill('建议公开条例修订时间表')
+    await page
+      .getByLabel('事实与建议')
+      .fill('建议在民主墙公开修订节点、负责人和预计投票时间，便于社区持续跟进。')
+    await page.getByRole('button', { name: '提交到民主墙' }).click()
+
+    await expect.poll(() => submission?.Summary?.Anonymous).toBe(true)
+    expect(submission?.Summary?.Tags).toEqual(['民主墙', '匿名提议', '公共议案', '待审核'])
+    await expect(page).toHaveURL(/#\/d\/matter\/66a84559744ed757b46f8999$/)
+  })
 })

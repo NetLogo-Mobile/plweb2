@@ -234,6 +234,7 @@ export default {
       ongoing: '進行中',
       public: '公共事項',
       oversight: '運営監査',
+      suggestions: '匿名提案',
       featured: '注目の決議',
     },
     kinds: { case: '記録', proposal: '議案' },
@@ -244,6 +245,25 @@ export default {
     actions: {
       view: '詳細を見る',
       question: '質疑に参加',
+    },
+    create: {
+      formalAction: '案件を開始',
+      anonymousAction: '匿名で提案',
+      formalTitle: 'コミュニティ案件を開始',
+      anonymousTitle: '匿名提案を送信',
+      anonymousAuthor: '匿名提案者',
+      anonymousNotice:
+        '公開ページではアカウント情報が隠されます。乱用はコミュニティ規則に従って対応されます。',
+      formalDenied: '正式案件の開始には編集者または管理者権限が必要です。匿名提案は利用できます。',
+      loginRequired: 'ログイン済みの一般ユーザーは匿名提案を送信できます。',
+      kind: '案件区分',
+      subject: 'タイトル',
+      subjectPlaceholder: '話し合う事項を一文でまとめてください',
+      description: '事実と提案',
+      descriptionPlaceholder: '背景、既知の事実、望む結果、対応案を記入してください',
+      submit: '民主の壁へ送信',
+      success: '案件を送信しました',
+      failed: '送信に失敗しました。後でもう一度お試しください。',
     },
     matter: {
       title: '案件詳細',

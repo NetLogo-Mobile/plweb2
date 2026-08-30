@@ -227,6 +227,7 @@ export default {
       ongoing: '进行中',
       public: '公共事务',
       oversight: '管理监察',
+      suggestions: '匿名提议',
       featured: '精选决议',
     },
     kinds: {
@@ -243,6 +244,24 @@ export default {
     actions: {
       view: '查看详情',
       question: '参与质询',
+    },
+    create: {
+      formalAction: '发起事务',
+      anonymousAction: '匿名提议',
+      formalTitle: '发起社区事务',
+      anonymousTitle: '提交匿名提议',
+      anonymousAuthor: '匿名提议者',
+      anonymousNotice: '公开页面会隐藏你的账号身份，管理员仍可依照社区规则处理滥用行为。',
+      formalDenied: '发起正式事务需要编辑或管理员权限，你仍可提交匿名提议。',
+      loginRequired: '登录后的普通用户可以提交匿名提议。',
+      kind: '事务分类',
+      subject: '标题',
+      subjectPlaceholder: '用一句话概括需要社区讨论的事项',
+      description: '事实与建议',
+      descriptionPlaceholder: '说明背景、已知事实、希望解决的问题及可行建议',
+      submit: '提交到民主墙',
+      success: '事务已提交',
+      failed: '提交失败，请稍后再试',
     },
     matter: {
       title: '事务详情',

@@ -8,6 +8,7 @@ import type {
 
 export const DEMOCRACY_DEMO_QUERY = 'demo=1'
 const DEMO_VOTE_KEY = 'plweb2.democracy.demoVotes'
+const DEMO_MATTER_KEY = 'plweb2.democracy.demoMatters'
 const DEMO_USER_ID = '66d10000000000000000a001'
 
 interface DemoVoteState {
@@ -77,7 +78,7 @@ function createSummary(options: DemoSummaryOptions): Summary {
   }
 }
 
-export const DEMOCRACY_DEMO_SUMMARIES: Summary[] = [
+const DEMOCRACY_DEMO_SUMMARIES: Summary[] = [
   createSummary({
     id: '66d100000000000000000001',
     subject: '关于公开指控处理流程的调查卷宗',
@@ -140,6 +141,49 @@ export const DEMOCRACY_DEMO_SUMMARIES: Summary[] = [
     visits: 618,
   }),
 ]
+
+function readMatterStore(): Summary[] {
+  try {
+    const value = JSON.parse(localStorage.getItem(DEMO_MATTER_KEY) || '[]')
+    return Array.isArray(value) ? (value as Summary[]) : []
+  } catch {
+    return []
+  }
+}
+
+export function getDemocracyDemoSummaries() {
+  return [...readMatterStore(), ...DEMOCRACY_DEMO_SUMMARIES]
+}
+
+export function submitDemocracyDemoMatter(input: {
+  subject: string
+  description: string
+  kind: 'public' | 'oversight'
+  anonymous: boolean
+}) {
+  const currentUser = input.anonymous
+    ? { verification: '' as Summary['User']['Verification'], nickname: '匿名提议者' }
+    : { verification: 'Editor' as const, nickname: '认证编辑·演示用户' }
+  const summary = createSummary({
+    id: `demo-${Date.now().toString(36)}`,
+    subject: input.subject,
+    description: input.description,
+    tags: [
+      ...(input.anonymous ? ['匿名提议'] : []),
+      input.kind === 'oversight' ? '管理监察' : '公共议案',
+      input.anonymous ? '待审核' : '待质询',
+    ],
+    verification: currentUser.verification,
+    nickname: currentUser.nickname,
+    comments: 0,
+    visits: 0,
+  })
+  if (input.anonymous) summary.User.ID = ''
+  const matters = readMatterStore()
+  matters.unshift(summary)
+  localStorage.setItem(DEMO_MATTER_KEY, JSON.stringify(matters))
+  return summary
+}
 
 export const DEMOCRACY_DEMO_DETAILS: Record<string, DemocracyDemoDetail> = {
   '66d100000000000000000001': {

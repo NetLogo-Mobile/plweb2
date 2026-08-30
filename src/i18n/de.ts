@@ -235,6 +235,7 @@ export default {
       ongoing: 'Laufend',
       public: 'Öffentliche Angelegenheiten',
       oversight: 'Verwaltungsaufsicht',
+      suggestions: 'Anonyme Vorschläge',
       featured: 'Ausgewählte Entscheidungen',
     },
     kinds: { case: 'Akte', proposal: 'Vorschlag' },
@@ -245,6 +246,26 @@ export default {
     actions: {
       view: 'Details ansehen',
       question: 'Frage stellen',
+    },
+    create: {
+      formalAction: 'Vorgang starten',
+      anonymousAction: 'Anonym vorschlagen',
+      formalTitle: 'Community-Vorgang starten',
+      anonymousTitle: 'Anonymen Vorschlag einreichen',
+      anonymousAuthor: 'Anonyme Person',
+      anonymousNotice:
+        'Ihre Kontodaten bleiben öffentlich verborgen. Missbrauch kann nach den Community-Regeln bearbeitet werden.',
+      formalDenied:
+        'Ein formeller Vorgang erfordert Redaktions- oder Administratorrechte. Anonyme Vorschläge bleiben möglich.',
+      loginRequired: 'Angemeldete Mitglieder können anonyme Vorschläge einreichen.',
+      kind: 'Kategorie',
+      subject: 'Titel',
+      subjectPlaceholder: 'Fassen Sie das Thema kurz zusammen',
+      description: 'Fakten und Vorschlag',
+      descriptionPlaceholder: 'Beschreiben Sie Kontext, Fakten, Ziel und möglichen Ansatz',
+      submit: 'An die Demokratiewand senden',
+      success: 'Vorgang eingereicht',
+      failed: 'Senden fehlgeschlagen. Bitte später erneut versuchen.',
     },
     matter: {
       title: 'Vorgangsdetails',

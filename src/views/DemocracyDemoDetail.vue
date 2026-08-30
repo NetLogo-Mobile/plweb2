@@ -25,11 +25,18 @@
           <h2>{{ entry.summary.Subject }}</h2>
           <p>{{ entry.summary.Description?.[0] }}</p>
           <div class="author">
-            <router-link v-if="!demoMode" :to="`/u/${entry.summary.User.ID}`">
+            <span v-if="entry.anonymousSuggestion">{{
+              t('democracy.create.anonymousAuthor')
+            }}</span>
+            <router-link v-else-if="!demoMode" :to="`/u/${entry.summary.User.ID}`">
               {{ entry.summary.User.Nickname }}
             </router-link>
             <span v-else>{{ entry.summary.User.Nickname }}</span>
-            <Tag category="User" :tag="`C-${entry.summary.User.Verification}`" />
+            <Tag
+              v-if="entry.summary.User.Verification && !entry.anonymousSuggestion"
+              category="User"
+              :tag="`C-${entry.summary.User.Verification}`"
+            />
           </div>
         </header>
 
@@ -141,7 +148,7 @@ import {
 } from '@services/democracyWall'
 import {
   DEMOCRACY_DEMO_DETAILS,
-  DEMOCRACY_DEMO_SUMMARIES,
+  getDemocracyDemoSummaries,
   isDemocracyDemoMode,
   type DemocracyDemoDetail,
 } from '@services/democracyWallDemo'
@@ -201,7 +208,7 @@ function loadDemoQuestions() {
 async function loadMatter() {
   loading.value = true
   if (demoMode) {
-    summary.value = DEMOCRACY_DEMO_SUMMARIES.find((item) => item.ID === matterId.value)
+    summary.value = getDemocracyDemoSummaries().find((item) => item.ID === matterId.value)
     loadDemoQuestions()
     loading.value = false
     return

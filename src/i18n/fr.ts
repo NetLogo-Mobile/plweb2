@@ -235,6 +235,7 @@ export default {
       ongoing: 'En cours',
       public: 'Affaires publiques',
       oversight: 'Contrôle de la gouvernance',
+      suggestions: 'Propositions anonymes',
       featured: 'Décisions sélectionnées',
     },
     kinds: { case: 'Dossier', proposal: 'Proposition' },
@@ -245,6 +246,27 @@ export default {
     actions: {
       view: 'Voir le détail',
       question: 'Participer aux questions',
+    },
+    create: {
+      formalAction: 'Lancer une affaire',
+      anonymousAction: 'Proposer anonymement',
+      formalTitle: 'Lancer une affaire communautaire',
+      anonymousTitle: 'Envoyer une proposition anonyme',
+      anonymousAuthor: 'Membre anonyme',
+      anonymousNotice:
+        'Votre identité reste masquée publiquement. Les abus peuvent être traités selon les règles communautaires.',
+      formalDenied:
+        'Une affaire formelle exige les droits éditeur ou administrateur. La proposition anonyme reste disponible.',
+      loginRequired: 'Les membres connectés peuvent envoyer des propositions anonymes.',
+      kind: 'Catégorie',
+      subject: 'Titre',
+      subjectPlaceholder: 'Résumez le sujet à discuter',
+      description: 'Faits et proposition',
+      descriptionPlaceholder:
+        'Décrivez le contexte, les faits, le résultat souhaité et une approche possible',
+      submit: 'Envoyer au mur démocratique',
+      success: 'Affaire envoyée',
+      failed: 'Échec de l’envoi. Réessayez plus tard.',
     },
     matter: {
       title: "Détail de l'affaire",

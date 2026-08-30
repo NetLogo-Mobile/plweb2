@@ -42,6 +42,14 @@
             <h2>{{ t('democracy.scopes.current') }}</h2>
             <p>{{ t('democracy.scopes.currentDescription') }}</p>
           </div>
+          <div class="create-actions">
+            <n-button v-if="access.canSuggestAnonymously" tag="a" :href="createPath('anonymous')">
+              {{ t('democracy.create.anonymousAction') }}
+            </n-button>
+            <n-button v-if="access.canInitiate" type="info" tag="a" :href="createPath('formal')">
+              {{ t('democracy.create.formalAction') }}
+            </n-button>
+          </div>
         </header>
 
         <n-tabs v-model:value="activeTab" type="line" animated>
@@ -64,6 +72,17 @@
           <n-tab-pane name="oversight" :tab="tabTitle('oversight', caseEntries.length)">
             <EntryGrid
               :entries="caseEntries"
+              :loading="entryLoading"
+              :error="entryError"
+              @retry="loadEntries"
+            />
+          </n-tab-pane>
+          <n-tab-pane
+            name="suggestions"
+            :tab="tabTitle('suggestions', anonymousSuggestionEntries.length)"
+          >
+            <EntryGrid
+              :entries="anonymousSuggestionEntries"
               :loading="entryLoading"
               :error="entryError"
               @retry="loadEntries"
@@ -102,7 +121,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineComponent, h, onMounted, ref, type PropType } from 'vue'
+import { computed, defineComponent, h, onActivated, onMounted, ref, type PropType } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { NButton, NEmpty, NSpin, NTabPane, NTabs } from 'naive-ui'
@@ -112,6 +131,7 @@ import DemocracyEntryCard from '@components/democracy/DemocracyEntryCard.vue'
 import {
   fetchDemocracyEntries,
   fetchDemocracyHistoryEntries,
+  getDemocracyCreationAccess,
   type DemocracyEntry,
 } from '@services/democracyWall'
 import { isDemocracyDemoMode, resetDemocracyDemoVotes } from '@services/democracyWallDemo'
@@ -119,6 +139,7 @@ import { isDemocracyDemoMode, resetDemocracyDemoVotes } from '@services/democrac
 const { t } = useI18n()
 const route = useRoute()
 const demoMode = isDemocracyDemoMode()
+const access = computed(getDemocracyCreationAccess)
 const activeScope = ref<'current' | 'history'>(
   route.query.scope === 'history' ? 'history' : 'current',
 )
@@ -130,18 +151,33 @@ const entryError = ref(false)
 const historyLoading = ref(true)
 const historyError = ref(false)
 
-const ongoingEntries = computed(() => entries.value.filter((entry) => entry.status === 'open'))
+const ongoingEntries = computed(() =>
+  entries.value.filter((entry) => entry.status === 'open' && !entry.anonymousSuggestion),
+)
 const caseEntries = computed(() =>
-  entries.value.filter((entry) => entry.kind === 'case' && entry.status === 'open'),
+  entries.value.filter(
+    (entry) => entry.kind === 'case' && entry.status === 'open' && !entry.anonymousSuggestion,
+  ),
 )
 const proposalEntries = computed(() =>
-  entries.value.filter((entry) => entry.kind === 'proposal' && entry.status === 'open'),
+  entries.value.filter(
+    (entry) => entry.kind === 'proposal' && entry.status === 'open' && !entry.anonymousSuggestion,
+  ),
+)
+const anonymousSuggestionEntries = computed(() =>
+  entries.value.filter((entry) => entry.anonymousSuggestion && entry.status === 'open'),
 )
 const featuredEntries = computed(() => entries.value.filter((entry) => entry.featured))
 const publicAffairsCount = computed(() => proposalEntries.value.length)
 
 function tabTitle(key: string, count: number) {
   return `${t(`democracy.tabs.${key}`)} ${count}`
+}
+
+function createPath(mode: 'formal' | 'anonymous') {
+  const query = new URLSearchParams({ mode })
+  if (demoMode) query.set('demo', '1')
+  return `#/d/new?${query.toString()}`
 }
 
 async function loadEntries() {
@@ -168,8 +204,9 @@ async function loadHistory() {
   }
 }
 
-function resetDemo() {
+async function resetDemo() {
   resetDemocracyDemoVotes()
+  await Promise.allSettled([loadEntries(), loadHistory()])
 }
 
 const EntryGrid = defineComponent({
@@ -214,8 +251,11 @@ const EntryGrid = defineComponent({
   },
 })
 
-onMounted(() => {
+onActivated(() => {
   void Promise.allSettled([loadEntries(), loadHistory()])
+})
+
+onMounted(() => {
   window.$Logger.logPageView({ pageLink: '/Democracy/', timeStamp: Date.now() })
 })
 </script>
@@ -354,6 +394,12 @@ main {
   margin: 0;
 }
 
+.create-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.55rem;
+}
+
 .panel-heading h2 {
   color: #333;
   font-size: 1.15rem;
@@ -408,6 +454,20 @@ main {
 
   .content-panel {
     padding: 10px;
+  }
+
+  .panel-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .create-actions {
+    width: 100%;
+  }
+
+  .create-actions :deep(.n-button) {
+    flex: 1;
   }
 
   .panel-heading p {

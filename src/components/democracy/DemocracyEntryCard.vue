@@ -24,14 +24,14 @@
 
     <footer class="entry-footer">
       <component
-        :is="demoMode ? 'div' : 'router-link'"
+        :is="demoMode || entry.anonymousSuggestion ? 'div' : 'router-link'"
         class="author"
-        :to="demoMode ? undefined : `/u/${entry.summary.User.ID}`"
+        :to="demoMode || entry.anonymousSuggestion ? undefined : `/u/${entry.summary.User.ID}`"
       >
-        <img :src="avatarUrl" alt="" />
-        <span>{{ entry.summary.User.Nickname }}</span>
+        <img v-if="!entry.anonymousSuggestion" :src="avatarUrl" alt="" />
+        <span>{{ authorName }}</span>
         <Tag
-          v-if="entry.summary.User.Verification"
+          v-if="entry.summary.User.Verification && !entry.anonymousSuggestion"
           category="User"
           :tag="`C-${entry.summary.User.Verification}`"
         />
@@ -86,6 +86,11 @@ const commentsPath = computed(() =>
       },
 )
 const avatarUrl = computed(() => getUserUrl(props.entry.summary.User))
+const authorName = computed(() =>
+  props.entry.anonymousSuggestion
+    ? t('democracy.create.anonymousAuthor')
+    : props.entry.summary.User.Nickname,
+)
 const localizedSubject = computed(
   () =>
     props.entry.summary.LocalizedSubject?.[locale.value] ||

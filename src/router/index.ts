@@ -33,6 +33,12 @@ const routes: RouteRecordRaw[] = [
     meta: { keepAlive: false },
   },
   {
+    path: '/d/new',
+    name: 'democracy-matter-create',
+    component: () => import('../views/DemocracyMatterCreate.vue'),
+    meta: { keepAlive: false },
+  },
+  {
     path: '/d/demo/:id',
     redirect: (to) => ({
       name: 'democracy-matter-detail',
