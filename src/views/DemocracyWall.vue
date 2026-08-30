@@ -98,13 +98,38 @@
             <p>{{ t('democracy.scopes.historyDescription') }}</p>
           </div>
         </header>
-        <EntryGrid
-          :entries="historyEntries"
-          :loading="historyLoading"
-          :error="historyError"
-          read-only
-          @retry="loadHistory"
-        />
+        <n-tabs v-model:value="activeHistoryTab" type="line" animated>
+          <n-tab-pane name="public" :tab="historyTabTitle('public', historyPublicEntries.length)">
+            <EntryGrid
+              :entries="historyPublicEntries"
+              :loading="historyLoading"
+              :error="historyError"
+              read-only
+              @retry="loadHistory"
+            />
+          </n-tab-pane>
+          <n-tab-pane
+            name="oversight"
+            :tab="historyTabTitle('oversight', historyOversightEntries.length)"
+          >
+            <EntryGrid
+              :entries="historyOversightEntries"
+              :loading="historyLoading"
+              :error="historyError"
+              read-only
+              @retry="loadHistory"
+            />
+          </n-tab-pane>
+          <n-tab-pane name="replies" :tab="historyTabTitle('replies', historyReplyEntries.length)">
+            <EntryGrid
+              :entries="historyReplyEntries"
+              :loading="historyLoading"
+              :error="historyError"
+              read-only
+              @retry="loadHistory"
+            />
+          </n-tab-pane>
+        </n-tabs>
       </section>
     </main>
 
@@ -136,6 +161,7 @@ const activeScope = ref<'current' | 'history'>(
   route.query.scope === 'history' ? 'history' : 'current',
 )
 const activeTab = ref('ongoing')
+const activeHistoryTab = ref('public')
 const entries = ref<DemocracyEntry[]>([])
 const historyEntries = ref<DemocracyEntry[]>([])
 const entryLoading = ref(true)
@@ -160,9 +186,34 @@ const anonymousSuggestionEntries = computed(() =>
   entries.value.filter((entry) => entry.anonymousSuggestion && entry.status === 'open'),
 )
 const publicAffairsCount = computed(() => proposalEntries.value.length)
+const historyReplyEntries = computed(() =>
+  historyEntries.value.filter(
+    (entry) => entry.anonymousSuggestion || entry.summary.Tags.includes('提议回复'),
+  ),
+)
+const historyOversightEntries = computed(() =>
+  historyEntries.value.filter(
+    (entry) =>
+      entry.kind === 'case' &&
+      !entry.anonymousSuggestion &&
+      !entry.summary.Tags.includes('提议回复'),
+  ),
+)
+const historyPublicEntries = computed(() =>
+  historyEntries.value.filter(
+    (entry) =>
+      entry.kind === 'proposal' &&
+      !entry.anonymousSuggestion &&
+      !entry.summary.Tags.includes('提议回复'),
+  ),
+)
 
 function tabTitle(key: string, count: number) {
   return `${t(`democracy.tabs.${key}`)} ${count}`
+}
+
+function historyTabTitle(key: string, count: number) {
+  return `${t(`democracy.historyTabs.${key}`)} ${count}`
 }
 
 function createPath(mode: 'formal' | 'anonymous') {

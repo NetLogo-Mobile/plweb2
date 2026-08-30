@@ -140,6 +140,16 @@ const DEMOCRACY_DEMO_SUMMARIES: Summary[] = [
     comments: 29,
     visits: 618,
   }),
+  createSummary({
+    id: '66d100000000000000000007',
+    subject: '提议回复：公开调查团成员替补流程',
+    description: '管理组已回复匿名提议，并公布调查团成员退出后的替补顺序与公开记录要求。',
+    tags: ['匿名提议', '提议回复', '公共议案', '已决议', '已归档'],
+    verification: 'Administrator',
+    nickname: '管理员·议事回复',
+    comments: 12,
+    visits: 206,
+  }),
 ]
 
 function readMatterStore(): Summary[] {

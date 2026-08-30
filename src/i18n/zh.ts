@@ -229,6 +229,11 @@ export default {
       oversight: '管理监察',
       suggestions: '匿名提议',
     },
+    historyTabs: {
+      public: '公共事务',
+      oversight: '管理监察',
+      replies: '提议回复',
+    },
     kinds: {
       case: '卷宗',
       proposal: '议案',

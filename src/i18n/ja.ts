@@ -236,6 +236,11 @@ export default {
       oversight: '運営監査',
       suggestions: '匿名提案',
     },
+    historyTabs: {
+      public: '公共事項',
+      oversight: '運営監査',
+      replies: '提案への回答',
+    },
     kinds: { case: '記録', proposal: '議案' },
     status: { open: '進行中', resolved: '決議済み' },
     comments: '質疑 {count} 件',

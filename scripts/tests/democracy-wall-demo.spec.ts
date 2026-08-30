@@ -22,14 +22,21 @@ test.describe('民主墙离线演示', () => {
 
   test('在当前事务和历史事务之间切换', async ({ page }) => {
     await expect(page.getByRole('button', { name: /当前事务 3/ })).toBeVisible()
-    await page.getByRole('button', { name: /历史事务 3/ }).click()
+    await page.getByRole('button', { name: /历史事务 4/ }).click()
 
     await expect(page.getByRole('heading', { name: '历史事务' })).toBeVisible()
-    await expect(page.getByText('历史事务：社区公开记录保留规则')).toBeVisible()
+    await expect(page.getByText('公共事务 1', { exact: true })).toBeVisible()
+    await expect(page.getByText('管理监察 2', { exact: true })).toBeVisible()
+    await expect(page.getByText('提议回复 1', { exact: true })).toBeVisible()
+    await expect(page.getByText('已决议：条例修订必须保留旧版本')).toBeVisible()
+
+    await page.getByText('管理监察 2', { exact: true }).click()
     await expect(page.getByText('历史事务：志愿调查团回避办法试行记录')).toBeVisible()
+
+    await page.getByText('提议回复 1', { exact: true }).click()
+    await expect(page.getByText('提议回复：公开调查团成员替补流程')).toBeVisible()
     await expect(page.getByRole('link', { name: '参与质询' })).toHaveCount(0)
-    await expect(page.getByRole('link', { name: '查看详情' })).toHaveCount(3)
-    await page.getByRole('link', { name: '查看详情' }).first().click()
+    await page.getByRole('link', { name: '提议回复：公开调查团成员替补流程' }).click()
     await expect(page.getByText('历史记录只读')).toBeVisible()
     await expect(page.getByRole('button', { name: '提交建言' })).toHaveCount(0)
   })
@@ -43,7 +50,7 @@ test.describe('民主墙离线演示', () => {
     await expect(page.getByText('卷宗质询期决议')).toBeVisible()
 
     await page.goto('/#/d?demo=1&scope=history')
-    await page.getByRole('button', { name: /历史事务 3/ }).click()
+    await page.getByRole('button', { name: /历史事务 4/ }).click()
     await page.getByRole('link', { name: '已决议：条例修订必须保留旧版本' }).first().click()
     await page.getByText('2. 投票阶段', { exact: true }).click()
     await expect(page.getByText('条例版本保留决议结果')).toBeVisible()

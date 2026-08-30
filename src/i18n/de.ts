@@ -237,6 +237,11 @@ export default {
       oversight: 'Verwaltungsaufsicht',
       suggestions: 'Anonyme Vorschläge',
     },
+    historyTabs: {
+      public: 'Öffentliche Angelegenheiten',
+      oversight: 'Verwaltungsaufsicht',
+      replies: 'Antworten auf Vorschläge',
+    },
     kinds: { case: 'Akte', proposal: 'Vorschlag' },
     status: { open: 'Laufend', resolved: 'Entschieden' },
     comments: '{count} Fragen',

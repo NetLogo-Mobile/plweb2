@@ -234,6 +234,11 @@ export default {
       oversight: 'Governance oversight',
       suggestions: 'Anonymous suggestions',
     },
+    historyTabs: {
+      public: 'Public affairs',
+      oversight: 'Governance oversight',
+      replies: 'Suggestion replies',
+    },
     kinds: {
       case: 'Docket',
       proposal: 'Proposal',

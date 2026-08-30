@@ -237,6 +237,11 @@ export default {
       oversight: 'Contrôle de la gouvernance',
       suggestions: 'Propositions anonymes',
     },
+    historyTabs: {
+      public: 'Affaires publiques',
+      oversight: 'Contrôle de la gouvernance',
+      replies: 'Réponses aux propositions',
+    },
     kinds: { case: 'Dossier', proposal: 'Proposition' },
     status: { open: 'En cours', resolved: 'Décidé' },
     comments: '{count} questions',
