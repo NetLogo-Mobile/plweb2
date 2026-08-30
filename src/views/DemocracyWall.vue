@@ -60,22 +60,6 @@
               :error="entryError"
               @retry="loadEntries"
             />
-            <div v-if="voteLoading" class="embedded-state"><n-spin size="small" /></div>
-            <div v-else-if="voteError" class="embedded-state">
-              <n-button size="small" @click="loadVotes">
-                {{ t('democracy.vote.loadFailed') }} · {{ t('democracy.retry') }}
-              </n-button>
-            </div>
-            <div v-else-if="activeVoteActivities.length" class="vote-grid embedded-votes">
-              <AnonymousVoteCard
-                v-for="activity in activeVoteActivities"
-                :key="activity.ID"
-                :activity="activity"
-                :status="statusFor(activity.ID)"
-                :statistic="voteContext.statistic"
-                @updated="onVoteUpdated"
-              />
-            </div>
           </n-tab-pane>
           <n-tab-pane name="oversight" :tab="tabTitle('oversight', caseEntries.length)">
             <EntryGrid
@@ -85,23 +69,13 @@
               @retry="loadEntries"
             />
           </n-tab-pane>
-          <n-tab-pane name="featured" :tab="tabTitle('featured', featuredCount)">
+          <n-tab-pane name="featured" :tab="tabTitle('featured', featuredEntries.length)">
             <EntryGrid
               :entries="featuredEntries"
               :loading="entryLoading"
               :error="entryError"
               @retry="loadEntries"
             />
-            <div v-if="resolvedVoteActivities.length" class="vote-grid embedded-votes">
-              <AnonymousVoteCard
-                v-for="activity in resolvedVoteActivities"
-                :key="activity.ID"
-                :activity="activity"
-                :status="statusFor(activity.ID)"
-                :statistic="voteContext.statistic"
-                @updated="onVoteUpdated"
-              />
-            </div>
           </n-tab-pane>
         </n-tabs>
       </section>
@@ -130,25 +104,24 @@
 <script setup lang="ts">
 import { computed, defineComponent, h, onMounted, ref, type PropType } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import { NButton, NEmpty, NSpin, NTabPane, NTabs } from 'naive-ui'
 import Header from '@components/utils/Header.vue'
 import Footer from '@components/utils/Footer.vue'
 import DemocracyEntryCard from '@components/democracy/DemocracyEntryCard.vue'
-import AnonymousVoteCard from '@components/democracy/AnonymousVoteCard.vue'
 import {
   fetchDemocracyEntries,
   fetchDemocracyHistoryEntries,
-  fetchDemocracyVoteContext,
-  mergeDemocracyVoteContext,
   type DemocracyEntry,
-  type DemocracyVoteContext,
 } from '@services/democracyWall'
 import { isDemocracyDemoMode, resetDemocracyDemoVotes } from '@services/democracyWallDemo'
-import type { Sync } from '../pl-serve-type-main/type/main'
 
 const { t } = useI18n()
+const route = useRoute()
 const demoMode = isDemocracyDemoMode()
-const activeScope = ref<'current' | 'history'>('current')
+const activeScope = ref<'current' | 'history'>(
+  route.query.scope === 'history' ? 'history' : 'current',
+)
 const activeTab = ref('ongoing')
 const entries = ref<DemocracyEntry[]>([])
 const historyEntries = ref<DemocracyEntry[]>([])
@@ -156,9 +129,6 @@ const entryLoading = ref(true)
 const entryError = ref(false)
 const historyLoading = ref(true)
 const historyError = ref(false)
-const voteLoading = ref(true)
-const voteError = ref(false)
-const voteContext = ref<DemocracyVoteContext>({ activities: [], statuses: [] })
 
 const ongoingEntries = computed(() => entries.value.filter((entry) => entry.status === 'open'))
 const caseEntries = computed(() =>
@@ -168,18 +138,7 @@ const proposalEntries = computed(() =>
   entries.value.filter((entry) => entry.kind === 'proposal' && entry.status === 'open'),
 )
 const featuredEntries = computed(() => entries.value.filter((entry) => entry.featured))
-const activeVoteActivities = computed(() =>
-  voteContext.value.activities.filter((activity) => !statusFor(activity.ID)?.Finished),
-)
-const resolvedVoteActivities = computed(() =>
-  voteContext.value.activities.filter((activity) => statusFor(activity.ID)?.Finished),
-)
-const publicAffairsCount = computed(
-  () => proposalEntries.value.length + activeVoteActivities.value.length,
-)
-const featuredCount = computed(
-  () => featuredEntries.value.length + resolvedVoteActivities.value.length,
-)
+const publicAffairsCount = computed(() => proposalEntries.value.length)
 
 function tabTitle(key: string, count: number) {
   return `${t(`democracy.tabs.${key}`)} ${count}`
@@ -209,29 +168,8 @@ async function loadHistory() {
   }
 }
 
-async function loadVotes() {
-  voteLoading.value = true
-  voteError.value = false
-  try {
-    voteContext.value = await fetchDemocracyVoteContext()
-  } catch {
-    voteError.value = true
-  } finally {
-    voteLoading.value = false
-  }
-}
-
-function statusFor(activityId: string) {
-  return voteContext.value.statuses.find((status) => status.ActivityID === activityId)
-}
-
-function onVoteUpdated(sync?: Sync) {
-  voteContext.value = mergeDemocracyVoteContext(voteContext.value, sync)
-}
-
 function resetDemo() {
   resetDemocracyDemoVotes()
-  void loadVotes()
 }
 
 const EntryGrid = defineComponent({
@@ -277,7 +215,7 @@ const EntryGrid = defineComponent({
 })
 
 onMounted(() => {
-  void Promise.allSettled([loadEntries(), loadHistory(), loadVotes()])
+  void Promise.allSettled([loadEntries(), loadHistory()])
   window.$Logger.logPageView({ pageLink: '/Democracy/', timeStamp: Date.now() })
 })
 </script>
@@ -436,23 +374,11 @@ main {
   white-space: nowrap;
 }
 
-:deep(.entry-grid),
-.vote-grid {
+:deep(.entry-grid) {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   padding: 4px 0 10px;
-}
-
-.embedded-votes {
-  margin-top: -10px;
-}
-
-.embedded-state {
-  display: flex;
-  min-height: 3rem;
-  align-items: center;
-  justify-content: center;
 }
 
 :deep(.state-box) {
@@ -462,8 +388,7 @@ main {
 }
 
 @media (max-width: 820px) {
-  :deep(.entry-grid),
-  .vote-grid {
+  :deep(.entry-grid) {
     grid-template-columns: 1fr;
   }
 }

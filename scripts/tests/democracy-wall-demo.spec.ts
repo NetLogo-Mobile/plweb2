@@ -14,9 +14,9 @@ test.describe('民主墙离线演示', () => {
     await expect(page.getByText('Editor')).toBeVisible()
 
     await page.getByText('关于公开指控处理流程的调查卷宗').click()
-    await expect(page).toHaveURL(/#\/d\/demo\/66d100000000000000000001\?demo=1$/)
-    await expect(page.getByRole('heading', { name: '公开卷宗' })).toBeVisible()
-    await expect(page.getByRole('heading', { name: '已确认事实' })).toBeVisible()
+    await expect(page).toHaveURL(/#\/d\/matter\/66d100000000000000000001\?demo=1$/)
+    await expect(page.getByRole('heading', { name: '事务详情' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: '社区质询与建言' })).toBeVisible()
     await expect(page.getByText('卷宗引用的条例版本是否在事件发生时已生效？')).toBeVisible()
   })
 
@@ -29,20 +29,31 @@ test.describe('民主墙离线演示', () => {
     await expect(page.getByText('历史事务：志愿调查团回避办法试行记录')).toBeVisible()
     await expect(page.getByRole('link', { name: '参与质询' })).toHaveCount(0)
     await expect(page.getByRole('link', { name: '查看详情' })).toHaveCount(3)
+    await page.getByRole('link', { name: '查看详情' }).first().click()
+    await expect(page.getByText('历史记录只读')).toBeVisible()
+    await expect(page.getByRole('button', { name: '提交建言' })).toHaveCount(0)
   })
 
-  test('公共事务内置进行中投票，精选决议内置投票结果', async ({ page }) => {
-    await page.getByText('公共事务 4', { exact: true }).click()
+  test('提案详情整合质询建言和投票阶段', async ({ page }) => {
+    await page.getByText('公共事务 2', { exact: true }).click()
+    await page.getByRole('link', { name: '提案：卷宗公开后设置 72 小时质询期' }).first().click()
+    await expect(page.getByText('1. 质询建言阶段', { exact: true })).toBeVisible()
+    await expect(page.getByText('2. 投票阶段', { exact: true })).toBeVisible()
+    await page.getByText('2. 投票阶段', { exact: true }).click()
     await expect(page.getByText('卷宗质询期决议')).toBeVisible()
-    await expect(page.getByRole('heading', { name: '匿名投票与社区决议' })).toHaveCount(0)
 
-    await page.getByText('精选决议 2', { exact: true }).click()
+    await page.goto('/#/d?demo=1')
+    await page.getByText('精选决议 1', { exact: true }).click()
+    await page.getByRole('link', { name: '已决议：条例修订必须保留旧版本' }).first().click()
+    await page.getByText('2. 投票阶段', { exact: true }).click()
     await expect(page.getByText('条例版本保留决议结果')).toBeVisible()
     await expect(page.getByRole('button', { name: /通过修订/ })).toBeDisabled()
   })
 
   test('匿名投票可刷新保留并重置', async ({ page }) => {
-    await page.getByText('公共事务 4', { exact: true }).click()
+    await page.getByText('公共事务 2', { exact: true }).click()
+    await page.getByRole('link', { name: '提案：卷宗公开后设置 72 小时质询期' }).first().click()
+    await page.getByText('2. 投票阶段', { exact: true }).click()
     const choice = page.getByRole('button', { name: /同意 72 小时/ })
 
     await expect(choice).toBeEnabled()
@@ -51,10 +62,14 @@ test.describe('民主墙离线演示', () => {
 
     await page.reload()
     await waitForPageReady(page)
-    await page.getByText('公共事务 4', { exact: true }).click()
+    await page.getByText('2. 投票阶段', { exact: true }).click()
     await expect(page.getByRole('button', { name: /同意 72 小时/ })).toBeDisabled()
 
+    await page.goto('/#/d?demo=1')
     await page.getByRole('button', { name: '重置投票' }).click()
+    await page.getByText('公共事务 2', { exact: true }).click()
+    await page.getByRole('link', { name: '提案：卷宗公开后设置 72 小时质询期' }).first().click()
+    await page.getByText('2. 投票阶段', { exact: true }).click()
     await expect(page.getByRole('button', { name: /同意 72 小时/ })).toBeEnabled()
   })
 })

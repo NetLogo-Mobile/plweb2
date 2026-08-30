@@ -27,10 +27,18 @@ const routes: RouteRecordRaw[] = [
     meta: { keepAlive: true },
   },
   {
-    path: '/d/demo/:id',
-    name: 'democracy-demo-detail',
+    path: '/d/matter/:id',
+    name: 'democracy-matter-detail',
     component: () => import('../views/DemocracyDemoDetail.vue'),
     meta: { keepAlive: false },
+  },
+  {
+    path: '/d/demo/:id',
+    redirect: (to) => ({
+      name: 'democracy-matter-detail',
+      params: { id: to.params.id },
+      query: { ...to.query, demo: '1' },
+    }),
   },
   {
     path: '/p/:category/:id',

@@ -3,14 +3,16 @@
     <Header>
       <button class="back" type="button" @click="goBack">←</button>
       <div class="heading">
-        <h1>{{ t('democracy.demo.detailTitle') }}</h1>
-        <span>{{ t('democracy.demo.badge') }}</span>
+        <h1>{{ t('democracy.matter.title') }}</h1>
+        <span v-if="demoMode">{{ t('democracy.demo.badge') }}</span>
       </div>
     </Header>
 
-    <main v-if="entry">
-      <article class="docket">
-        <header class="docket-header">
+    <main v-if="loading" class="center-state"><n-spin size="large" /></main>
+
+    <main v-else-if="entry">
+      <article class="matter-card">
+        <header class="matter-header">
           <div class="labels">
             <span class="status">{{ statusText }}</span>
             <Tag
@@ -23,54 +25,94 @@
           <h2>{{ entry.summary.Subject }}</h2>
           <p>{{ entry.summary.Description?.[0] }}</p>
           <div class="author">
-            <span>{{ entry.summary.User.Nickname }}</span>
+            <router-link v-if="!demoMode" :to="`/u/${entry.summary.User.ID}`">
+              {{ entry.summary.User.Nickname }}
+            </router-link>
+            <span v-else>{{ entry.summary.User.Nickname }}</span>
             <Tag category="User" :tag="`C-${entry.summary.User.Verification}`" />
           </div>
         </header>
 
-        <section>
-          <h3>{{ t('democracy.demo.rule') }}</h3>
+        <section v-if="demoMode" class="overview">
+          <h3>{{ t('democracy.matter.overview') }}</h3>
           <p class="rule">{{ detail.rule }}</p>
-        </section>
-
-        <section>
-          <h3>{{ t('democracy.demo.confirmedFacts') }}</h3>
           <ul>
             <li v-for="fact in detail.facts" :key="fact">{{ fact }}</li>
           </ul>
         </section>
 
-        <section>
-          <h3>{{ t('democracy.demo.timeline') }}</h3>
-          <ol class="timeline">
-            <li v-for="item in detail.timeline" :key="`${item.date}-${item.text}`">
-              <time>{{ item.date }}</time>
-              <span>{{ item.text }}</span>
-            </li>
-          </ol>
-        </section>
+        <section class="stages">
+          <n-tabs v-model:value="activeStage" type="line" animated>
+            <n-tab-pane name="questions" :tab="t('democracy.matter.questionsStage')">
+              <div class="stage-intro">
+                <h3>{{ t('democracy.matter.suggestTitle') }}</h3>
+                <span v-if="readOnly" class="read-only">{{ t('democracy.matter.readOnly') }}</span>
+              </div>
 
-        <section>
-          <h3>{{ t('democracy.demo.finding') }}</h3>
-          <p>{{ detail.finding }}</p>
-        </section>
+              <div v-if="demoMode" class="demo-questions">
+                <blockquote v-for="question in displayedDemoQuestions" :key="question">
+                  {{ question }}
+                </blockquote>
+              </div>
+              <MessageList
+                v-else
+                :ID="matterId"
+                Category="Discussion"
+                :upDate="upDate"
+                @msgClick="handleMsgClick"
+              />
 
-        <section>
-          <h3>{{ t('democracy.demo.publicQuestions') }}</h3>
-          <div class="questions">
-            <blockquote v-for="question in detail.questions" :key="question">
-              {{ question }}
-            </blockquote>
-          </div>
+              <div v-if="!readOnly" class="composer">
+                <n-input
+                  v-model:value="comment"
+                  type="textarea"
+                  :placeholder="t('democracy.matter.suggestPlaceholder')"
+                  :maxlength="400"
+                  show-count
+                  :autosize="{ minRows: 2, maxRows: 5 }"
+                  :disabled="isSubmitting"
+                  @keyup.ctrl.enter="submitSuggestion"
+                />
+                <n-button
+                  type="info"
+                  :loading="isSubmitting"
+                  :disabled="!comment.trim()"
+                  @click="submitSuggestion"
+                >
+                  {{ t('democracy.matter.submitSuggestion') }}
+                </n-button>
+              </div>
+            </n-tab-pane>
+
+            <n-tab-pane name="vote" :tab="t('democracy.matter.voteStage')">
+              <div v-if="voteLoading" class="center-state compact"><n-spin /></div>
+              <n-empty v-else-if="voteError" :description="t('democracy.vote.loadFailed')">
+                <template #extra>
+                  <n-button size="small" @click="loadVotes">{{ t('democracy.retry') }}</n-button>
+                </template>
+              </n-empty>
+              <div v-else-if="matterActivities.length" class="vote-grid">
+                <AnonymousVoteCard
+                  v-for="activity in matterActivities"
+                  :key="activity.ID"
+                  :activity="activity"
+                  :status="statusFor(activity.ID)"
+                  :statistic="voteContext.statistic"
+                  @updated="onVoteUpdated"
+                />
+              </div>
+              <n-empty v-else :description="t('democracy.matter.noVotes')" />
+            </n-tab-pane>
+          </n-tabs>
         </section>
       </article>
     </main>
 
-    <main v-else class="missing">
+    <main v-else class="center-state">
       <n-empty :description="t('democracy.demo.missing')">
-        <template #extra>
-          <n-button @click="goBack">{{ t('democracy.demo.back') }}</n-button>
-        </template>
+        <template #extra
+          ><n-button @click="goBack">{{ t('democracy.demo.back') }}</n-button></template
+        >
       </n-empty>
     </main>
 
@@ -79,49 +121,157 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { NButton, NEmpty } from 'naive-ui'
+import { NButton, NEmpty, NInput, NSpin, NTabPane, NTabs } from 'naive-ui'
 import Header from '@components/utils/Header.vue'
 import Footer from '@components/utils/Footer.vue'
 import Tag from '@components/utils/TagLarger.vue'
-import { toDemocracyEntry } from '@services/democracyWall'
+import MessageList from '@components/messages/MessageList.vue'
+import AnonymousVoteCard from '@components/democracy/AnonymousVoteCard.vue'
+import { getData } from '@services/api/getData'
+import postComment from '@services/postComment'
+import {
+  fetchDemocracyVoteContext,
+  getDemocracyMatterActivities,
+  mergeDemocracyVoteContext,
+  toDemocracyEntry,
+  type DemocracyVoteContext,
+} from '@services/democracyWall'
 import {
   DEMOCRACY_DEMO_DETAILS,
   DEMOCRACY_DEMO_SUMMARIES,
+  isDemocracyDemoMode,
   type DemocracyDemoDetail,
 } from '@services/democracyWallDemo'
+import type { CommentResult, Summary, Sync } from '../pl-serve-type-main/type/main'
 
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
-const id = computed(() => String(route.params.id || ''))
-const summary = computed(() => DEMOCRACY_DEMO_SUMMARIES.find((item) => item.ID === id.value))
+const matterId = computed(() => String(route.params.id || ''))
+const demoMode = isDemocracyDemoMode()
+const readOnly = computed(() => route.query.scope === 'history')
+const activeStage = ref(route.query.stage === 'vote' ? 'vote' : 'questions')
+const summary = ref<Summary>()
+const loading = ref(true)
+const comment = ref('')
+const isSubmitting = ref(false)
+const replyID = ref('')
+const upDate = ref(0)
+const voteLoading = ref(true)
+const voteError = ref(false)
+const voteContext = ref<DemocracyVoteContext>({ activities: [], statuses: [] })
+const localQuestions = ref<string[]>([])
+
 const entry = computed(() => (summary.value ? toDemocracyEntry(summary.value) : undefined))
-const fallbackDetail: DemocracyDemoDetail = {
-  id: id.value,
+const fallbackDetail = computed<DemocracyDemoDetail>(() => ({
+  id: matterId.value,
   rule: t('democracy.demo.fallbackRule'),
   facts: [t('democracy.demo.fallbackFact')],
   timeline: [{ date: '08-29', text: t('democracy.demo.fallbackTimeline') }],
   finding: t('democracy.demo.fallbackFinding'),
   questions: [t('democracy.demo.fallbackQuestion')],
-}
-const detail = computed(() => DEMOCRACY_DEMO_DETAILS[id.value] ?? fallbackDetail)
+}))
+const detail = computed(() => DEMOCRACY_DEMO_DETAILS[matterId.value] ?? fallbackDetail.value)
+const displayedDemoQuestions = computed(() => [...detail.value.questions, ...localQuestions.value])
+const matterActivities = computed(() =>
+  getDemocracyMatterActivities(voteContext.value.activities, matterId.value),
+)
 const statusText = computed(() =>
   entry.value?.status === 'resolved' ? t('democracy.status.resolved') : t('democracy.status.open'),
 )
 
-function goBack() {
-  void router.push('/d?demo=1')
+function demoQuestionKey() {
+  return `plweb2.democracy.demoQuestions.${matterId.value}`
 }
+
+function loadDemoQuestions() {
+  try {
+    const value = JSON.parse(localStorage.getItem(demoQuestionKey()) || '[]')
+    localQuestions.value = Array.isArray(value)
+      ? value.filter((item): item is string => typeof item === 'string')
+      : []
+  } catch {
+    localQuestions.value = []
+  }
+}
+
+async function loadMatter() {
+  loading.value = true
+  if (demoMode) {
+    summary.value = DEMOCRACY_DEMO_SUMMARIES.find((item) => item.ID === matterId.value)
+    loadDemoQuestions()
+    loading.value = false
+    return
+  }
+
+  const response = await getData('/Contents/GetSummary', {
+    ContentID: matterId.value,
+    Category: 'Discussion',
+  })
+  if (response.Status === 200) summary.value = response.Data ?? undefined
+  loading.value = false
+}
+
+async function loadVotes() {
+  voteLoading.value = true
+  voteError.value = false
+  try {
+    voteContext.value = await fetchDemocracyVoteContext()
+  } catch {
+    voteError.value = true
+  } finally {
+    voteLoading.value = false
+  }
+}
+
+function statusFor(activityId: string) {
+  return voteContext.value.statuses.find((status) => status.ActivityID === activityId)
+}
+
+function onVoteUpdated(sync?: Sync) {
+  voteContext.value = mergeDemocracyVoteContext(voteContext.value, sync)
+}
+
+function handleMsgClick(item: CommentResult) {
+  replyID.value = item.UserID
+  comment.value = `${t('ui.messages.replyToUser')}@${item.Nickname}: `
+}
+
+async function submitSuggestion() {
+  const content = comment.value.trim()
+  if (!content || readOnly.value || isSubmitting.value) return
+  if (demoMode) {
+    localQuestions.value.push(content)
+    localStorage.setItem(demoQuestionKey(), JSON.stringify(localQuestions.value))
+    comment.value = ''
+    return
+  }
+  await postComment(comment, isSubmitting, 'Discussion', matterId.value, replyID, upDate)
+}
+
+function goBack() {
+  void router.push({
+    path: '/d',
+    query: {
+      ...(demoMode ? { demo: '1' } : {}),
+      ...(readOnly.value ? { scope: 'history' } : {}),
+    },
+  })
+}
+
+onMounted(() => {
+  void Promise.allSettled([loadMatter(), loadVotes()])
+})
 </script>
 
 <style scoped>
 .detail-page {
   min-height: 100dvh;
-  background: #f2f5f7;
-  color: #263846;
+  background: #f3f3f3;
+  color: #333;
 }
 
 .back {
@@ -130,8 +280,8 @@ function goBack() {
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: #edf3f7;
-  color: #28536d;
+  background: #f0f0f0;
+  color: #555;
   font-size: 1.4rem;
   cursor: pointer;
 }
@@ -148,129 +298,141 @@ function goBack() {
   font-size: 1.15rem;
 }
 
-.heading span {
+.heading span,
+.read-only {
   padding: 0.18rem 0.5rem;
-  border-radius: 999px;
-  background: #fff1c7;
-  color: #8b5b00;
-  font-size: 0.7rem;
+  border-radius: 4px;
+  background: #e7f4fb;
+  color: #0185c5;
+  font-size: 0.72rem;
 }
 
 main {
   height: calc(100dvh - 100px);
   overflow-y: auto;
-  padding: clamp(0.75rem, 2vw, 1.5rem);
+  padding: 12px;
 }
 
-.docket {
-  width: min(900px, 100%);
+.matter-card {
+  width: min(920px, 100%);
   margin: 0 auto;
   overflow: hidden;
-  border: 1px solid #dbe3e9;
-  border-radius: 1rem;
+  border-radius: 10px;
   background: #fff;
-  box-shadow: 0 0.35rem 1.4rem rgba(28, 52, 69, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.docket-header,
-section {
-  padding: clamp(1rem, 3vw, 1.7rem);
+.matter-header,
+.overview,
+.stages {
+  padding: 16px;
 }
 
-.docket-header {
-  background: linear-gradient(140deg, #153f59, #18728c);
-  color: #fff;
+.matter-header {
+  border-bottom: 1px solid #eee;
 }
 
 .labels,
-.author {
+.author,
+.stage-intro,
+.composer {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
+  gap: 0.55rem;
   align-items: center;
+}
+
+.labels {
+  flex-wrap: wrap;
 }
 
 .status {
   padding: 0.2rem 0.55rem;
-  border-radius: 999px;
-  background: #dff4e8;
-  color: #126b41;
+  border-radius: 4px;
+  background: #e8f6ee;
+  color: #187448;
   font-size: 0.75rem;
   font-weight: 700;
 }
 
-.docket-header h2 {
-  margin: 1rem 0 0.6rem;
-  font-size: clamp(1.35rem, 4vw, 2rem);
+.matter-header h2 {
+  margin: 0.9rem 0 0.45rem;
+  color: #333;
+  font-size: clamp(1.25rem, 3vw, 1.7rem);
 }
 
-.docket-header p {
-  color: #d9edf3;
+.matter-header p,
+.overview li {
+  color: #666;
   line-height: 1.65;
 }
 
 .author {
   justify-content: flex-end;
-  font-size: 0.85rem;
 }
 
-section + section {
-  border-top: 1px solid #e8edf1;
+.author a {
+  color: #0185c5;
+  text-decoration: none;
 }
 
-section h3 {
-  margin: 0 0 0.8rem;
-  color: #183e57;
+.overview {
+  border-bottom: 1px solid #eee;
 }
 
-section p,
-section li {
-  line-height: 1.7;
+.overview h3,
+.stage-intro h3 {
+  margin: 0;
 }
 
 .rule {
-  padding: 0.85rem 1rem;
-  border-left: 0.25rem solid #1883ad;
-  background: #eff8fc;
+  padding: 0.75rem 0.9rem;
+  border-left: 3px solid #0185c5;
+  background: #f4f8fa;
+  line-height: 1.6;
 }
 
-.timeline {
+.stage-intro {
+  justify-content: space-between;
+  margin-bottom: 0.8rem;
+}
+
+.demo-questions {
   display: grid;
-  gap: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.timeline li {
-  display: grid;
-  grid-template-columns: 7rem 1fr;
-  gap: 1rem;
-  padding: 0.65rem 0;
-  border-bottom: 1px dashed #dbe3e8;
-}
-
-.timeline time {
-  color: #1681a8;
-  font-weight: 700;
-}
-
-.questions {
-  display: grid;
-  gap: 0.65rem;
+  gap: 0.6rem;
 }
 
 blockquote {
   margin: 0;
-  padding: 0.8rem 1rem;
-  border-radius: 0.7rem;
-  background: #f5f7f9;
-  color: #425563;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  background: #fafafa;
+  color: #555;
   line-height: 1.6;
 }
 
-.missing {
+.composer {
+  align-items: flex-end;
+  margin-top: 0.9rem;
+}
+
+.composer :deep(.n-input) {
+  flex: 1;
+}
+
+.vote-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.center-state {
   display: grid;
   place-items: center;
+}
+
+.center-state.compact {
+  min-height: 10rem;
+  padding: 0;
 }
 
 @media (max-width: 520px) {
@@ -278,9 +440,19 @@ blockquote {
     display: none;
   }
 
-  .timeline li {
-    grid-template-columns: 1fr;
-    gap: 0.15rem;
+  main {
+    padding: 8px;
+  }
+
+  .matter-header,
+  .overview,
+  .stages {
+    padding: 12px;
+  }
+
+  .composer {
+    align-items: stretch;
+    flex-direction: column;
   }
 }
 </style>

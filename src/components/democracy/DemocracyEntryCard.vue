@@ -66,21 +66,23 @@ import type { DemocracyEntry } from '@services/democracyWall'
 const props = defineProps<{ entry: DemocracyEntry; demoMode?: boolean; readOnly?: boolean }>()
 const { t, locale } = useI18n()
 
-const targetPath = computed(() =>
-  props.demoMode
-    ? `/d/demo/${props.entry.summary.ID}?demo=1`
-    : `/p/${props.entry.summary.Category || 'Discussion'}/${props.entry.summary.ID}`,
-)
+const targetPath = computed(() => ({
+  name: 'democracy-matter-detail',
+  params: { id: props.entry.summary.ID },
+  query: {
+    ...(props.demoMode ? { demo: '1' } : {}),
+    ...(props.readOnly ? { scope: 'history' } : {}),
+  },
+}))
 const commentsPath = computed(() =>
   props.demoMode
-    ? targetPath.value
+    ? {
+        ...targetPath.value,
+        query: { demo: '1', stage: 'questions' },
+      }
     : {
-        name: 'Comments',
-        params: {
-          category: props.entry.summary.Category || 'Discussion',
-          id: props.entry.summary.ID,
-          name: localizedSubject.value,
-        },
+        ...targetPath.value,
+        query: { stage: 'questions' },
       },
 )
 const avatarUrl = computed(() => getUserUrl(props.entry.summary.User))

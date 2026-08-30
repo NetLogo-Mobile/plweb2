@@ -119,6 +119,20 @@ function isVoteActivity(activity: Activity) {
   return activity.InterfaceModel === 'Vote' || activity.InterfaceModel === 'Vote-Single'
 }
 
+export function getDemocracyMatterActivities(activities: Activity[], matterId: string) {
+  return activities.filter((activity) => {
+    const targets = [activity.InternalLink, activity.TargetLink, activity.TargetText]
+    return targets.some((target) => {
+      if (typeof target === 'string') return target.includes(matterId)
+      try {
+        return JSON.stringify(target).includes(matterId)
+      } catch {
+        return false
+      }
+    })
+  })
+}
+
 export async function fetchDemocracyVoteContext(): Promise<DemocracyVoteContext> {
   if (isDemocracyDemoMode()) {
     return mergeDemocracyVoteContext({ activities: [], statuses: [] }, getDemocracyDemoSync())

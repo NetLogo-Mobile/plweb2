@@ -73,7 +73,7 @@ const activitiesResponse = {
         FinishDate: '2026-09-30T00:00:00Z',
         ID: '7777ff550b5f97d6e49d12d7',
         InterfaceModel: 'Vote-Single',
-        InternalLink: null,
+        InternalLink: '/p/Discussion/66a84559744ed757b46f8917',
         IsAttendance: false,
         IsDaily: false,
         IsDevelopment: false,
@@ -124,6 +124,18 @@ test.describe('民主墙', () => {
         body: JSON.stringify(activitiesResponse),
       })
     })
+    await page.route('**/api/Contents/GetSummary', async (route) => {
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({ Status: 200, Message: '', Data: entriesResponse.Data.$values[0] }),
+      })
+    })
+    await page.route('**/api/Messages/GetComments', async (route) => {
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({ Status: 200, Message: '', Data: { Comments: [], Count: 0 } }),
+      })
+    })
   })
 
   test('展示卷宗、身份标签和现有匿名投票', async ({ page }) => {
@@ -135,14 +147,15 @@ test.describe('民主墙', () => {
     await expect(page.getByText('Editor')).toBeVisible()
     await expect(page.getByRole('link', { name: '查看详情' }).first()).toHaveAttribute(
       'href',
-      '#/p/Discussion/66a84559744ed757b46f8917',
+      '#/d/matter/66a84559744ed757b46f8917',
     )
     await expect(page.getByRole('link', { name: '参与质询' }).first()).toHaveAttribute(
       'href',
-      /#\/c\/Discussion\/66a84559744ed757b46f8917\//,
+      '#/d/matter/66a84559744ed757b46f8917?stage=questions',
     )
 
-    await page.getByText('公共事务 1', { exact: true }).click()
+    await page.getByRole('link', { name: '查看详情' }).first().click()
+    await page.getByText('2. 投票阶段', { exact: true }).click()
     await expect(page.getByText('条例修订投票')).toBeVisible()
     await expect(page.getByRole('button', { name: /同意修订/ })).toBeVisible()
   })
