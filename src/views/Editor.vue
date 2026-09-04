@@ -36,6 +36,7 @@
           <button
             class="tab-btn"
             :class="{ active: activeTab === 'Discussion' }"
+            type="button"
             @click="activeTab = 'Discussion'"
           >
             {{ t('worklist.categoryDiscussion') }}
@@ -43,6 +44,7 @@
           <button
             class="tab-btn"
             :class="{ active: activeTab === 'Experiment' }"
+            type="button"
             @click="activeTab = 'Experiment'"
           >
             {{ t('worklist.categoryExperiment') }}
@@ -155,7 +157,7 @@
     >
       <div class="tag-edit">
         <div class="tag-list">
-          <n-tag v-for="(tag, i) in editTags" :key="i" closable @close="editTags.splice(i, 1)">{{
+          <n-tag v-for="(tag, i) in editTags" :key="tag" closable @close="editTags.splice(i, 1)">{{
             tag
           }}</n-tag>
         </div>
@@ -362,41 +364,51 @@ async function selectWork(id: string) {
       worksByCategory[cat][idx] = updated
     }
   } catch (error) {
-    if (ticket === selectTicket) {
-      showMessage('error', (error as Error).message, { duration: 4000 })
-    }
+    if (ticket !== selectTicket) return
+    showMessage('error', (error as Error).message, { duration: 4000 })
     detailLoading.value = false
     return
   }
-  applyWork(selectedWork.value!)
+  const selected = selectedWork.value
+  if (!selected) return
+  applyWork(selected)
   detailLoading.value = false
 }
 
-async function loadCategory(category: Category) {
-  const result = await fetchEditableWorks(cursorsByCategory[category], PAGE_SIZE)
-  cursorsByCategory[category] = result.cursors
-  worksByCategory[category] = result.works
-  hasMoreByCategory[category] = result.hasMore
-}
+let loadTicket = 0
 
 async function loadWorks() {
   if (!checkLogin(true)) {
+    loadTicket++
     isLoggedIn.value = false
+    loading.value = false
     return
   }
+  const ticket = ++loadTicket
   isLoggedIn.value = true
   loading.value = true
   try {
-    await Promise.all([loadCategory('Discussion'), loadCategory('Experiment')])
+    const [discussion, experiment] = await Promise.all([
+      fetchEditableWorks(cursorsByCategory.Discussion, PAGE_SIZE),
+      fetchEditableWorks(cursorsByCategory.Experiment, PAGE_SIZE),
+    ])
+    if (ticket !== loadTicket) return
+    cursorsByCategory.Discussion = discussion.cursors
+    cursorsByCategory.Experiment = experiment.cursors
+    worksByCategory.Discussion = discussion.works
+    worksByCategory.Experiment = experiment.works
+    hasMoreByCategory.Discussion = discussion.hasMore
+    hasMoreByCategory.Experiment = experiment.hasMore
     if (allWorks.value.length > 0) {
-      selectWork(allWorks.value[0].id)
+      void selectWork(allWorks.value[0].id)
     } else {
       selectedId.value = ''
     }
   } catch (error) {
+    if (ticket !== loadTicket) return
     showMessage('error', (error as Error).message, { duration: 4000 })
   } finally {
-    loading.value = false
+    if (ticket === loadTicket) loading.value = false
   }
 }
 
@@ -527,14 +539,16 @@ async function updateTags() {
   tagModalVisible.value = false
 }
 
-async function loadWorkById(category: string, id: string) {
+async function loadWorkById(category: Category, id: string) {
+  const ticket = ++loadTicket
   loading.value = true
   try {
     const [work, discResult, expResult] = await Promise.all([
-      fetchEditableWork(category as any, id),
+      fetchEditableWork(category, id),
       fetchEditableWorks(cursorsByCategory.Discussion, PAGE_SIZE),
       fetchEditableWorks(cursorsByCategory.Experiment, PAGE_SIZE),
     ])
+    if (ticket !== loadTicket) return
 
     cursorsByCategory.Discussion = discResult.cursors
     cursorsByCategory.Experiment = expResult.cursors
@@ -552,36 +566,41 @@ async function loadWorkById(category: string, id: string) {
     applyWork(work)
     detailLoading.value = false
   } catch (error) {
+    if (ticket !== loadTicket) return
     showMessage('error', (error as Error).message, { duration: 5000 })
-    loadWorks()
+    void loadWorks()
   } finally {
-    loading.value = false
+    if (ticket === loadTicket) loading.value = false
   }
 }
 
 onMounted(() => {
   updateViewState()
   window.addEventListener('resize', updateViewState)
+})
 
-  if (isLoggedIn.value) {
-    const category = getRouteCategory(route, 'Discussion')
-    const id = route.params.id as string
-    if (id) {
-      loadWorkById(category, id)
-    } else {
-      loadWorks()
+watch(
+  [() => getRouteCategory(route, 'Discussion'), () => route.params.id],
+  ([category, routeId]) => {
+    if (!isLoggedIn.value) {
+      loading.value = false
+      return
     }
-  } else {
-    loading.value = false
-  }
-})
-
-onUnmounted(() => {
-  window.removeEventListener('resize', updateViewState)
-})
+    const id = Array.isArray(routeId) ? routeId[0] || '' : routeId || ''
+    if (id) {
+      if (selectedWork.value?.id === id && selectedWork.value.category === category) return
+      void loadWorkById(category, id)
+    } else {
+      void loadWorks()
+    }
+  },
+  { immediate: true },
+)
 
 onActivated(() => {
-  isLoggedIn.value = checkLogin(false)
+  const loggedIn = checkLogin(false)
+  if (!loggedIn) loadTicket++
+  isLoggedIn.value = loggedIn
   window.$Logger?.logPageView({
     pageLink: '/markdown-editor',
     timeStamp: Date.now(),
@@ -598,26 +617,37 @@ function setupTabObserver(
   listRef: ReturnType<typeof ref<HTMLElement | null>>,
   category: Category,
 ) {
-  let initialized = false
-  watch(sentinelRef, (el) => {
-    if (!el || initialized) return
-    initialized = true
-    const root = listRef.value || el.parentElement
-    if (!root) return
-    const obs = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMoreWorks(category)
-        }
-      },
-      { root, rootMargin: '200px' },
-    )
-    obs.observe(el)
-  })
+  return watch(
+    [sentinelRef, listRef],
+    ([el, list], _previous, onCleanup) => {
+      if (!el) return
+      const root = list || el.parentElement
+      if (!root) return
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0]?.isIntersecting) {
+            void loadMoreWorks(category)
+          }
+        },
+        { root, rootMargin: '200px' },
+      )
+      observer.observe(el)
+      onCleanup(() => observer.disconnect())
+    },
+    { flush: 'post' },
+  )
 }
 
-setupTabObserver(discSentinelRef, discListRef, 'Discussion')
-setupTabObserver(expSentinelRef, expListRef, 'Experiment')
+const stopDiscussionObserver = setupTabObserver(discSentinelRef, discListRef, 'Discussion')
+const stopExperimentObserver = setupTabObserver(expSentinelRef, expListRef, 'Experiment')
+
+onUnmounted(() => {
+  selectTicket++
+  loadTicket++
+  window.removeEventListener('resize', updateViewState)
+  stopDiscussionObserver()
+  stopExperimentObserver()
+})
 </script>
 
 <style scoped>

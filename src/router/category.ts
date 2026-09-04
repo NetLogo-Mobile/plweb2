@@ -1,5 +1,5 @@
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import type { Category } from '@services/../pl-serve-type-main/type/main'
+import type { Category } from '../pl-serve-type-main/type/main'
 
 export type RoutedCategory = Extract<Category, 'Experiment' | 'Discussion' | 'User'>
 
