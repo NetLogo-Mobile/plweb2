@@ -57,7 +57,7 @@ jobs:
 
           # 启动 OpenCode，AI 会自动调用 Bash 终端执行 git 命令并分析
           opencode run \
-            --model opencode/deepseek-v4-flash-free \
+            --model opencode/big-pickle \
             --variant high \
             --dangerously-skip-permissions \
             "$(cat review_prompt.txt)" > review_report.md
