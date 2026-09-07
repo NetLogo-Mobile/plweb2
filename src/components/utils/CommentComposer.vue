@@ -105,8 +105,8 @@ async function handleFocus() {
   align-items: flex-end;
   gap: 8px;
   padding: 8px;
-  border-radius: calc(var(--card-radius) + 2px);
-  border: 1px solid var(--border-soft);
+  border: 1px solid var(--border-soft, #e5e7eb);
+  border-radius: calc(var(--card-radius, 8px) + 2px);
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
 }
