@@ -1,15 +1,70 @@
 import type {
   Activity,
   ActivityStatus,
+  ContentSubmitSummary,
   Statistic,
   Summary,
   Sync,
 } from '../pl-serve-type-main/type/main'
+import type {
+  DemocracyAccountAction,
+  DemocracyAuditEntry,
+  DemocracyContribution,
+  DemocracyInvestigationInvite,
+  DemocracyMatterParticipation,
+  DemocracyMatterStage,
+  DemocracyReportCategory,
+  DemocracyVotePlan,
+} from './democracyWallContract'
+import { democracyTransitionTargets } from './democracyMatterState'
+import { validateDemocracyBanDays } from './democracyModerationRules'
 
 export const DEMOCRACY_DEMO_QUERY = 'demo=1'
+export const DEMOCRACY_DEMO_ADMIN_QUERY = 'admin=1'
 const DEMO_VOTE_KEY = 'plweb2.democracy.demoVotes'
 const DEMO_MATTER_KEY = 'plweb2.democracy.demoMatters'
+const DEMO_ANONYMOUS_PROFILE_KEY = 'plweb2.democracy.demoAnonymousProfiles'
+const DEMO_ANONYMOUS_TRACE_KEY = 'plweb2.democracy.demoAnonymousTrace'
+const DEMO_ADMIN_STATE_KEY = 'plweb2.democracy.demoAdminState'
+const DEMO_CUSTOM_VOTES_KEY = 'plweb2.democracy.demoCustomVotes'
+const DEMO_VOTE_PLANS_KEY = 'plweb2.democracy.demoVotePlans'
 const DEMO_USER_ID = '66d10000000000000000a001'
+const DEMO_CONTRIBUTION_AUTHORS: Record<string, string> = {
+  '66d100000000000000000001:demo-contribution-001': '66d10000000000000000a002',
+  '66d100000000000000000001:demo-contribution-002': DEMO_USER_ID,
+}
+const DEFAULT_DEMO_ANONYMOUS_ALIAS = '潮汐观察员'
+
+export interface DemocracyDemoAnonymousProfile {
+  alias: string
+  revoked: boolean
+  userId: string
+}
+
+export interface DemocracyDemoAnonymousAudit {
+  alias: string
+  revoked: boolean
+  userId: string
+}
+
+type DemoAnonymousProfileStore = Record<string, DemocracyDemoAnonymousProfile>
+type DemoAnonymousTraceStore = Record<string, string>
+type DemoVotePlanStore = Record<string, DemocracyVotePlan>
+
+interface DemoAdminState {
+  bannedUntil: Record<string, string>
+  contributionAuthors: Record<string, string>
+  disclosures: Record<string, NonNullable<DemocracyContribution['Disclosure']>>
+  audit: Record<string, DemocracyAuditEntry[]>
+  bannedAccounts: Record<string, boolean>
+  deletedMatters: string[]
+  investigationTeams: Record<string, DemocracyInvestigationInvite[]>
+  reports: Record<
+    string,
+    Array<{ category: DemocracyReportCategory; createdAt: string; details: string }>
+  >
+  stages: Record<string, DemocracyMatterStage>
+}
 
 interface DemoVoteState {
   counts: number[]
@@ -24,10 +79,11 @@ export interface DemocracyDemoDetail {
   facts: string[]
   timeline: Array<{ date: string; text: string }>
   finding: string
-  questions: string[]
+  questions: DemocracyContribution[]
 }
 
 interface DemoSummaryOptions {
+  anonymous?: boolean
   id: string
   subject: string
   description: string
@@ -38,7 +94,7 @@ interface DemoSummaryOptions {
   visits: number
 }
 
-function createSummary(options: DemoSummaryOptions): Summary {
+function createSummary(options: DemoSummaryOptions): ContentSubmitSummary {
   const { id, subject, description, tags, verification, nickname, comments, visits } = options
 
   return {
@@ -75,6 +131,7 @@ function createSummary(options: DemoSummaryOptions): Summary {
     SortingDate: Date.now(),
     CreationDate: Date.now(),
     Multilingual: false,
+    Anonymous: options.anonymous,
   }
 }
 
@@ -93,7 +150,7 @@ const DEMOCRACY_DEMO_SUMMARIES: Summary[] = [
     id: '66d100000000000000000002',
     subject: '提案：卷宗公开后设置 72 小时质询期',
     description: '建议统一卷宗公开后的质询时间，给当事人、调查团和社区留出明确的回应窗口。',
-    tags: ['公共议案', '待讨论'],
+    tags: ['公共议案', '匿名投票'],
     verification: 'Volunteer',
     nickname: '志愿者·枫岚',
     comments: 18,
@@ -161,8 +218,564 @@ function readMatterStore(): Summary[] {
   }
 }
 
+function readAnonymousProfiles(): DemoAnonymousProfileStore {
+  try {
+    const value = JSON.parse(localStorage.getItem(DEMO_ANONYMOUS_PROFILE_KEY) || '{}')
+    return value && typeof value === 'object' ? (value as DemoAnonymousProfileStore) : {}
+  } catch {
+    return {}
+  }
+}
+
+function writeAnonymousProfiles(profiles: DemoAnonymousProfileStore) {
+  localStorage.setItem(DEMO_ANONYMOUS_PROFILE_KEY, JSON.stringify(profiles))
+}
+
+function readAnonymousTrace(): DemoAnonymousTraceStore {
+  try {
+    const value = JSON.parse(localStorage.getItem(DEMO_ANONYMOUS_TRACE_KEY) || '{}')
+    return value && typeof value === 'object' ? (value as DemoAnonymousTraceStore) : {}
+  } catch {
+    return {}
+  }
+}
+
+function readAdminState(): DemoAdminState {
+  try {
+    const value = JSON.parse(
+      localStorage.getItem(DEMO_ADMIN_STATE_KEY) || '{}',
+    ) as Partial<DemoAdminState>
+    return {
+      audit: value.audit ?? {},
+      bannedUntil: value.bannedUntil ?? {},
+      contributionAuthors: value.contributionAuthors ?? {},
+      disclosures: value.disclosures ?? {},
+      bannedAccounts: value.bannedAccounts ?? {},
+      deletedMatters: value.deletedMatters ?? [],
+      investigationTeams: value.investigationTeams ?? {},
+      reports: value.reports ?? {},
+      stages: value.stages ?? {},
+    }
+  } catch {
+    return {
+      audit: {},
+      bannedUntil: {},
+      contributionAuthors: {},
+      disclosures: {},
+      bannedAccounts: {},
+      deletedMatters: [],
+      investigationTeams: {},
+      reports: {},
+      stages: {},
+    }
+  }
+}
+
+function writeAdminState(state: DemoAdminState) {
+  localStorage.setItem(DEMO_ADMIN_STATE_KEY, JSON.stringify(state))
+}
+
+function readVotePlans(): DemoVotePlanStore {
+  try {
+    const value = JSON.parse(localStorage.getItem(DEMO_VOTE_PLANS_KEY) || '{}')
+    return value && typeof value === 'object' ? (value as DemoVotePlanStore) : {}
+  } catch {
+    return {}
+  }
+}
+
+function writeVotePlans(plans: DemoVotePlanStore) {
+  localStorage.setItem(DEMO_VOTE_PLANS_KEY, JSON.stringify(plans))
+}
+
+function appendDemoAudit(matterId: string, action: DemocracyAuditEntry['Action'], details: string) {
+  const state = readAdminState()
+  const entry: DemocracyAuditEntry = {
+    Action: action,
+    ActorAlias: '演示管理人员',
+    CreatedAt: new Date().toISOString(),
+    Details: details,
+    ID: crypto.randomUUID(),
+  }
+  state.audit[matterId] = [entry, ...(state.audit[matterId] ?? [])]
+  writeAdminState(state)
+  return entry
+}
+
+function inferDemoStage(summary: Summary): DemocracyMatterStage {
+  const tags = summary.Tags ?? []
+  if (tags.includes('已归档')) return 'Archived'
+  if (tags.includes('已决议')) return 'Resolved'
+  if (tags.includes('匿名投票')) return 'Voting'
+  if (tags.includes('待审核')) return 'PendingReview'
+  return 'Questions'
+}
+
+function applyDemoStage(summary: Summary): Summary {
+  const stage = readAdminState().stages[summary.ID]
+  if (!stage) return summary
+  const stageTags: Record<DemocracyMatterStage, string[]> = {
+    Archived: ['已决议', '已归档'],
+    PendingReview: ['待审核'],
+    Questions: ['待质询'],
+    Rejected: ['已驳回'],
+    Resolved: ['已决议'],
+    Voting: ['匿名投票'],
+  }
+  const reserved = new Set(['待审核', '待质询', '匿名投票', '已决议', '已归档', '已驳回'])
+  return {
+    ...summary,
+    Tags: [...(summary.Tags ?? []).filter((tag) => !reserved.has(tag)), ...stageTags[stage]],
+  }
+}
+
+function applyDemoParticipation(summary: Summary): Summary {
+  const participationTag =
+    getDemocracyDemoMatterParticipation(summary.ID) === 'Vote' ? '投票事务' : '意见征集'
+  return {
+    ...summary,
+    Tags: [
+      ...(summary.Tags ?? []).filter((tag) => tag !== '意见征集' && tag !== '投票事务'),
+      participationTag,
+    ],
+  }
+}
+
+export function getDemocracyDemoAnonymousProfile(userId = DEMO_USER_ID) {
+  return (
+    readAnonymousProfiles()[userId] ?? {
+      alias: DEFAULT_DEMO_ANONYMOUS_ALIAS,
+      revoked: false,
+      userId,
+    }
+  )
+}
+
+export function updateDemocracyDemoAnonymousAlias(alias: string, userId = DEMO_USER_ID) {
+  const normalizedAlias = alias.trim()
+  if (normalizedAlias.length < 2 || normalizedAlias.length > 16) throw new Error('invalid-alias')
+
+  const profiles = readAnonymousProfiles()
+  const duplicate = Object.values(profiles).some(
+    (profile) =>
+      profile.userId !== userId &&
+      profile.alias.toLocaleLowerCase() === normalizedAlias.toLocaleLowerCase(),
+  )
+  if (duplicate) throw new Error('duplicate-alias')
+
+  const profile = {
+    ...getDemocracyDemoAnonymousProfile(userId),
+    alias: normalizedAlias,
+    userId,
+  }
+  profiles[userId] = profile
+  writeAnonymousProfiles(profiles)
+
+  const trace = readAnonymousTrace()
+  const matters = readMatterStore()
+  let changed = false
+  for (const matter of matters) {
+    if (trace[matter.ID] !== userId) continue
+    matter.User.Nickname = normalizedAlias
+    changed = true
+  }
+  if (changed) localStorage.setItem(DEMO_MATTER_KEY, JSON.stringify(matters))
+  return profile
+}
+
+export function isDemocracyDemoAnonymousPostingRevoked(userId = DEMO_USER_ID) {
+  return getDemocracyDemoAnonymousProfile(userId).revoked || isDemoAccountBanned(userId)
+}
+
+export function isDemocracyDemoDeveloperMode() {
+  return (
+    isDemocracyDemoMode() &&
+    new URLSearchParams(window.location.hash.split('?')[1]).get('developer') === '1'
+  )
+}
+
+function isDemoAccountBanned(userId: string) {
+  const state = readAdminState()
+  return state.bannedUntil[userId]
+    ? new Date(state.bannedUntil[userId]).getTime() > Date.now()
+    : !!state.bannedAccounts[userId]
+}
+
+export function setDemocracyDemoAnonymousPostingRevoked(userId: string, revoked: boolean) {
+  const profiles = readAnonymousProfiles()
+  profiles[userId] = {
+    ...getDemocracyDemoAnonymousProfile(userId),
+    revoked,
+    userId,
+  }
+  writeAnonymousProfiles(profiles)
+  return profiles[userId]
+}
+
+export function traceDemocracyDemoPublisher(matterId: string, reason: string) {
+  const summary = getDemocracyDemoSummaries().find((item) => item.ID === matterId)
+  if (!summary) throw new Error('matter-not-found')
+  const userId = readAnonymousTrace()[matterId] || DEMO_USER_ID
+  const profile = getDemocracyDemoAnonymousProfile(userId)
+  appendDemoAudit(matterId, 'TracePublisher', reason)
+  return {
+    Alias: profile.alias,
+    Banned: isDemoAccountBanned(userId),
+    BannedUntil: readAdminState().bannedUntil[userId],
+    CanPublish: !isDemocracyDemoAnonymousPostingRevoked(userId),
+    PublishingRevoked: profile.revoked,
+    UserID: userId,
+  }
+}
+
+export function moderateDemocracyDemoAccount(
+  matterId: string,
+  action: DemocracyAccountAction,
+  reason: string,
+  banDays?: number,
+) {
+  const userId = readAnonymousTrace()[matterId] || DEMO_USER_ID
+  return moderateDemoAccountById(matterId, userId, action, reason, banDays)
+}
+
+function moderateDemoAccountById(
+  matterId: string,
+  userId: string,
+  action: DemocracyAccountAction,
+  reason: string,
+  banDays?: number,
+) {
+  const state = readAdminState()
+  if (action === 'Ban') {
+    validateDemocracyBanDays(banDays)
+    state.bannedUntil[userId] = new Date(Date.now() + banDays * 86_400_000).toISOString()
+  }
+  if (action === 'Unban') {
+    state.bannedAccounts[userId] = false
+    delete state.bannedUntil[userId]
+  }
+  writeAdminState(state)
+  const auditAction =
+    action === 'Warn' ? 'WarnAccount' : action === 'Ban' ? 'BanAccount' : 'UnbanAccount'
+  appendDemoAudit(
+    matterId,
+    auditAction,
+    `${userId}: ${reason}${action === 'Ban' ? ` (${banDays} days)` : ''}`,
+  )
+  return {
+    Banned: isDemoAccountBanned(userId),
+    BannedUntil: readAdminState().bannedUntil[userId],
+    CanPublish: !isDemocracyDemoAnonymousPostingRevoked(userId),
+  }
+}
+
+export function deleteDemocracyDemoMatter(matterId: string, reason: string) {
+  const summaries = [...readMatterStore(), ...DEMOCRACY_DEMO_SUMMARIES]
+  if (!summaries.some((matter) => matter.ID === matterId)) throw new Error('matter-not-found')
+  const state = readAdminState()
+  state.deletedMatters = Array.from(new Set([...state.deletedMatters, matterId]))
+  writeAdminState(state)
+  appendDemoAudit(matterId, 'DeleteMatter', reason)
+  return { Deleted: true }
+}
+
+export function moderateDemocracyDemoPublisher(matterId: string, revoked: boolean, reason: string) {
+  const userId = readAnonymousTrace()[matterId] || DEMO_USER_ID
+  setDemocracyDemoAnonymousPostingRevoked(userId, revoked)
+  appendDemoAudit(matterId, revoked ? 'RevokePublisher' : 'RestorePublisher', reason)
+  return {
+    CanPublish: !isDemocracyDemoAnonymousPostingRevoked(userId),
+    Revoked: revoked,
+  }
+}
+
+export function getDemocracyDemoMatterStage(matterId: string): DemocracyMatterStage {
+  const summary = getDemocracyDemoSummaries().find((item) => item.ID === matterId)
+  if (!summary) throw new Error('matter-not-found')
+  return readAdminState().stages[matterId] ?? inferDemoStage(summary)
+}
+
+export function getDemocracyDemoMatterParticipation(
+  matterId: string,
+): DemocracyMatterParticipation {
+  if (readVotePlans()[matterId]) return 'Vote'
+  const summary = [...readMatterStore(), ...DEMOCRACY_DEMO_SUMMARIES].find(
+    (item) => item.ID === matterId,
+  )
+  const tags = summary?.Tags ?? []
+  if (tags.includes('投票事务') || tags.includes('匿名投票')) return 'Vote'
+  if (
+    matterId === '66d100000000000000000002' ||
+    matterId === '66d100000000000000000003' ||
+    matterId === '66d100000000000000000004'
+  ) {
+    return 'Vote'
+  }
+  return 'Consultation'
+}
+
+export function transitionDemocracyDemoMatter(
+  matterId: string,
+  expectedStage: DemocracyMatterStage,
+  targetStage: DemocracyMatterStage,
+  reason: string,
+) {
+  const current = getDemocracyDemoMatterStage(matterId)
+  if (current !== expectedStage) throw new Error('stage-conflict')
+  const participation = getDemocracyDemoMatterParticipation(matterId)
+  if (!democracyTransitionTargets(current, participation).includes(targetStage)) {
+    throw new Error('invalid-transition')
+  }
+  const state = readAdminState()
+  state.stages[matterId] = targetStage
+  writeAdminState(state)
+  appendDemoAudit(matterId, 'Transition', `${current} → ${targetStage}：${reason}`)
+  return getDemocracyDemoSummaries().find((item) => item.ID === matterId)
+}
+
+export function getDemocracyDemoAudit(matterId: string) {
+  return readAdminState().audit[matterId] ?? []
+}
+
+export function getDemocracyDemoInvestigationTeam(matterId: string) {
+  return readAdminState().investigationTeams[matterId] ?? []
+}
+
+export function getDemocracyDemoInvitation(matterId: string, inviteId: string) {
+  const invite = getDemocracyDemoInvestigationTeam(matterId).find((item) => item.ID === inviteId)
+  if (!invite || invite.UserID !== DEMO_USER_ID) throw new Error('invitation-unavailable')
+  return { ID: invite.ID, Status: invite.Status, CreatedAt: invite.CreatedAt }
+}
+
+export function respondDemocracyDemoInvitation(
+  matterId: string,
+  inviteId: string,
+  decision: 'Accepted' | 'Declined',
+) {
+  const invite = getDemocracyDemoInvitation(matterId, inviteId)
+  if (invite.Status === decision) return invite
+  if (invite.Status !== 'Pending') throw new Error('invitation-already-answered')
+  if (isDemocracyDemoAnonymousPostingRevoked()) throw new Error('permission-denied')
+  const state = readAdminState()
+  state.investigationTeams[matterId] = (state.investigationTeams[matterId] ?? []).map((item) =>
+    item.ID === inviteId ? { ...item, Status: decision } : item,
+  )
+  writeAdminState(state)
+  appendDemoAudit(matterId, 'RespondInvestigationInvite', `${inviteId}: ${decision}`)
+  return { ...invite, Status: decision }
+}
+
+export function inviteDemocracyDemoInvestigator(matterId: string, userId: string, reason: string) {
+  const matter = getDemocracyDemoSummaries().find((item) => item.ID === matterId)
+  if (!matter) throw new Error('matter-not-found')
+  if (!(matter.Tags ?? []).includes('管理监察')) throw new Error('matter-kind-invalid')
+
+  const state = readAdminState()
+  const existing = (state.investigationTeams[matterId] ?? []).find(
+    (entry) => entry.UserID === userId && entry.Status !== 'Declined',
+  )
+  if (existing) return existing
+
+  const invitation: DemocracyInvestigationInvite = {
+    CreatedAt: new Date().toISOString(),
+    ID: crypto.randomUUID(),
+    Nickname: `受邀用户·${userId.slice(-4)}`,
+    Status: 'Pending',
+    UserID: userId,
+  }
+  state.investigationTeams[matterId] = [invitation, ...(state.investigationTeams[matterId] ?? [])]
+  writeAdminState(state)
+  appendDemoAudit(matterId, 'InviteInvestigator', `${invitation.Nickname}（${userId}）：${reason}`)
+  return invitation
+}
+
+export function reportDemocracyDemoMatter(
+  matterId: string,
+  category: DemocracyReportCategory,
+  details: string,
+) {
+  const state = readAdminState()
+  state.reports[matterId] = [
+    ...(state.reports[matterId] ?? []),
+    { category, createdAt: new Date().toISOString(), details },
+  ]
+  writeAdminState(state)
+  appendDemoAudit(matterId, 'Report', `${category}：${details}`)
+  return { Accepted: true }
+}
+
+export function getDemocracyDemoAnonymousAudit(
+  matterId: string,
+): DemocracyDemoAnonymousAudit | undefined {
+  const userId = readAnonymousTrace()[matterId]
+  if (!userId) return undefined
+  const profile = getDemocracyDemoAnonymousProfile(userId)
+  return { alias: profile.alias, revoked: profile.revoked, userId }
+}
+
 export function getDemocracyDemoSummaries() {
-  return [...readMatterStore(), ...DEMOCRACY_DEMO_SUMMARIES]
+  const deleted = new Set(readAdminState().deletedMatters)
+  const stored = readMatterStore()
+  const storedIds = new Set(stored.map((summary) => summary.ID))
+  const summaries = [
+    ...stored,
+    ...DEMOCRACY_DEMO_SUMMARIES.filter((summary) => !storedIds.has(summary.ID)),
+  ].filter((summary) => !deleted.has(summary.ID))
+  for (const summary of summaries) activateScheduledVoteIfDue(summary)
+  return summaries.map(applyDemoStage).map(applyDemoParticipation)
+}
+
+export function canEditDemocracyDemoMatter(matterId: string) {
+  if (readAdminState().deletedMatters.includes(matterId)) return false
+  if (isDemocracyDemoDeveloperMode()) {
+    return [...readMatterStore(), ...DEMOCRACY_DEMO_SUMMARIES].some((item) => item.ID === matterId)
+  }
+  if (isDemocracyDemoAnonymousPostingRevoked()) return false
+  if (readAnonymousTrace()[matterId] !== DEMO_USER_ID) return false
+  const summary = readMatterStore().find((item) => item.ID === matterId)
+  if (!summary) return false
+  const stage = readAdminState().stages[matterId] ?? inferDemoStage(summary)
+  const plan = readVotePlans()[matterId]
+  return (
+    (stage === 'PendingReview' || stage === 'Questions') &&
+    (!plan || new Date(plan.StartAt).getTime() > Date.now())
+  )
+}
+
+export function getDemocracyDemoVotePlan(matterId: string) {
+  return readVotePlans()[matterId]
+}
+
+function demoContributionKey(matterId: string) {
+  return `plweb2.democracy.demoQuestions.${matterId}`
+}
+
+function readDemoContributions(matterId: string): DemocracyContribution[] {
+  try {
+    const value = JSON.parse(localStorage.getItem(demoContributionKey(matterId)) || '[]')
+    if (!Array.isArray(value)) return []
+    return value.flatMap((item, index) => {
+      if (typeof item === 'string') {
+        return [
+          {
+            AuthorAlias: DEFAULT_DEMO_ANONYMOUS_ALIAS,
+            AuthorPosition: 'Oldtimer',
+            Content: item,
+            CreatedAt: new Date().toISOString(),
+            ID: `legacy-${matterId}-${index}`,
+          },
+        ]
+      }
+      return item && typeof item === 'object' ? [item as DemocracyContribution] : []
+    })
+  } catch {
+    return []
+  }
+}
+
+export function getDemocracyDemoContributions(matterId: string) {
+  return [
+    ...(DEMOCRACY_DEMO_DETAILS[matterId]?.questions ?? []),
+    ...readDemoContributions(matterId),
+  ].map((entry) => ({
+    ...entry,
+    Disclosure: readAdminState().disclosures[`${matterId}:${entry.ID}`],
+  }))
+}
+
+export function submitDemocracyDemoContribution(matterId: string, content: string) {
+  if (!getDemocracyDemoSummaries().some((matter) => matter.ID === matterId)) {
+    throw new Error('matter-not-found')
+  }
+  const contribution: DemocracyContribution = {
+    AuthorAlias: getDemocracyDemoAnonymousProfile().alias,
+    AuthorPosition: isDemocracyDemoAdminMode() ? '认证编辑' : 'Oldtimer',
+    Content: content.trim(),
+    CreatedAt: new Date().toISOString(),
+    ID: crypto.randomUUID(),
+  }
+  const entries = [...readDemoContributions(matterId), contribution]
+  localStorage.setItem(demoContributionKey(matterId), JSON.stringify(entries))
+  const state = readAdminState()
+  state.contributionAuthors[`${matterId}:${contribution.ID}`] = DEMO_USER_ID
+  writeAdminState(state)
+  return contribution
+}
+
+export function traceDemocracyDemoContribution(
+  matterId: string,
+  contributionId: string,
+  reason: string,
+) {
+  const entry = getDemocracyDemoContributions(matterId).find((item) => item.ID === contributionId)
+  if (!entry) throw new Error('contribution-not-found')
+  const userId =
+    readAdminState().contributionAuthors[`${matterId}:${contributionId}`] ??
+    DEMO_CONTRIBUTION_AUTHORS[`${matterId}:${contributionId}`]
+  if (!userId) throw new Error('trace-unavailable')
+  appendDemoAudit(matterId, 'TraceContribution', reason)
+  return {
+    Alias: entry.AuthorAlias,
+    UserID: userId,
+    Banned: isDemoAccountBanned(userId),
+    BannedUntil: readAdminState().bannedUntil[userId],
+    CanPublish: !isDemocracyDemoAnonymousPostingRevoked(userId),
+    PublishingRevoked: getDemocracyDemoAnonymousProfile(userId).revoked,
+  }
+}
+
+export function moderateDemocracyDemoContributor(
+  matterId: string,
+  contributionId: string,
+  action: DemocracyAccountAction,
+  reason: string,
+  days?: number,
+) {
+  const userId =
+    readAdminState().contributionAuthors[`${matterId}:${contributionId}`] ??
+    DEMO_CONTRIBUTION_AUTHORS[`${matterId}:${contributionId}`]
+  if (!userId) throw new Error('trace-unavailable')
+  return moderateDemoAccountById(matterId, userId, action, reason, days)
+}
+
+export function discloseDemocracyDemoContribution(
+  matterId: string,
+  contributionId: string,
+  reason: string,
+) {
+  const trace = traceDemocracyDemoContribution(matterId, contributionId, reason)
+  const state = readAdminState()
+  state.disclosures[`${matterId}:${contributionId}`] = {
+    UserID: trace.UserID,
+    Reason: reason,
+    DisclosedAt: new Date().toISOString(),
+  }
+  writeAdminState(state)
+  appendDemoAudit(matterId, 'DiscloseContribution', reason)
+  return getDemocracyDemoContributions(matterId).find((item) => item.ID === contributionId)!
+}
+
+function validateDemoVotePlan(
+  participation: DemocracyMatterParticipation,
+  votePlan?: DemocracyVotePlan,
+) {
+  if (participation !== 'Vote' || !votePlan) return
+  const startsAt = new Date(votePlan.StartAt).getTime()
+  const finishesAt = new Date(votePlan.FinishAt).getTime()
+  if (!Number.isFinite(startsAt) || !Number.isFinite(finishesAt) || startsAt <= Date.now() || finishesAt <= startsAt) throw new Error('invalid-vote-plan')
+}
+
+function demoMatterTags(
+  anonymous: boolean,
+  kind: 'oversight' | 'public',
+  participation: DemocracyMatterParticipation,
+) {
+  if (anonymous) return ['匿名提议', '意见征集', '待质询']
+  return [
+    kind === 'oversight' ? '管理监察' : '公共议案',
+    participation === 'Vote' ? '投票事务' : '意见征集',
+    '待质询',
+  ]
 }
 
 export function submitDemocracyDemoMatter(input: {
@@ -170,29 +783,92 @@ export function submitDemocracyDemoMatter(input: {
   description: string
   kind: 'public' | 'oversight'
   anonymous: boolean
+  anonymousAlias?: string
+  clientRequestId?: string
+  participation: DemocracyMatterParticipation
+  votePlan?: DemocracyVotePlan
 }) {
-  const currentUser = input.anonymous
-    ? { verification: '' as Summary['User']['Verification'], nickname: '匿名提议者' }
-    : { verification: 'Editor' as const, nickname: '认证编辑·演示用户' }
+  if (isDemocracyDemoAnonymousPostingRevoked()) {
+    throw new Error('permission-denied')
+  }
+  const participation = input.anonymous ? 'Consultation' : input.participation
+  validateDemoVotePlan(participation, input.votePlan)
+  const anonymousProfile = updateDemocracyDemoAnonymousAlias(
+    input.anonymousAlias || DEFAULT_DEMO_ANONYMOUS_ALIAS,
+  )
   const summary = createSummary({
+    anonymous: true,
     id: `demo-${Date.now().toString(36)}`,
     subject: input.subject,
     description: input.description,
-    tags: [
-      ...(input.anonymous ? ['匿名提议'] : []),
-      input.kind === 'oversight' ? '管理监察' : '公共议案',
-      input.anonymous ? '待审核' : '待质询',
-    ],
-    verification: currentUser.verification,
-    nickname: currentUser.nickname,
+    tags: demoMatterTags(input.anonymous, input.kind, participation),
+    verification: 'Oldtimer',
+    nickname: anonymousProfile.alias,
     comments: 0,
     visits: 0,
   })
-  if (input.anonymous) summary.User.ID = ''
+  summary.User.ID = ''
   const matters = readMatterStore()
   matters.unshift(summary)
   localStorage.setItem(DEMO_MATTER_KEY, JSON.stringify(matters))
+  const trace = readAnonymousTrace()
+  trace[summary.ID] = DEMO_USER_ID
+  localStorage.setItem(DEMO_ANONYMOUS_TRACE_KEY, JSON.stringify(trace))
+  if (participation === 'Vote' && input.votePlan) {
+    const plans = readVotePlans()
+    plans[summary.ID] = input.votePlan
+    writeVotePlans(plans)
+  }
+  appendDemoAudit(summary.ID, 'Create', '发布者创建事务')
   return summary
+}
+
+function findEditableDemoMatter(matters: Summary[], matterId: string) {
+  let matter = matters.find((item) => item.ID === matterId)
+  if (!matter && isDemocracyDemoDeveloperMode()) {
+    const seeded = DEMOCRACY_DEMO_SUMMARIES.find((item) => item.ID === matterId)
+    if (seeded) {
+      matter = { ...seeded }
+      matters.push(matter)
+    }
+  }
+  if (!matter) throw new Error('matter-not-found')
+  return matter
+}
+
+export function updateDemocracyDemoMatter(
+  matterId: string,
+  input: {
+    description: string
+    participation: DemocracyMatterParticipation
+    subject: string
+    votePlan?: DemocracyVotePlan
+  },
+) {
+  if (!canEditDemocracyDemoMatter(matterId)) throw new Error('permission-denied')
+  const previousPlan = readVotePlans()[matterId]
+  const votingStarted = previousPlan && new Date(previousPlan.StartAt).getTime() <= Date.now()
+  if (votingStarted) {
+    input = { ...input, participation: 'Vote', votePlan: previousPlan }
+  }
+  if (!votingStarted) validateDemoVotePlan(input.participation, input.votePlan)
+  const matters = readMatterStore()
+  const matter = findEditableDemoMatter(matters, matterId)
+  matter.Subject = input.subject.trim()
+  matter.Description = [input.description.trim()]
+  matter.Tags = [
+    ...(matter.Tags ?? []).filter((tag) => tag !== '意见征集' && tag !== '投票事务'),
+    input.participation === 'Vote' ? '投票事务' : '意见征集',
+  ]
+  matter.UpdateDate = Date.now()
+  localStorage.setItem(DEMO_MATTER_KEY, JSON.stringify(matters))
+
+  const plans = readVotePlans()
+  if (input.participation === 'Vote' && input.votePlan) plans[matterId] = input.votePlan
+  else delete plans[matterId]
+  writeVotePlans(plans)
+  appendDemoAudit(matterId, 'Edit', '发布者修改内容或投票时间')
+  return matter
 }
 
 export const DEMOCRACY_DEMO_DETAILS: Record<string, DemocracyDemoDetail> = {
@@ -212,8 +888,20 @@ export const DEMOCRACY_DEMO_DETAILS: Record<string, DemocracyDemoDetail> = {
     ],
     finding: '已确认事实部分成立，对行为性质的解释仍需结合条例版本接受质询。',
     questions: [
-      '卷宗引用的条例版本是否在事件发生时已生效？',
-      '隐藏期间是否保留了当事人补充证据的通道？',
+      {
+        AuthorAlias: '星轨记录员',
+        AuthorPosition: '认证编辑',
+        Content: '卷宗引用的条例版本是否在事件发生时已生效？',
+        CreatedAt: '2026-08-29T10:20:00+08:00',
+        ID: 'demo-contribution-001',
+      },
+      {
+        AuthorAlias: '潮汐观察员',
+        AuthorPosition: 'Oldtimer',
+        Content: '隐藏期间是否保留了当事人补充证据的通道？',
+        CreatedAt: '2026-08-29T11:05:00+08:00',
+        ID: 'demo-contribution-002',
+      },
     ],
   },
 }
@@ -348,8 +1036,107 @@ const DEMO_VOTES: Activity[] = [
   },
 ]
 
+function readCustomVotes(): Activity[] {
+  try {
+    const value = JSON.parse(localStorage.getItem(DEMO_CUSTOM_VOTES_KEY) || '[]')
+    return Array.isArray(value) ? (value as Activity[]) : []
+  } catch {
+    return []
+  }
+}
+
+function buildCustomVote(
+  matterId: string,
+  plan: DemocracyVotePlan,
+  matterSubject: string,
+): Activity {
+  return {
+    Contents: [],
+    FinishDate: plan.FinishAt,
+    ID: `demo-vote-${Date.now().toString(36)}`,
+    InterfaceModel: plan.Multiple ? 'Vote' : 'Vote-Single',
+    InternalLink: `/d/matter/${matterId}`,
+    IsAttendance: false,
+    IsDaily: false,
+    IsDevelopment: true,
+    IsTutorial: false,
+    Items: plan.Options.map((option) => ({
+      Bonuses: { Gold: 0, Experience: 0, Diamond: 0 },
+      Condition: '',
+      Counter: 0,
+      Counters: {},
+      Description: option,
+      Local: false,
+    })),
+    Languages: [],
+    Platforms: [],
+    Priority: 1,
+    StartDate: plan.StartAt,
+    Subject: { Chinese: matterSubject } as never,
+    TargetLink: {} as never,
+    TargetText: {} as never,
+    Version: 1,
+  }
+}
+
+function activateScheduledVoteIfDue(summary: Summary) {
+  const plan = readVotePlans()[summary.ID]
+  if (!plan || new Date(plan.StartAt).getTime() > Date.now()) return
+  const state = readAdminState()
+  const stage = state.stages[summary.ID] ?? inferDemoStage(summary)
+  if (stage !== 'Questions') return
+
+  const votes = readCustomVotes()
+  if (!votes.some((vote) => vote.InternalLink === `/d/matter/${summary.ID}`)) {
+    votes.unshift(buildCustomVote(summary.ID, plan, summary.Subject))
+    localStorage.setItem(DEMO_CUSTOM_VOTES_KEY, JSON.stringify(votes))
+  }
+  state.stages[summary.ID] = 'Voting'
+  writeAdminState(state)
+  appendDemoAudit(summary.ID, 'CreateVote', '到达发布者设定的投票开始时间')
+}
+
+export function createDemocracyDemoVote(input: {
+  finishDate: string
+  matterId: string
+  multiple: boolean
+  options: string[]
+  reason: string
+}) {
+  if (getDemocracyDemoMatterParticipation(input.matterId) !== 'Vote') {
+    throw new Error('participation-mode-invalid')
+  }
+  if (getDemocracyDemoMatterStage(input.matterId) !== 'Questions') {
+    throw new Error('stage-conflict')
+  }
+  const summary = getDemocracyDemoSummaries().find((item) => item.ID === input.matterId)
+  if (!summary) throw new Error('matter-not-found')
+  const vote = buildCustomVote(
+    input.matterId,
+    {
+      FinishAt: input.finishDate,
+      Multiple: input.multiple,
+      Options: input.options,
+      StartAt: new Date().toISOString(),
+    },
+    summary.Subject,
+  )
+  const votes = readCustomVotes()
+  votes.unshift(vote)
+  localStorage.setItem(DEMO_CUSTOM_VOTES_KEY, JSON.stringify(votes))
+  const state = readAdminState()
+  state.stages[input.matterId] = 'Voting'
+  writeAdminState(state)
+  appendDemoAudit(input.matterId, 'CreateVote', input.reason)
+  return vote
+}
+
 export function isDemocracyDemoMode() {
   return import.meta.env.DEV && window.location.hash.includes(DEMOCRACY_DEMO_QUERY)
+}
+
+export function isDemocracyDemoAdminMode() {
+  return isDemocracyDemoMode() && window.location.hash.includes(DEMOCRACY_DEMO_ADMIN_QUERY)
 }
 
 function readVoteStore(): DemoVoteStore {
@@ -360,8 +1147,12 @@ function readVoteStore(): DemoVoteStore {
   }
 }
 
+function allDemoVotes() {
+  return [...readCustomVotes(), ...DEMO_VOTES]
+}
+
 function buildDemoVotes(store = readVoteStore()) {
-  return DEMO_VOTES.map((activity) => ({
+  return allDemoVotes().map((activity) => ({
     ...activity,
     Items: activity.Items.map((item, index) => ({
       ...item,
@@ -371,7 +1162,7 @@ function buildDemoVotes(store = readVoteStore()) {
 }
 
 function buildDemoStatuses(store = readVoteStore()): ActivityStatus[] {
-  return DEMO_VOTES.map((activity) => ({
+  return allDemoVotes().map((activity) => ({
     ActivityID: activity.ID,
     Avails:
       new Date(activity.FinishDate).getTime() <= Date.now()
@@ -395,6 +1186,9 @@ export function getDemocracyDemoSync(): Sync {
 }
 
 export function castDemocracyDemoVote(activity: Activity, index: number): Sync {
+  if (new Date(activity.FinishDate).getTime() <= Date.now()) {
+    throw new Error('vote-finished')
+  }
   const store = readVoteStore()
   const current = store[activity.ID] ?? {
     counts: activity.Items.map(() => 0),

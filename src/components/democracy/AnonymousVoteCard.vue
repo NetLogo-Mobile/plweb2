@@ -1,20 +1,18 @@
 <template>
   <article class="vote-card">
     <header>
-      <div>
-        <span class="anonymous-label">{{ t('democracy.vote.anonymous') }}</span>
-        <h3>{{ localized(activity.Subject) }}</h3>
-      </div>
-      <span class="vote-mode">
-        {{
-          activity.InterfaceModel === 'Vote-Single'
-            ? t('democracy.vote.single')
-            : t('democracy.vote.multiple')
-        }}
+      <span class="anonymous-label">{{ t('democracy.vote.anonymous') }}</span>
+      <span class="vote-meta">
+        <span v-if="isFinished" class="vote-status">{{ t('democracy.vote.finished') }}</span>
+        <span class="vote-mode">
+          {{
+            activity.InterfaceModel === 'Vote-Single'
+              ? t('democracy.vote.single')
+              : t('democracy.vote.multiple')
+          }}
+        </span>
       </span>
     </header>
-
-    <p v-if="description" class="vote-description">{{ description }}</p>
 
     <div class="choices">
       <button
@@ -47,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { showLoginModel } from '@popup/index'
 import { showMessage } from '@popup/naiveui'
@@ -60,26 +58,21 @@ const props = defineProps<{
   activity: Activity
   status?: ActivityStatus
   statistic?: Statistic
+  disabled?: boolean
 }>()
 const emit = defineEmits<{ updated: [Sync | undefined] }>()
 
-const { t, te, locale } = useI18n()
+const { t, te } = useI18n()
 const votingIndex = ref<number | null>(null)
+const currentTime = ref(Date.now())
+let deadlineTimer: ReturnType<typeof setInterval> | undefined
 
-function localized(value?: Record<string, string | null> | null) {
-  return (
-    value?.[locale.value] ||
-    value?.Chinese ||
-    value?.English ||
-    Object.values(value ?? {}).find(Boolean) ||
-    t('democracy.untitled')
-  )
-}
-
-const description = computed(() => {
-  const content = props.activity.Contents?.[0]
-  return content ? localized(content) : ''
-})
+const finishTimestamp = computed(() => new Date(props.activity.FinishDate).getTime())
+const isFinished = computed(
+  () =>
+    props.status?.Finished === true ||
+    (Number.isFinite(finishTimestamp.value) && finishTimestamp.value <= currentTime.value),
+)
 
 const dateRange = computed(
   () =>
@@ -87,7 +80,7 @@ const dateRange = computed(
 )
 
 const totalVotes = computed(() =>
-  props.activity.Items.reduce((total, item) => total + item.Counter + 5, 0),
+  props.activity.Items.reduce((total, item) => total + Math.max(0, item.Counter), 0),
 )
 
 function choiceLabel(description: string | null, index: number) {
@@ -101,18 +94,22 @@ function hasChosen(index: number) {
 
 function shouldShowResult(index: number) {
   if (!props.status) return true
-  if (props.status.Finished) return true
+  if (isFinished.value) return true
   if (hasChosen(index)) return true
   return props.activity.InterfaceModel === 'Vote-Single' && props.status.Gains.length > 0
 }
 
 function percentage(index: number) {
   if (totalVotes.value <= 0) return 0
-  return Math.round((((props.activity.Items[index]?.Counter ?? 0) + 5) / totalVotes.value) * 100)
+  return Math.round(
+    (Math.max(0, props.activity.Items[index]?.Counter ?? 0) / totalVotes.value) * 100,
+  )
 }
 
 function canVote(index: number) {
-  if (!props.status || !props.statistic || props.status.Finished || hasChosen(index)) return false
+  if (props.disabled || new Date(props.activity.StartDate).getTime() > currentTime.value)
+    return false
+  if (!props.status || !props.statistic || isFinished.value || hasChosen(index)) return false
   if (props.activity.InterfaceModel === 'Vote-Single' && props.status.Gains.length > 0) return false
   return true
 }
@@ -139,6 +136,16 @@ async function vote(index: number) {
     votingIndex.value = null
   }
 }
+
+onMounted(() => {
+  deadlineTimer = setInterval(() => {
+    currentTime.value = Date.now()
+  }, 500)
+})
+
+onUnmounted(() => {
+  if (deadlineTimer) clearInterval(deadlineTimer)
+})
 </script>
 
 <style scoped>
@@ -169,18 +176,11 @@ header {
 
 .anonymous-label {
   display: inline-block;
-  margin-bottom: 0.35rem;
   color: #0879b5;
   font-size: 0.76rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-}
-
-h3 {
-  margin: 0;
-  color: #1c3142;
-  font-size: clamp(1.05rem, 2vw, 1.35rem);
 }
 
 .vote-mode {
@@ -192,10 +192,20 @@ h3 {
   font-size: 0.75rem;
 }
 
-.vote-description {
-  margin: 0;
-  color: #5a6873;
-  line-height: 1.55;
+.vote-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  justify-content: flex-end;
+}
+
+.vote-status {
+  padding: 0.28rem 0.6rem;
+  border-radius: 4px;
+  background: #edf0f2;
+  color: #5c6870;
+  font-size: 0.75rem;
+  font-weight: 700;
 }
 
 .choices {

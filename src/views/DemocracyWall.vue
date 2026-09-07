@@ -1,5 +1,5 @@
 <template>
-  <div class="democracy-page">
+  <n-config-provider class="democracy-page" :theme-overrides="democracyTheme">
     <Header>
       <div class="page-heading">
         <h1>{{ t('democracy.title') }}</h1>
@@ -14,8 +14,18 @@
           <strong>{{ t('democracy.demo.title') }}</strong>
           <span>{{ t('democracy.demo.description') }}</span>
         </div>
-        <n-button size="small" @click="resetDemo">{{ t('democracy.demo.reset') }}</n-button>
+        <div class="demo-actions">
+          <n-button size="small" @click="switchDemoRole">
+            {{
+              demoAdminMode ? t('democracy.demo.switchToUser') : t('democracy.demo.switchToAdmin')
+            }}
+          </n-button>
+          <n-button size="small" @click="resetDemo">{{ t('democracy.demo.reset') }}</n-button>
+        </div>
       </section>
+      <n-alert v-else-if="releaseMode === 'read-only'" type="info" :show-icon="false">
+        {{ t('democracy.release.readOnly') }}
+      </n-alert>
 
       <nav class="scope-switch" :aria-label="t('democracy.scopes.label')">
         <button
@@ -134,29 +144,35 @@
     </main>
 
     <Footer />
-  </div>
+  </n-config-provider>
 </template>
 
 <script setup lang="ts">
 import { computed, defineComponent, h, onActivated, onMounted, ref, type PropType } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute } from 'vue-router'
-import { NButton, NEmpty, NSpin, NTabPane, NTabs } from 'naive-ui'
+import { useRoute, useRouter } from 'vue-router'
+import { NAlert, NButton, NConfigProvider, NEmpty, NSpin, NTabPane, NTabs } from 'naive-ui'
+import { democracyTheme } from '../components/democracy/theme'
 import Header from '@components/utils/Header.vue'
 import Footer from '@components/utils/Footer.vue'
 import DemocracyEntryCard from '@components/democracy/DemocracyEntryCard.vue'
 import {
   fetchDemocracyEntries,
   fetchDemocracyHistoryEntries,
+  fetchDemocracyCreationAccess,
   getDemocracyCreationAccess,
   type DemocracyEntry,
 } from '@services/democracyWall'
 import { isDemocracyDemoMode, resetDemocracyDemoVotes } from '@services/democracyWallDemo'
+import { getDemocracyWallReleaseMode } from '@services/democracyWallFeature'
 
 const { t } = useI18n()
 const route = useRoute()
+const router = useRouter()
 const demoMode = isDemocracyDemoMode()
-const access = computed(getDemocracyCreationAccess)
+const demoAdminMode = computed(() => route.query.admin === '1')
+const releaseMode = getDemocracyWallReleaseMode()
+const access = ref(getDemocracyCreationAccess())
 const activeScope = ref<'current' | 'history'>(
   route.query.scope === 'history' ? 'history' : 'current',
 )
@@ -219,7 +235,17 @@ function historyTabTitle(key: string, count: number) {
 function createPath(mode: 'formal' | 'anonymous') {
   const query = new URLSearchParams({ mode })
   if (demoMode) query.set('demo', '1')
+  if (demoMode && route.query.developer === '1') query.set('developer', '1')
+  if (demoAdminMode.value) query.set('admin', '1')
   return `#/d/new?${query.toString()}`
+}
+
+async function switchDemoRole() {
+  await router.replace({
+    path: '/d',
+    query: demoAdminMode.value ? { demo: '1' } : { demo: '1', admin: '1' },
+  })
+  await loadCreationAccess()
 }
 
 async function loadEntries() {
@@ -232,6 +258,10 @@ async function loadEntries() {
   } finally {
     entryLoading.value = false
   }
+}
+
+async function loadCreationAccess() {
+  access.value = await fetchDemocracyCreationAccess()
 }
 
 async function loadHistory() {
@@ -285,6 +315,7 @@ const EntryGrid = defineComponent({
             key: entry.summary.ID,
             entry,
             demoMode,
+            demoAdminMode: demoAdminMode.value,
             readOnly: props.readOnly,
           }),
         ),
@@ -294,7 +325,7 @@ const EntryGrid = defineComponent({
 })
 
 onActivated(() => {
-  void Promise.allSettled([loadEntries(), loadHistory()])
+  void Promise.allSettled([loadEntries(), loadHistory(), loadCreationAccess()])
 })
 
 onMounted(() => {
@@ -305,7 +336,7 @@ onMounted(() => {
 <style scoped>
 .democracy-page {
   min-height: 100dvh;
-  background: #f3f3f3;
+  background: #f5f5f5;
   color: #333;
 }
 
@@ -331,8 +362,8 @@ onMounted(() => {
 .demo-chip {
   padding: 0.15rem 0.45rem;
   border-radius: 0.3rem;
-  background: #e7f4fb;
-  color: #0185c5;
+  background: #eef2ff;
+  color: #2563eb;
   font-size: 0.72rem;
 }
 
@@ -358,8 +389,8 @@ main {
   justify-content: space-between;
   margin-bottom: 10px;
   padding: 10px 12px;
-  border-left: 4px solid #0185c5;
-  border-radius: 6px;
+  border-left: 4px solid #2563eb;
+  border-radius: 8px;
   background: #fff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
@@ -368,6 +399,13 @@ main {
   display: flex;
   gap: 0.2rem;
   flex-direction: column;
+}
+
+.demo-banner .demo-actions {
+  gap: 0.5rem;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .demo-banner span {
@@ -380,6 +418,7 @@ main {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-bottom: 10px;
   padding: 4px;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
   background: #fff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
@@ -399,8 +438,9 @@ main {
 }
 
 .scope-switch button.active {
-  background: #0185c5;
-  color: #fff;
+  background: #e7f4fb;
+  color: #0185c5;
+  box-shadow: inset 0 -2px #0185c5;
 }
 
 .scope-switch button:focus-visible {
@@ -417,9 +457,10 @@ main {
 
 .content-panel {
   padding: 14px;
-  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
   background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 }
 
 .panel-heading {

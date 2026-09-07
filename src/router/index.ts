@@ -1,5 +1,9 @@
 import { createRouter, createWebHashHistory, type RouteRecordRaw } from 'vue-router'
 import Home from '../views/Home.vue'
+import { isDemocracyWallVisible, isDemocracyWallWritable } from '@services/democracyWallFeature'
+
+const democracyVisibleGuard = () => (isDemocracyWallVisible() ? true : { name: 'Home' })
+const democracyWritableGuard = () => (isDemocracyWallWritable() ? true : { name: 'democracy' })
 
 const routes: RouteRecordRaw[] = [
   {
@@ -24,18 +28,21 @@ const routes: RouteRecordRaw[] = [
     path: '/d',
     name: 'democracy',
     component: () => import('../views/DemocracyWall.vue'),
+    beforeEnter: democracyVisibleGuard,
     meta: { keepAlive: true },
   },
   {
     path: '/d/matter/:id',
     name: 'democracy-matter-detail',
     component: () => import('../views/DemocracyDemoDetail.vue'),
+    beforeEnter: democracyVisibleGuard,
     meta: { keepAlive: false },
   },
   {
     path: '/d/new',
     name: 'democracy-matter-create',
     component: () => import('../views/DemocracyMatterCreate.vue'),
+    beforeEnter: democracyWritableGuard,
     meta: { keepAlive: false },
   },
   {

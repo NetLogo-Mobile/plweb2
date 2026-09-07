@@ -78,4 +78,25 @@ test.describe('通知中心 (Notifications)', () => {
 
     await assertNoWhiteScreen(page)
   })
+
+  test('民主墙通知精确跳转到对应阶段', async ({ page }) => {
+    const matterId = '66d100000000000000000002'
+    await page.goto('/src/services/democracyNotification.ts')
+    const targets = await page.evaluate(async (id) => {
+      const modulePath = '/src/services/democracyNotification.ts'
+      const { getDemocracyNotificationTarget } = await import(modulePath)
+      return {
+        voting: getDemocracyNotificationTarget({ DemocracyMatterID: id, DemocracyStage: 'Voting' }),
+        archived: getDemocracyNotificationTarget({
+          DemocracyMatterID: id,
+          DemocracyStage: 'Archived',
+        }),
+        invalid: getDemocracyNotificationTarget({ DemocracyMatterID: 'invalid' }),
+      }
+    }, matterId)
+
+    expect(targets.voting).toBe(`/d/matter/${matterId}?stage=vote`)
+    expect(targets.archived).toBe(`/d/matter/${matterId}?scope=history`)
+    expect(targets.invalid).toBeNull()
+  })
 })

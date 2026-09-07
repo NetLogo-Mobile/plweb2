@@ -1,5 +1,5 @@
 <template>
-  <div class="detail-page">
+  <n-config-provider class="detail-page" :theme-overrides="democracyTheme">
     <Header>
       <button class="back" type="button" @click="goBack">←</button>
       <div class="heading">
@@ -23,22 +23,49 @@
             />
           </div>
           <h2>{{ entry.summary.Subject }}</h2>
-          <p>{{ entry.summary.Description?.[0] }}</p>
+          <div v-richText="renderDescription" class="summary-description"></div>
           <div class="author">
-            <span v-if="entry.anonymousSuggestion">{{
-              t('democracy.create.anonymousAuthor')
+            <span v-if="entry.anonymousAuthor">{{
+              entry.summary.User.Nickname || t('democracy.create.anonymousAuthor')
             }}</span>
             <router-link v-else-if="!demoMode" :to="`/u/${entry.summary.User.ID}`">
               {{ entry.summary.User.Nickname }}
             </router-link>
             <span v-else>{{ entry.summary.User.Nickname }}</span>
             <Tag
-              v-if="entry.summary.User.Verification && !entry.anonymousSuggestion"
+              v-if="entry.summary.User.Verification && !entry.anonymousAuthor"
               category="User"
               :tag="`C-${entry.summary.User.Verification}`"
             />
+            <n-button v-if="!readOnly && canReport" text size="small" @click="reportOpen = true">
+              {{ t('democracy.report.action') }}
+            </n-button>
+            <n-button
+              v-if="publisherCanEdit && ((accountCanWrite && !readOnly) || managementVisible)"
+              text
+              size="small"
+              @click="editMatter"
+            >
+              {{ t('democracy.create.editAction') }}
+            </n-button>
           </div>
         </header>
+
+        <DemocracyInvitationCard
+          v-if="invitationId"
+          :matter-id="matterId"
+          :invite-id="invitationId"
+          :disabled="readOnly || !accountCanWrite"
+          @updated="loadManagementAccess"
+        />
+
+        <DemocracyManagementPanel
+          v-if="managementVisible"
+          :matter-id="matterId"
+          :kind="matterKind"
+          :can-manage="managementVisible"
+          @deleted="handleMatterDeleted"
+        />
 
         <section v-if="demoMode" class="overview">
           <h3>{{ t('democracy.matter.overview') }}</h3>
@@ -49,6 +76,13 @@
         </section>
 
         <section class="stages">
+          <p v-if="votePlan && currentStage === 'Questions'" class="vote-schedule">
+            {{
+              t('democracy.matter.voteScheduled', {
+                date: new Date(votePlan.StartAt).toLocaleString(),
+              })
+            }}
+          </p>
           <n-tabs v-model:value="activeStage" type="line" animated>
             <n-tab-pane name="questions" :tab="t('democracy.matter.questionsStage')">
               <div class="stage-intro">
@@ -56,42 +90,53 @@
                 <span v-if="readOnly" class="read-only">{{ t('democracy.matter.readOnly') }}</span>
               </div>
 
-              <div v-if="demoMode" class="demo-questions">
-                <blockquote v-for="question in displayedDemoQuestions" :key="question">
-                  {{ question }}
-                </blockquote>
-              </div>
-              <MessageList
-                v-else
-                :ID="matterId"
-                Category="Discussion"
-                :upDate="upDate"
-                @msgClick="handleMsgClick"
-              />
-
-              <div v-if="!readOnly" class="composer">
-                <n-input
-                  v-model:value="comment"
-                  type="textarea"
-                  :placeholder="t('democracy.matter.suggestPlaceholder')"
-                  :maxlength="400"
-                  show-count
-                  :autosize="{ minRows: 2, maxRows: 5 }"
-                  :disabled="isSubmitting"
-                  @keyup.ctrl.enter="submitSuggestion"
-                />
-                <n-button
-                  type="info"
-                  :loading="isSubmitting"
-                  :disabled="!comment.trim()"
-                  @click="submitSuggestion"
+              <div class="contribution-list">
+                <div v-if="contributionLoading" class="center-state compact"><n-spin /></div>
+                <n-empty
+                  v-else-if="contributionError"
+                  :description="t('democracy.matter.contributionLoadFailed')"
                 >
-                  {{ t('democracy.matter.submitSuggestion') }}
-                </n-button>
+                  <template #extra>
+                    <n-button size="small" @click="loadContributions">
+                      {{ t('democracy.retry') }}
+                    </n-button>
+                  </template>
+                </n-empty>
+                <n-empty
+                  v-else-if="!contributions.length"
+                  :description="t('democracy.matter.noContributions')"
+                />
+                <template v-else>
+                  <DemocracyContributionCard
+                    v-for="contribution in contributions"
+                    :key="contribution.ID"
+                    :contribution="contribution"
+                    :matter-id="matterId"
+                    :can-manage="managementVisible"
+                    @disclosed="loadContributions"
+                  />
+                </template>
               </div>
+
+              <CommentComposer
+                v-if="!readOnly && canContribute"
+                v-model="comment"
+                :placeholder="t('democracy.matter.suggestPlaceholder')"
+                :maxlength="400"
+                :loading="isSubmitting"
+                :disabled="!comment.trim()"
+                @submit="submitSuggestion"
+              />
             </n-tab-pane>
 
-            <n-tab-pane name="vote" :tab="t('democracy.matter.voteStage')">
+            <n-tab-pane
+              v-if="
+                matterParticipation === 'Vote' &&
+                (currentStage === 'Voting' || matterActivities.length)
+              "
+              name="vote"
+              :tab="t('democracy.matter.voteStage')"
+            >
               <div v-if="voteLoading" class="center-state compact"><n-spin /></div>
               <n-empty v-else-if="voteError" :description="t('democracy.vote.loadFailed')">
                 <template #extra>
@@ -105,6 +150,7 @@
                   :activity="activity"
                   :status="statusFor(activity.ID)"
                   :statistic="voteContext.statistic"
+                  :disabled="readOnly || currentStage !== 'Voting' || !accountCanWrite"
                   @updated="onVoteUpdated"
                 />
               </div>
@@ -123,54 +169,89 @@
       </n-empty>
     </main>
 
+    <DemocracyReportDialog v-model:show="reportOpen" :matter-id="matterId" />
     <Footer />
-  </div>
+  </n-config-provider>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { NButton, NEmpty, NInput, NSpin, NTabPane, NTabs } from 'naive-ui'
+import { NButton, NConfigProvider, NEmpty, NSpin, NTabPane, NTabs } from 'naive-ui'
+import { democracyTheme } from '../components/democracy/theme'
 import Header from '@components/utils/Header.vue'
 import Footer from '@components/utils/Footer.vue'
 import Tag from '@components/utils/TagLarger.vue'
-import MessageList from '@components/messages/MessageList.vue'
+import CommentComposer from '@components/utils/CommentComposer.vue'
 import AnonymousVoteCard from '@components/democracy/AnonymousVoteCard.vue'
-import { getData } from '@services/api/getData'
-import postComment from '@services/postComment'
+import DemocracyContributionCard from '@components/democracy/DemocracyContributionCard.vue'
+import DemocracyManagementPanel from '@components/democracy/DemocracyManagementPanel.vue'
+import DemocracyInvitationCard from '@components/democracy/DemocracyInvitationCard.vue'
+import DemocracyReportDialog from '@components/democracy/DemocracyReportDialog.vue'
+import { showMessage } from '@popup/naiveui'
+import parse from '@services/pltxt2htm/advancedParser'
 import {
+  fetchDemocracyContributions,
+  fetchDemocracyMatter,
+  fetchDemocracyContext,
   fetchDemocracyVoteContext,
   getDemocracyMatterActivities,
   mergeDemocracyVoteContext,
+  submitDemocracyContribution,
   toDemocracyEntry,
   type DemocracyVoteContext,
 } from '@services/democracyWall'
 import {
   DEMOCRACY_DEMO_DETAILS,
-  getDemocracyDemoSummaries,
   isDemocracyDemoMode,
   type DemocracyDemoDetail,
 } from '@services/democracyWallDemo'
-import type { CommentResult, Summary, Sync } from '../pl-serve-type-main/type/main'
+import type {
+  DemocracyMatterKind,
+  DemocracyContribution,
+  DemocracyMatterParticipation,
+  DemocracyMatterStage,
+  DemocracyVotePlan,
+} from '@services/democracyWallContract'
+import type { Activity, Summary, Sync } from '../pl-serve-type-main/type/main'
+import { isDemocracyWallWritable } from '@services/democracyWallFeature'
+import { isDemocracyHistoryStage } from '@services/democracyMatterState'
 
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
 const matterId = computed(() => String(route.params.id || ''))
+const invitationId = computed(() =>
+  typeof route.query.invitation === 'string' ? route.query.invitation : '',
+)
 const demoMode = isDemocracyDemoMode()
-const readOnly = computed(() => route.query.scope === 'history')
+const demoAdminMode = computed(() => route.query.admin === '1')
+const readOnly = computed(
+  () => !isDemocracyWallWritable() || isDemocracyHistoryStage(currentStage.value),
+)
 const activeStage = ref(route.query.stage === 'vote' ? 'vote' : 'questions')
 const summary = ref<Summary>()
 const loading = ref(true)
 const comment = ref('')
 const isSubmitting = ref(false)
-const replyID = ref('')
-const upDate = ref(0)
+const contributions = ref<DemocracyContribution[]>([])
+const contributionLoading = ref(true)
+const contributionError = ref(false)
 const voteLoading = ref(true)
 const voteError = ref(false)
 const voteContext = ref<DemocracyVoteContext>({ activities: [], statuses: [] })
-const localQuestions = ref<string[]>([])
+const linkedVoteActivity = ref<Activity>()
+const currentStage = ref<DemocracyMatterStage>('Questions')
+const matterKind = ref<DemocracyMatterKind>('Public')
+const matterParticipation = ref<DemocracyMatterParticipation>('Consultation')
+const publisherCanEdit = ref(false)
+const votePlan = ref<DemocracyVotePlan>()
+const developerAccess = ref(false)
+const canContribute = ref(false)
+const canReport = ref(false)
+const accountCanWrite = ref(false)
+const reportOpen = ref(false)
 
 const entry = computed(() => (summary.value ? toDemocracyEntry(summary.value) : undefined))
 const fallbackDetail = computed<DemocracyDemoDetail>(() => ({
@@ -179,47 +260,95 @@ const fallbackDetail = computed<DemocracyDemoDetail>(() => ({
   facts: [t('democracy.demo.fallbackFact')],
   timeline: [{ date: '08-29', text: t('democracy.demo.fallbackTimeline') }],
   finding: t('democracy.demo.fallbackFinding'),
-  questions: [t('democracy.demo.fallbackQuestion')],
+  questions: [],
 }))
 const detail = computed(() => DEMOCRACY_DEMO_DETAILS[matterId.value] ?? fallbackDetail.value)
-const displayedDemoQuestions = computed(() => [...detail.value.questions, ...localQuestions.value])
-const matterActivities = computed(() =>
-  getDemocracyMatterActivities(voteContext.value.activities, matterId.value),
-)
-const statusText = computed(() =>
-  entry.value?.status === 'resolved' ? t('democracy.status.resolved') : t('democracy.status.open'),
-)
+const descriptionText = computed(() => entry.value?.summary.Description?.join('\n') || '')
+const matterActivities = computed(() => {
+  if (matterParticipation.value !== 'Vote') return []
+  const linked = linkedVoteActivity.value ? [linkedVoteActivity.value] : []
+  const discovered = getDemocracyMatterActivities(voteContext.value.activities, matterId.value)
+  const refreshed = voteContext.value.activities.filter((activity) =>
+    linked.some((item) => item.ID === activity.ID),
+  )
+  return [...refreshed, ...discovered, ...linked].filter(
+    (activity, index, activities) =>
+      activities.findIndex((candidate) => candidate.ID === activity.ID) === index,
+  )
+})
+const statusText = computed(() => t(`democracy.management.stages.${currentStage.value}`))
+const managementVisible = computed(() => isDemocracyWallWritable() && developerAccess.value)
+let activationTimer: number | undefined
+let disposed = false
 
-function demoQuestionKey() {
-  return `plweb2.democracy.demoQuestions.${matterId.value}`
-}
-
-function loadDemoQuestions() {
-  try {
-    const value = JSON.parse(localStorage.getItem(demoQuestionKey()) || '[]')
-    localQuestions.value = Array.isArray(value)
-      ? value.filter((item): item is string => typeof item === 'string')
-      : []
-  } catch {
-    localQuestions.value = []
-  }
-}
+const renderDescription = () =>
+  parse(descriptionText.value, {
+    project: entry.value?.summary.Subject || '',
+    visitorId: '',
+    authorId: '',
+    coauthorIds: [],
+  })
 
 async function loadMatter() {
   loading.value = true
-  if (demoMode) {
-    summary.value = getDemocracyDemoSummaries().find((item) => item.ID === matterId.value)
-    loadDemoQuestions()
-    loading.value = false
+  try {
+    const matter = await fetchDemocracyMatter(matterId.value)
+    summary.value = matter.summary
+    linkedVoteActivity.value = matter.voteActivity
+    currentStage.value = matter.stage
+    matterKind.value = matter.kind
+    matterParticipation.value = matter.participation
+    publisherCanEdit.value = matter.canEdit
+    votePlan.value = matter.votePlan
+    if (matter.stage === 'Voting') activeStage.value = 'vote'
+    scheduleVoteActivation()
+  } catch {
+    summary.value = undefined
+  }
+  loading.value = false
+}
+
+function scheduleVoteActivation() {
+  if (activationTimer) window.clearTimeout(activationTimer)
+  if (
+    disposed ||
+    matterParticipation.value !== 'Vote' ||
+    !votePlan.value ||
+    currentStage.value !== 'Questions'
+  ) {
     return
   }
+  const delay = new Date(votePlan.value.StartAt).getTime() - Date.now()
+  if (!Number.isFinite(delay)) return
+  activationTimer = window.setTimeout(
+    () => void activateScheduledVote(),
+    Math.min(Math.max(delay + 100, 5_000), 2_147_000_000),
+  )
+}
 
-  const response = await getData('/Contents/GetSummary', {
-    ContentID: matterId.value,
-    Category: 'Discussion',
-  })
-  if (response.Status === 200) summary.value = response.Data ?? undefined
-  loading.value = false
+async function activateScheduledVote() {
+  await Promise.allSettled([loadMatter(), loadVotes()])
+  if (currentStage.value === 'Voting') activeStage.value = 'vote'
+}
+
+async function loadManagementAccess() {
+  try {
+    const context = await fetchDemocracyContext()
+    const canPublish = context.Profile?.CanPublish === true
+    accountCanWrite.value = canPublish
+    canContribute.value = canPublish && context.Permissions.CanContribute
+    canReport.value = canPublish
+    developerAccess.value = context.Permissions.CanDeveloperManage === true
+  } catch {
+    accountCanWrite.value = false
+    canContribute.value = false
+    canReport.value = false
+    developerAccess.value = false
+  }
+}
+
+function handleMatterDeleted() {
+  goBack()
 }
 
 async function loadVotes() {
@@ -242,21 +371,31 @@ function onVoteUpdated(sync?: Sync) {
   voteContext.value = mergeDemocracyVoteContext(voteContext.value, sync)
 }
 
-function handleMsgClick(item: CommentResult) {
-  replyID.value = item.UserID
-  comment.value = `${t('ui.messages.replyToUser')}@${item.Nickname}: `
+async function loadContributions() {
+  contributionLoading.value = true
+  contributionError.value = false
+  try {
+    contributions.value = await fetchDemocracyContributions(matterId.value)
+  } catch {
+    contributionError.value = true
+  } finally {
+    contributionLoading.value = false
+  }
 }
 
 async function submitSuggestion() {
   const content = comment.value.trim()
   if (!content || readOnly.value || isSubmitting.value) return
-  if (demoMode) {
-    localQuestions.value.push(content)
-    localStorage.setItem(demoQuestionKey(), JSON.stringify(localQuestions.value))
+  isSubmitting.value = true
+  try {
+    const contribution = await submitDemocracyContribution(matterId.value, content)
+    contributions.value = [...contributions.value, contribution]
     comment.value = ''
-    return
+  } catch {
+    showMessage('error', t('democracy.matter.contributionSubmitFailed'), { duration: 2800 })
+  } finally {
+    isSubmitting.value = false
   }
-  await postComment(comment, isSubmitting, 'Discussion', matterId.value, replyID, upDate)
 }
 
 function goBack() {
@@ -264,20 +403,39 @@ function goBack() {
     path: '/d',
     query: {
       ...(demoMode ? { demo: '1' } : {}),
+      ...(demoMode && route.query.developer === '1' ? { developer: '1' } : {}),
+      ...(demoMode && demoAdminMode.value ? { admin: '1' } : {}),
       ...(readOnly.value ? { scope: 'history' } : {}),
     },
   })
 }
 
+function editMatter() {
+  void router.push({
+    path: '/d/new',
+    query: {
+      edit: matterId.value,
+      ...(demoMode ? { demo: '1' } : {}),
+      ...(demoMode && route.query.developer === '1' ? { developer: '1' } : {}),
+      ...(demoMode && demoAdminMode.value ? { admin: '1' } : {}),
+    },
+  })
+}
+
 onMounted(() => {
-  void Promise.allSettled([loadMatter(), loadVotes()])
+  void Promise.allSettled([loadMatter(), loadVotes(), loadManagementAccess(), loadContributions()])
+})
+
+onUnmounted(() => {
+  disposed = true
+  if (activationTimer) window.clearTimeout(activationTimer)
 })
 </script>
 
 <style scoped>
 .detail-page {
   min-height: 100dvh;
-  background: #f3f3f3;
+  background: #f5f5f5;
   color: #333;
 }
 
@@ -324,9 +482,10 @@ main {
   width: min(920px, 100%);
   margin: 0 auto;
   overflow: hidden;
-  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
   background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 }
 
 .matter-header,
@@ -341,8 +500,7 @@ main {
 
 .labels,
 .author,
-.stage-intro,
-.composer {
+.stage-intro {
   display: flex;
   gap: 0.55rem;
   align-items: center;
@@ -364,13 +522,28 @@ main {
 .matter-header h2 {
   margin: 0.9rem 0 0.45rem;
   color: #333;
-  font-size: clamp(1.25rem, 3vw, 1.7rem);
+  font-size: clamp(1.15rem, 2.5vw, 1.4rem);
 }
 
-.matter-header p,
+.summary-description,
 .overview li {
   color: #666;
   line-height: 1.65;
+}
+
+.summary-description {
+  margin: 0.65rem 0;
+  overflow-wrap: anywhere;
+}
+
+.summary-description :deep(p) {
+  margin: 0.45rem 0;
+}
+
+.summary-description :deep(img),
+.summary-description :deep(svg) {
+  max-width: 100%;
+  height: auto;
 }
 
 .author {
@@ -403,28 +576,18 @@ main {
   margin-bottom: 0.8rem;
 }
 
-.demo-questions {
+.vote-schedule {
+  margin: 0 0 0.8rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: 6px;
+  background: #eef6ff;
+  color: #245f96;
+  font-size: 0.84rem;
+}
+
+.contribution-list {
   display: grid;
   gap: 0.6rem;
-}
-
-blockquote {
-  margin: 0;
-  padding: 0.75rem 0.9rem;
-  border: 1px solid #eee;
-  border-radius: 6px;
-  background: #fafafa;
-  color: #555;
-  line-height: 1.6;
-}
-
-.composer {
-  align-items: flex-end;
-  margin-top: 0.9rem;
-}
-
-.composer :deep(.n-input) {
-  flex: 1;
 }
 
 .vote-grid {
@@ -455,11 +618,6 @@ blockquote {
   .overview,
   .stages {
     padding: 12px;
-  }
-
-  .composer {
-    align-items: stretch;
-    flex-direction: column;
   }
 }
 </style>

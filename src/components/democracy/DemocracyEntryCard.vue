@@ -2,7 +2,13 @@
   <article class="entry-card">
     <div class="entry-topline">
       <span class="entry-kind" :class="entry.kind">
-        {{ entry.kind === 'case' ? t('democracy.kinds.case') : t('democracy.kinds.proposal') }}
+        {{
+          entry.anonymousSuggestion
+            ? t('democracy.kinds.suggestion')
+            : entry.kind === 'case'
+              ? t('democracy.kinds.case')
+              : t('democracy.kinds.proposal')
+        }}
       </span>
       <span class="entry-status" :class="entry.status">
         {{
@@ -24,14 +30,14 @@
 
     <footer class="entry-footer">
       <component
-        :is="demoMode || entry.anonymousSuggestion ? 'div' : 'router-link'"
+        :is="demoMode || entry.anonymousAuthor ? 'div' : 'router-link'"
         class="author"
-        :to="demoMode || entry.anonymousSuggestion ? undefined : `/u/${entry.summary.User.ID}`"
+        :to="demoMode || entry.anonymousAuthor ? undefined : `/u/${entry.summary.User.ID}`"
       >
-        <img v-if="!entry.anonymousSuggestion" :src="avatarUrl" alt="" />
+        <img v-if="!entry.anonymousAuthor" :src="avatarUrl" alt="" />
         <span>{{ authorName }}</span>
         <Tag
-          v-if="entry.summary.User.Verification && !entry.anonymousSuggestion"
+          v-if="entry.summary.User.Verification && !entry.anonymousAuthor"
           category="User"
           :tag="`C-${entry.summary.User.Verification}`"
         />
@@ -40,7 +46,7 @@
         <span v-if="readOnly">{{
           t('democracy.comments', { count: entry.summary.Comments })
         }}</span>
-        <router-link v-else :to="commentsPath">
+        <router-link v-else :to="targetPath">
           {{ t('democracy.comments', { count: entry.summary.Comments }) }}
         </router-link>
         <span>{{ t('democracy.visits', { count: entry.summary.Visits }) }}</span>
@@ -49,9 +55,6 @@
 
     <div class="entry-actions">
       <router-link :to="targetPath">{{ t('democracy.actions.view') }}</router-link>
-      <router-link v-if="!readOnly" :to="commentsPath">
-        {{ t('democracy.actions.question') }}
-      </router-link>
     </div>
   </article>
 </template>
@@ -59,37 +62,33 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import Tag from '@components/utils/TagLarger.vue'
 import { formatDate, getUserUrl } from '@services/utils'
 import type { DemocracyEntry } from '@services/democracyWall'
 
-const props = defineProps<{ entry: DemocracyEntry; demoMode?: boolean; readOnly?: boolean }>()
+const props = defineProps<{
+  demoAdminMode?: boolean
+  demoMode?: boolean
+  entry: DemocracyEntry
+  readOnly?: boolean
+}>()
 const { t, locale } = useI18n()
+const route = useRoute()
 
 const targetPath = computed(() => ({
   name: 'democracy-matter-detail',
   params: { id: props.entry.summary.ID },
   query: {
     ...(props.demoMode ? { demo: '1' } : {}),
+    ...(props.demoMode && route.query.developer === '1' ? { developer: '1' } : {}),
+    ...(props.demoMode && props.demoAdminMode ? { admin: '1' } : {}),
     ...(props.readOnly ? { scope: 'history' } : {}),
   },
 }))
-const commentsPath = computed(() =>
-  props.demoMode
-    ? {
-        ...targetPath.value,
-        query: { demo: '1', stage: 'questions' },
-      }
-    : {
-        ...targetPath.value,
-        query: { stage: 'questions' },
-      },
-)
 const avatarUrl = computed(() => getUserUrl(props.entry.summary.User))
-const authorName = computed(() =>
-  props.entry.anonymousSuggestion
-    ? t('democracy.create.anonymousAuthor')
-    : props.entry.summary.User.Nickname,
+const authorName = computed(
+  () => props.entry.summary.User.Nickname || t('democracy.create.anonymousAuthor'),
 )
 const localizedSubject = computed(
   () =>
@@ -122,9 +121,16 @@ const visibleTags = computed(() =>
   gap: 0.75rem;
   padding: 14px;
   border: 1px solid #eee;
-  border-radius: 8px;
+  border-radius: 4px;
   background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  transition:
+    border-color 0.15s,
+    background-color 0.15s;
+}
+
+.entry-card:hover {
+  border-color: #cce5f1;
+  background: #fafcfd;
 }
 
 .entry-topline {
@@ -169,14 +175,14 @@ const visibleTags = computed(() =>
 
 .entry-title {
   color: #333;
-  font-size: clamp(1.05rem, 2vw, 1.3rem);
+  font-size: 1rem;
   font-weight: 700;
   line-height: 1.35;
   text-decoration: none;
 }
 
 .entry-title:hover {
-  color: #087ab8;
+  color: #2563eb;
 }
 
 .entry-description {
@@ -244,7 +250,7 @@ const visibleTags = computed(() =>
 }
 
 .metrics a:hover {
-  color: #0185c5;
+  color: #2563eb;
 }
 
 .entry-actions {
@@ -263,8 +269,8 @@ const visibleTags = computed(() =>
 }
 
 .entry-actions a:last-child {
-  border-color: #0185c5;
-  color: #0185c5;
+  border-color: #2563eb;
+  color: #2563eb;
 }
 
 .entry-actions a:hover {

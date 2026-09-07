@@ -1,60 +1,194 @@
-import { getData, login } from '@api/getData'
-import storageManager from '@storage/index'
+import { getData } from '@api/getData'
 import {
-  castDemocracyDemoVote,
+  createDemocracyDemoVote,
+  canEditDemocracyDemoMatter,
+  deleteDemocracyDemoMatter,
+  getDemocracyDemoAnonymousProfile,
+  getDemocracyDemoAudit,
+  getDemocracyDemoContributions,
+  getDemocracyDemoInvestigationTeam,
+  getDemocracyDemoMatterStage,
+  getDemocracyDemoMatterParticipation,
   getDemocracyDemoSummaries,
-  getDemocracyDemoSync,
+  getDemocracyDemoVotePlan,
+  moderateDemocracyDemoPublisher,
+  moderateDemocracyDemoAccount,
+  inviteDemocracyDemoInvestigator,
+  reportDemocracyDemoMatter,
+  traceDemocracyDemoPublisher,
+  transitionDemocracyDemoMatter,
+  isDemocracyDemoAnonymousPostingRevoked,
+  isDemocracyDemoAdminMode,
+  isDemocracyDemoDeveloperMode,
   isDemocracyDemoMode,
   submitDemocracyDemoMatter,
+  submitDemocracyDemoContribution,
+  updateDemocracyDemoMatter,
 } from './democracyWallDemo'
+import type { Activity, Summary } from '../pl-serve-type-main/type/main'
 import type {
-  Activity,
-  ActivityStatus,
-  Statistic,
-  Summary,
-  Sync,
-  UserInfo,
-} from '../pl-serve-type-main/type/main'
+  DemocracyContext,
+  DemocracyContribution,
+  DemocracyAccountAction,
+  DemocracyAuditEntry,
+  DemocracyInvestigationInvite,
+  DemocracyMatterScope,
+  DemocracyMatterParticipation,
+  DemocracyMatterStage,
+  DemocracyPublicMatter,
+  DemocracyPublisherTrace,
+  DemocracyReportCategory,
+  DemocracyVotePlan,
+} from './democracyWallContract'
+import { isDemocracyWallWritable } from './democracyWallFeature'
+import { isDemocracyHistoryStage } from './democracyMatterState'
+import { validateDemocracyBanDays } from './democracyModerationRules'
+
+function requireWritable() {
+  if (!isDemocracyWallWritable()) throw new Error('feature-read-only')
+}
+
+export async function requireDemocracyDeveloperAccess() {
+  requireWritable()
+  const context = await fetchDemocracyContext()
+  if (context.Permissions.CanDeveloperManage !== true) throw new Error('permission-denied')
+}
+
+async function collectPages<T>(load: (skip: number, take: number) => Promise<T[]>) {
+  const entries: T[] = []
+  const take = 50
+  for (;;) {
+    const page = await load(entries.length, take)
+    entries.push(...page)
+    if (page.length < take) return entries
+  }
+}
 
 export const DEMOCRACY_WALL_TAG = '民主墙'
 
 const CASE_TAGS = new Set(['公开卷宗', '调查卷宗', '公开案件', '管理监察'])
 const RESOLVED_TAGS = new Set(['已决议', '已归档'])
-const ANONYMOUS_SUGGESTION_REVOKED_USER_IDS = new Set(['5ea1934c8116c49429d3e405'])
-
 export type DemocracyEntryKind = 'case' | 'proposal'
 export type DemocracyEntryStatus = 'open' | 'resolved'
 
 export interface DemocracyEntry {
+  anonymousAuthor: boolean
   anonymousSuggestion: boolean
   kind: DemocracyEntryKind
   status: DemocracyEntryStatus
   summary: Summary
 }
 
-export interface DemocracyVoteContext {
-  activities: Activity[]
-  statuses: ActivityStatus[]
-  statistic?: Statistic
+export interface DemocracyMatterDetail {
+  canEdit: boolean
+  kind: DemocracyPublicMatter['Kind']
+  mode: DemocracyPublicMatter['Mode']
+  participation: DemocracyMatterParticipation
+  revision: string
+  stage: DemocracyMatterStage
+  summary: Summary
+  voteActivity?: Activity
+  votePlan?: DemocracyVotePlan
 }
 
 export interface DemocracyMatterInput {
   anonymous: boolean
+  anonymousAlias?: string
+  clientRequestId: string
   description: string
   kind: 'public' | 'oversight'
+  participation: DemocracyMatterParticipation
   subject: string
+  votePlan?: DemocracyVotePlan
 }
 
-const INITIATOR_VERIFICATIONS = new Set(['Editor', 'Administrator'])
+export interface DemocracyMatterEditInput {
+  description: string
+  expectedRevision: string
+  matterId: string
+  participation: DemocracyMatterParticipation
+  subject: string
+  votePlan?: DemocracyVotePlan
+}
 
-export function getDemocracyCreationAccess() {
-  const user = storageManager.getObj('userInfo').value
+export interface DemocracyCreationAccess {
+  anonymousAlias: string
+  canInitiate: boolean
+  canSuggestAnonymously: boolean
+}
+
+export interface DemocracyManagementAccess {
+  canModerate: boolean
+  canTransition: boolean
+}
+
+export interface DemocracyVoteInput {
+  finishDate: string
+  matterId: string
+  multiple: boolean
+  options: string[]
+  reason: string
+}
+
+const NO_CREATION_ACCESS: DemocracyCreationAccess = {
+  anonymousAlias: '',
+  canInitiate: false,
+  canSuggestAnonymously: false,
+}
+
+export function getDemocracyCreationAccess(): DemocracyCreationAccess {
+  if (isDemocracyDemoMode()) {
+    const demoPostingAllowed = !isDemocracyDemoAnonymousPostingRevoked()
+    return {
+      anonymousAlias: '',
+      canInitiate: demoPostingAllowed && isDemocracyDemoAdminMode(),
+      canSuggestAnonymously: demoPostingAllowed,
+    }
+  }
+  return NO_CREATION_ACCESS
+}
+
+export async function fetchDemocracyCreationAccess(): Promise<DemocracyCreationAccess> {
+  if (isDemocracyDemoMode()) return getDemocracyCreationAccess()
+  if (!isDemocracyWallWritable()) return NO_CREATION_ACCESS
+
+  return toCreationAccess(await fetchDemocracyContext())
+}
+
+export async function fetchDemocracyContext(): Promise<DemocracyContext> {
+  if (isDemocracyDemoMode()) {
+    const profile = getDemocracyDemoAnonymousProfile()
+    const adminMode = isDemocracyDemoAdminMode()
+    const canPublish = !isDemocracyDemoAnonymousPostingRevoked()
+    return {
+      ApiVersion: 1,
+      Permissions: {
+        CanDeveloperManage: isDemocracyDemoDeveloperMode(),
+        CanContribute: canPublish,
+        CanInitiate: adminMode,
+        CanModerate: adminMode,
+        CanSuggest: canPublish,
+        CanTransition: adminMode,
+      },
+      Profile: {
+        Alias: profile.alias,
+        CanPublish: canPublish,
+        ModifiedAt: new Date().toISOString(),
+      },
+    }
+  }
+  const response = await getData('/Democracy/GetContext', {})
+  if (response.Status !== 200 || !response.Data) {
+    throw new Error(response.Message || String(response.Status))
+  }
+  return response.Data
+}
+
+function toCreationAccess(context: DemocracyContext): DemocracyCreationAccess {
   return {
-    canInitiate:
-      isDemocracyDemoMode() || INITIATOR_VERIFICATIONS.has(String(user?.Verification || '')),
-    canSuggestAnonymously:
-      isDemocracyDemoMode() ||
-      (user?.Verification === 'Oldtimer' && !ANONYMOUS_SUGGESTION_REVOKED_USER_IDS.has(user.ID)),
+    anonymousAlias: context.Profile?.Alias ?? '',
+    canInitiate: context.Profile?.CanPublish === true && context.Permissions.CanInitiate,
+    canSuggestAnonymously: context.Profile?.CanPublish === true && context.Permissions.CanSuggest,
   }
 }
 
@@ -62,9 +196,47 @@ function hasAnyTag(tags: string[], candidates: Set<string>) {
   return tags.some((tag) => candidates.has(tag))
 }
 
+function canSubmitMatter(access: DemocracyCreationAccess, anonymous: boolean) {
+  return anonymous ? access.canSuggestAnonymously : access.canInitiate
+}
+
+function normalizedParticipation(input: DemocracyMatterInput) {
+  return input.anonymous ? ('Consultation' as const) : input.participation
+}
+
+function requireVotePlan(
+  participation: DemocracyMatterParticipation,
+  votePlan?: DemocracyVotePlan,
+) {
+  if (participation === 'Vote' && !votePlan) throw new Error('vote-plan-required')
+}
+
+function buildMatterSubmission(input: DemocracyMatterInput, fallbackAlias: string) {
+  const participation = normalizedParticipation(input)
+  return {
+    Alias: input.anonymousAlias?.trim() || fallbackAlias,
+    ClientRequestID: input.clientRequestId,
+    Description: input.description.trim(),
+    Kind:
+      !input.anonymous && input.kind === 'oversight' ? ('Oversight' as const) : ('Public' as const),
+    Mode: input.anonymous ? ('Suggestion' as const) : ('Formal' as const),
+    Participation: participation,
+    Subject: input.subject.trim(),
+    VotePlan: participation === 'Vote' ? input.votePlan : undefined,
+  }
+}
+
+function participationFromMatter(matter: DemocracyPublicMatter): DemocracyMatterParticipation {
+  if (matter.Participation) return matter.Participation
+  return matter.VotePlan || matter.VoteActivity || matter.Stage === 'Voting'
+    ? 'Vote'
+    : 'Consultation'
+}
+
 export function toDemocracyEntry(summary: Summary): DemocracyEntry {
   const tags = summary.Tags ?? []
   return {
+    anonymousAuthor: true,
     anonymousSuggestion: tags.includes('匿名提议'),
     kind: hasAnyTag(tags, CASE_TAGS) ? 'case' : 'proposal',
     status: hasAnyTag(tags, RESOLVED_TAGS) ? 'resolved' : 'open',
@@ -72,33 +244,64 @@ export function toDemocracyEntry(summary: Summary): DemocracyEntry {
   }
 }
 
-async function queryDemocracySummaries(tags: string[], take: number) {
-  const response = await getData('/Contents/QueryExperiments', {
-    Query: {
-      Category: 'Discussion',
-      Languages: [],
-      ExcludeLanguages: [],
-      Tags: tags,
-      ModelTags: [],
-      ExcludeTags: [],
-      ModelID: undefined,
-      ParentID: undefined,
-      UserID: undefined,
-      Special: undefined,
-      From: undefined,
-      Skip: 0,
-      Take: take,
-      Days: 0,
-      Sort: 0,
-      ShowAnnouncement: true,
-    },
-  })
-
-  if (response.Status !== 200) {
-    throw new Error(response.Message || String(response.Status))
+function normalizePublicMatter(matter: DemocracyPublicMatter): Summary {
+  const reservedTags = new Set([
+    '匿名提议',
+    '公共议案',
+    '管理监察',
+    '待审核',
+    '待质询',
+    '匿名投票',
+    '已决议',
+    '已归档',
+    '意见征集',
+    '投票事务',
+  ])
+  const stageTags: Partial<Record<DemocracyPublicMatter['Stage'], string[]>> = {
+    PendingReview: ['待审核'],
+    Questions: ['待质询'],
+    Voting: ['匿名投票'],
+    Resolved: ['已决议'],
+    Archived: ['已决议', '已归档'],
   }
+  return {
+    ...matter.Summary,
+    Tags: [
+      DEMOCRACY_WALL_TAG,
+      ...(matter.Summary.Tags ?? []).filter(
+        (tag) => tag !== DEMOCRACY_WALL_TAG && !reservedTags.has(tag),
+      ),
+      ...(matter.Mode === 'Suggestion' ? ['匿名提议'] : []),
+      ...(matter.Participation === 'Vote' ? ['投票事务'] : ['意见征集']),
+      ...(matter.Mode === 'Formal' ? [matter.Kind === 'Oversight' ? '管理监察' : '公共议案'] : []),
+      ...(stageTags[matter.Stage] ?? []),
+    ],
+  }
+}
 
-  return response.Data?.$values ?? []
+async function queryDemocracySummaries(scope: DemocracyMatterScope) {
+  const matters = await collectPages(async (skip, take) => {
+    const response = await getData('/Democracy/QueryMatters', {
+      Scope: scope,
+      Skip: skip,
+      Take: take,
+    })
+
+    if (response.Status !== 200 || !response.Data) {
+      throw new Error(response.Message || String(response.Status))
+    }
+
+    return response.Data.Entries
+  })
+  return matters
+    .filter((matter) => matter.Stage !== 'Rejected')
+    .map((matter) => ({
+      anonymousAuthor: true,
+      anonymousSuggestion: matter.Mode === 'Suggestion',
+      kind: matter.Kind === 'Oversight' ? ('case' as const) : ('proposal' as const),
+      status: isDemocracyHistoryStage(matter.Stage) ? ('resolved' as const) : ('open' as const),
+      summary: normalizePublicMatter(matter),
+    }))
 }
 
 export async function fetchDemocracyEntries(): Promise<DemocracyEntry[]> {
@@ -108,9 +311,7 @@ export async function fetchDemocracyEntries(): Promise<DemocracyEntry[]> {
       .filter((entry) => entry.status === 'open')
   }
 
-  return (await queryDemocracySummaries([DEMOCRACY_WALL_TAG], 48))
-    .map(toDemocracyEntry)
-    .filter((entry) => entry.status === 'open')
+  return (await queryDemocracySummaries('Current')).filter((entry) => entry.status === 'open')
 }
 
 export async function fetchDemocracyHistoryEntries(): Promise<DemocracyEntry[]> {
@@ -120,161 +321,312 @@ export async function fetchDemocracyHistoryEntries(): Promise<DemocracyEntry[]> 
       .filter((entry) => entry.status === 'resolved')
   }
 
-  const results = await Promise.allSettled([
-    queryDemocracySummaries([DEMOCRACY_WALL_TAG, '已归档'], 48),
-    queryDemocracySummaries([DEMOCRACY_WALL_TAG, '已决议'], 48),
-  ])
-  const summaries = results.flatMap((result) => (result.status === 'fulfilled' ? result.value : []))
-  const firstFailure = results.find(
-    (result): result is PromiseRejectedResult => result.status === 'rejected',
-  )
-  if (!summaries.length && firstFailure) {
-    throw firstFailure.reason
-  }
-
-  return Array.from(new Map(summaries.map((summary) => [summary.ID, summary])).values())
-    .map(toDemocracyEntry)
-    .filter((entry) => entry.status === 'resolved')
-}
-
-function createSubmissionSummary(
-  input: DemocracyMatterInput,
-  user: UserInfo,
-): Summary & {
-  Anonymous?: boolean
-} {
-  const timestamp = Date.now()
-  return {
-    $type: 'Quantum.Models.Contents.Summary, Quantum Models',
-    ID: '',
-    Tags: [
-      DEMOCRACY_WALL_TAG,
-      ...(input.anonymous ? ['匿名提议'] : []),
-      input.kind === 'oversight' ? '管理监察' : '公共议案',
-      input.anonymous ? '待审核' : '待质询',
-    ],
-    Type: 0,
-    User: {
-      ID: user.ID,
-      Nickname: user.Nickname,
-      Avatar: user.Avatar,
-      AvatarRegion: user.AvatarRegion,
-      Signature: user.Signature,
-      Decoration: user.Decoration,
-      Verification: user.Verification,
-    },
-    Image: 0,
-    Price: 0,
-    Stars: 0,
-    Visits: 0,
-    Remixes: 0,
-    Subject: input.subject.trim(),
-    Version: 1,
-    Category: 'Discussion',
-    Comments: 0,
-    Language: 'Chinese',
-    Supports: 0,
-    Coauthors: [],
-    Popularity: 0,
-    UpdateDate: timestamp,
-    Visibility: 0,
-    Description: input.description.trim().split('\n'),
-    ImageRegion: 0,
-    SortingDate: timestamp,
-    CreationDate: timestamp,
-    Multilingual: false,
-    Anonymous: input.anonymous,
-  }
+  return (await queryDemocracySummaries('History')).filter((entry) => entry.status === 'resolved')
 }
 
 export async function submitDemocracyMatter(input: DemocracyMatterInput) {
+  requireVotePlan(normalizedParticipation(input), input.votePlan)
   if (isDemocracyDemoMode()) return submitDemocracyDemoMatter(input)
+  if (!isDemocracyWallWritable()) throw new Error('feature-read-only')
 
-  const user = storageManager.getObj('userInfo').value
-  if (!user?.ID) throw new Error('login-required')
-  const access = getDemocracyCreationAccess()
-  if (
-    (!input.anonymous && !access.canInitiate) ||
-    (input.anonymous && !access.canSuggestAnonymously)
-  ) {
+  const access = await fetchDemocracyCreationAccess()
+  if (!canSubmitMatter(access, input.anonymous)) {
     throw new Error('permission-denied')
   }
 
-  const summary = createSubmissionSummary(input, user)
-  const response = await getData('/Contents/SubmitExperiment', {
-    Summary: summary,
-    Workspace: null,
-  } as never)
-  if (response.Status !== 200 || !response.Data?.Summary) {
-    throw new Error(response.Message || String(response.Status))
-  }
-  return response.Data.Summary
-}
-
-function isVoteActivity(activity: Activity) {
-  return activity.InterfaceModel === 'Vote' || activity.InterfaceModel === 'Vote-Single'
-}
-
-export function getDemocracyMatterActivities(activities: Activity[], matterId: string) {
-  return activities.filter((activity) => {
-    const targets = [activity.InternalLink, activity.TargetLink, activity.TargetText]
-    return targets.some((target) => {
-      if (typeof target === 'string') return target.includes(matterId)
-      try {
-        return JSON.stringify(target).includes(matterId)
-      } catch {
-        return false
-      }
-    })
-  })
-}
-
-export async function fetchDemocracyVoteContext(): Promise<DemocracyVoteContext> {
-  if (isDemocracyDemoMode()) {
-    return mergeDemocracyVoteContext({ activities: [], statuses: [] }, getDemocracyDemoSync())
-  }
-
-  const auth = storageManager.getObj('userAuthInfo').value
-  const response =
-    auth?.token && auth.authCode
-      ? await login(auth.token, auth.authCode, true)
-      : await login(null, null)
-
-  if (response.Status !== 200) {
-    throw new Error(response.Message || String(response.Status))
-  }
-
-  const sync = response.Data
-  return mergeDemocracyVoteContext(
-    {
-      activities: [],
-      statuses: [],
-    },
-    sync,
+  const response = await getData(
+    '/Democracy/SubmitMatter',
+    buildMatterSubmission(input, access.anonymousAlias),
   )
+  if (response.Status !== 200 || !response.Data) {
+    throw new Error(response.Message || String(response.Status))
+  }
+  return normalizePublicMatter(response.Data)
 }
 
-export async function submitDemocracyVote(activity: Activity, index: number, statistic: Statistic) {
+export async function fetchDemocracyMatter(matterId: string) {
   if (isDemocracyDemoMode()) {
-    return { Status: 200, Message: '', Data: castDemocracyDemoVote(activity, index) } as const
+    const summary = getDemocracyDemoSummaries().find((item) => item.ID === matterId)
+    if (!summary) throw new Error('matter-not-found')
+    const tags = summary.Tags ?? []
+    return {
+      canEdit: canEditDemocracyDemoMatter(matterId),
+      kind: tags.includes('管理监察') ? 'Oversight' : 'Public',
+      mode: tags.includes('匿名提议') ? 'Suggestion' : 'Formal',
+      participation: getDemocracyDemoMatterParticipation(matterId),
+      revision: String(summary.UpdateDate),
+      stage: getDemocracyDemoMatterStage(matterId),
+      summary,
+      votePlan: getDemocracyDemoVotePlan(matterId),
+    } satisfies DemocracyMatterDetail
   }
+  const response = await getData('/Democracy/GetMatter', { MatterID: matterId })
+  if (response.Status !== 200 || !response.Data) {
+    throw new Error(response.Message || String(response.Status))
+  }
+  return {
+    canEdit: response.Data.CanEdit,
+    kind: response.Data.Kind,
+    mode: response.Data.Mode,
+    participation: participationFromMatter(response.Data),
+    revision: response.Data.Revision,
+    stage: response.Data.Stage,
+    summary: normalizePublicMatter(response.Data),
+    voteActivity: response.Data.VoteActivity,
+    votePlan: response.Data.VotePlan,
+  } satisfies DemocracyMatterDetail
+}
 
-  return getData('/Users/ReceiveBonus', {
-    ActivityID: activity.ID,
-    Index: index,
-    Statistic: statistic,
+async function prepareMatterEdit(input: DemocracyMatterEditInput) {
+  if (!isDemocracyWallWritable()) throw new Error('feature-read-only')
+  const current = await fetchDemocracyMatter(input.matterId)
+  if (!current.canEdit) throw new Error('permission-denied')
+  const votingStarted =
+    current.stage === 'Voting' ||
+    (current.votePlan && new Date(current.votePlan.StartAt).getTime() <= Date.now())
+  if (votingStarted || isDemocracyHistoryStage(current.stage)) {
+    await requireDemocracyDeveloperAccess()
+    input = { ...input, participation: current.participation, votePlan: current.votePlan }
+  }
+  return input
+}
+
+export async function updateDemocracyMatter(input: DemocracyMatterEditInput) {
+  input = await prepareMatterEdit(input)
+  requireVotePlan(input.participation, input.votePlan)
+  if (isDemocracyDemoMode()) {
+    return updateDemocracyDemoMatter(input.matterId, {
+      description: input.description,
+      subject: input.subject,
+      participation: input.participation,
+      votePlan: input.votePlan,
+    })
+  }
+  const response = await getData('/Democracy/UpdateMatter', {
+    Description: input.description.trim(),
+    ExpectedRevision: input.expectedRevision,
+    MatterID: input.matterId,
+    Participation: input.participation,
+    Subject: input.subject.trim(),
+    VotePlan: input.participation === 'Vote' ? input.votePlan : undefined,
+  })
+  if (response.Status !== 200 || !response.Data) {
+    throw new Error(response.Message || String(response.Status))
+  }
+  return normalizePublicMatter(response.Data)
+}
+
+export async function traceDemocracyPublisher(matterId: string, reason: string) {
+  await requireDemocracyDeveloperAccess()
+  if (isDemocracyDemoMode()) return traceDemocracyDemoPublisher(matterId, reason)
+  const response = await getData('/Democracy/TracePublisher', {
+    Notify: false,
+    MatterID: matterId,
+    Reason: reason.trim(),
+  })
+  if (response.Status !== 200 || !response.Data) {
+    throw new Error(response.Message || String(response.Status))
+  }
+  return response.Data satisfies DemocracyPublisherTrace
+}
+
+export async function moderateDemocracyPublisher(
+  matterId: string,
+  revoked: boolean,
+  reason: string,
+) {
+  await requireDemocracyDeveloperAccess()
+  if (isDemocracyDemoMode()) {
+    return moderateDemocracyDemoPublisher(matterId, revoked, reason)
+  }
+  const response = await getData('/Democracy/ModeratePublisher', {
+    MatterID: matterId,
+    Reason: reason.trim(),
+    Revoked: revoked,
+  })
+  if (response.Status !== 200 || !response.Data) {
+    throw new Error(response.Message || String(response.Status))
+  }
+  return response.Data
+}
+
+export async function moderateDemocracyAccount(
+  matterId: string,
+  action: DemocracyAccountAction,
+  reason: string,
+  banDays?: number,
+) {
+  await requireDemocracyDeveloperAccess()
+  if (action === 'Ban') validateDemocracyBanDays(banDays)
+  if (isDemocracyDemoMode()) {
+    return moderateDemocracyDemoAccount(matterId, action, reason, banDays)
+  }
+  const response = await getData('/Democracy/ModerateAccount', {
+    BanDays: action === 'Ban' ? banDays : undefined,
+    Action: action,
+    MatterID: matterId,
+    Reason: reason.trim(),
+  })
+  if (response.Status !== 200 || !response.Data) {
+    throw new Error(response.Message || String(response.Status))
+  }
+  return response.Data
+}
+
+export async function deleteDemocracyMatter(matterId: string, reason: string) {
+  await requireDemocracyDeveloperAccess()
+  if (isDemocracyDemoMode()) return deleteDemocracyDemoMatter(matterId, reason)
+  const response = await getData('/Democracy/DeleteMatter', {
+    MatterID: matterId,
+    Reason: reason.trim(),
+  })
+  if (response.Status !== 200 || !response.Data) {
+    throw new Error(response.Message || String(response.Status))
+  }
+  return response.Data
+}
+
+export async function fetchDemocracyAudit(matterId: string): Promise<DemocracyAuditEntry[]> {
+  await requireDemocracyDeveloperAccess()
+  if (isDemocracyDemoMode()) return getDemocracyDemoAudit(matterId)
+  const response = await getData('/Democracy/QueryAudit', { MatterID: matterId })
+  if (response.Status !== 200 || !response.Data) {
+    throw new Error(response.Message || String(response.Status))
+  }
+  return response.Data.Entries
+}
+
+export async function fetchDemocracyContributions(
+  matterId: string,
+): Promise<DemocracyContribution[]> {
+  if (isDemocracyDemoMode()) return getDemocracyDemoContributions(matterId)
+  return collectPages(async (skip, take) => {
+    const response = await getData('/Democracy/QueryContributions', {
+      MatterID: matterId,
+      Skip: skip,
+      Take: take,
+    })
+    if (response.Status !== 200 || !response.Data) {
+      throw new Error(response.Message || String(response.Status))
+    }
+    return response.Data.Entries
   })
 }
 
-export function mergeDemocracyVoteContext(
-  current: DemocracyVoteContext,
-  sync?: Sync | null,
-): DemocracyVoteContext {
-  const activities = (sync?.Activities ?? current.activities).filter(isVoteActivity)
-  const statistic = sync?.Statistic ?? current.statistic
-  return {
-    activities,
-    statistic,
-    statuses: statistic?.Activities ?? current.statuses,
+export async function submitDemocracyContribution(
+  matterId: string,
+  content: string,
+  clientRequestId = crypto.randomUUID(),
+) {
+  requireWritable()
+  if (isDemocracyDemoMode()) return submitDemocracyDemoContribution(matterId, content)
+  const response = await getData('/Democracy/SubmitContribution', {
+    ClientRequestID: clientRequestId,
+    Content: content.trim(),
+    MatterID: matterId,
+  })
+  if (response.Status !== 200 || !response.Data) {
+    throw new Error(response.Message || String(response.Status))
+  }
+  return response.Data
+}
+
+export async function fetchDemocracyInvestigationTeam(
+  matterId: string,
+): Promise<DemocracyInvestigationInvite[]> {
+  if (isDemocracyDemoMode()) return getDemocracyDemoInvestigationTeam(matterId)
+  const response = await getData('/Democracy/QueryInvestigationTeam', { MatterID: matterId })
+  if (response.Status !== 200 || !response.Data) {
+    throw new Error(response.Message || String(response.Status))
+  }
+  return response.Data.Entries
+}
+
+export async function inviteDemocracyInvestigator(
+  matterId: string,
+  userId: string,
+  reason: string,
+) {
+  requireWritable()
+  if (isDemocracyDemoMode()) {
+    return inviteDemocracyDemoInvestigator(matterId, userId, reason)
+  }
+  const response = await getData('/Democracy/InviteInvestigator', {
+    MatterID: matterId,
+    Reason: reason.trim(),
+    UserID: userId,
+  })
+  if (response.Status !== 200 || !response.Data) {
+    throw new Error(response.Message || String(response.Status))
+  }
+  return response.Data
+}
+
+export async function transitionDemocracyMatter(
+  matterId: string,
+  expectedStage: DemocracyMatterStage,
+  targetStage: DemocracyMatterStage,
+  reason: string,
+) {
+  requireWritable()
+  if (isDemocracyDemoMode()) {
+    transitionDemocracyDemoMatter(matterId, expectedStage, targetStage, reason)
+    return
+  }
+  const response = await getData('/Democracy/TransitionMatter', {
+    ExpectedStage: expectedStage,
+    MatterID: matterId,
+    Reason: reason.trim(),
+    TargetStage: targetStage,
+  })
+  if (response.Status !== 200 || !response.Data) {
+    throw new Error(response.Message || String(response.Status))
   }
 }
+
+export async function createDemocracyVote(input: DemocracyVoteInput) {
+  requireWritable()
+  if (isDemocracyDemoMode()) {
+    return createDemocracyDemoVote(input)
+  }
+  const response = await getData('/Democracy/CreateVote', {
+    ExpectedStage: 'Questions',
+    FinishDate: input.finishDate,
+    MatterID: input.matterId,
+    Multiple: input.multiple,
+    Options: input.options.map((option) => option.trim()).filter(Boolean),
+    Reason: input.reason.trim(),
+  })
+  if (response.Status !== 200 || !response.Data) {
+    throw new Error(response.Message || String(response.Status))
+  }
+  return response.Data
+}
+
+export async function reportDemocracyMatter(
+  matterId: string,
+  category: DemocracyReportCategory,
+  details: string,
+  clientRequestId = crypto.randomUUID(),
+) {
+  requireWritable()
+  if (isDemocracyDemoMode()) return reportDemocracyDemoMatter(matterId, category, details)
+  const response = await getData('/Democracy/ReportMatter', {
+    Category: category,
+    ClientRequestID: clientRequestId,
+    Details: details.trim(),
+    MatterID: matterId,
+  })
+  if (response.Status !== 200 || !response.Data) {
+    throw new Error(response.Message || String(response.Status))
+  }
+  return response.Data
+}
+
+export {
+  fetchDemocracyVoteContext,
+  getDemocracyMatterActivities,
+  mergeDemocracyVoteContext,
+  submitDemocracyVote,
+  type DemocracyVoteContext,
+} from './democracyVotes'
