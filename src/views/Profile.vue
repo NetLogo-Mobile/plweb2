@@ -43,6 +43,7 @@
           </button>
         </div>
         <div class="userInfo">
+          <router-link v-if="isOwnProfile" class="shop-entry" to="/shop">{{ t('shop.title') }} →</router-link>
           <!-- User name row with settings button (portrait only) -->
           <div class="user-name-row">
             <div
@@ -383,6 +384,7 @@ function copyUser() {
 </script>
 
 <style scoped>
+.shop-entry { display: inline-block; padding: 0.6rem 1rem; margin-bottom: 0.75rem; background: white; color: #006b9e; border-radius: 6px; text-decoration: none; }
 .userInfo {
   text-align: left;
   z-index: 10;
