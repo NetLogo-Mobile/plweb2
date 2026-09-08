@@ -1,4 +1,5 @@
 export default {
+  avatarFrames: {"title":"Cadres d’avatar","demo":"Démo locale : aucun compte réel ni objet modifié.","error":"Échec du chargement ou de la sauvegarde.","retry":"Réessayer","banned":"Compte banni : cadre retiré, inventaire conservé. Rééquipez après le déblocage.","current":"Apparence actuelle","remove":"Retirer","equip":"Équiper","equipped":"Équipé","orbit":"Orbite","laurel":"Laurier","prism":"Prisme","banTest":"Simuler un bannissement","unbanTest":"Simuler un déblocage"},
   login: {
     emailOrPhone: 'E-mail / Téléphone',
     password: 'Mot de passe 6~20 caractères',

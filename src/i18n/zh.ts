@@ -1,4 +1,5 @@
 export default {
+  avatarFrames: {"title":"头像框背包","demo":"本地演示：不会修改真实账号或发放正式物品。","error":"加载或保存失败，请重试。","retry":"重试","banned":"账号已封禁：头像框已卸下，背包物品保留。解封后可重新佩戴。","current":"当前展示","remove":"卸下","equip":"佩戴","equipped":"已佩戴","orbit":"星轨","laurel":"桂冠","prism":"棱光","banTest":"模拟封禁","unbanTest":"模拟解封"},
   login: {
     emailOrPhone: '邮箱 / 手机',
     password: '密码 6~20 位',

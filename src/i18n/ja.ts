@@ -1,4 +1,5 @@
 export default {
+  avatarFrames: {"title":"アバターフレーム","demo":"ローカルデモ：実際のアカウントやアイテムは変更されません。","error":"読み込みまたは保存に失敗しました。","retry":"再試行","banned":"アカウント停止中：フレームは解除され、所有アイテムは保持されます。解除後に再装着できます。","current":"現在の表示","remove":"外す","equip":"装着","equipped":"装着中","orbit":"軌道","laurel":"月桂冠","prism":"プリズム","banTest":"停止をテスト","unbanTest":"停止解除をテスト"},
   login: {
     emailOrPhone: 'メール / 電話',
     password: 'パスワード 6~20 文字',

@@ -3,6 +3,12 @@ import Home from '../views/Home.vue'
 
 const routes: RouteRecordRaw[] = [
   {
+    path: '/avatar-frames',
+    name: 'avatar-frames',
+    component: () => import('../views/AvatarFrames.vue'),
+    meta: { keepAlive: false },
+  },
+  {
     path: '/',
     name: 'Home',
     component: Home,

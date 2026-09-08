@@ -1,4 +1,5 @@
 export default {
+  avatarFrames: {"title":"Avatar frames","demo":"Local demo: no real accounts or items are changed.","error":"Unable to load or save. Please retry.","retry":"Retry","banned":"Account banned: frame removed, inventory retained. Equip again after unbanning.","current":"Current appearance","remove":"Remove","equip":"Equip","equipped":"Equipped","orbit":"Orbit","laurel":"Laurel","prism":"Prism","banTest":"Simulate ban","unbanTest":"Simulate unban"},
   login: {
     emailOrPhone: 'Email / Phone',
     password: 'Password 6~20 chars',
