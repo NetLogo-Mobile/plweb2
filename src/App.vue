@@ -1,5 +1,11 @@
 <template>
-  <div id="app" @click="handleClick">
+  <div
+    id="app"
+    class="wallpaper-shell"
+    :class="{ 'has-wallpaper': wallpaper }"
+    :style="{ '--wallpaper-image': wallpaper?.background }"
+    @click="handleClick"
+  >
     <CookieNotice />
     <router-view v-slot="{ Component }">
       <!-- keep alive源自于vue-router的缓存 -->
@@ -15,6 +21,8 @@
 <script setup lang="ts">
 import showUserCard from '@popup/userProfileDialog.ts'
 import CookieNotice from './components/utils/CookieNotice.vue'
+import { wallpaper, useWallpaperSync } from './services/wallpapers'
+useWallpaperSync()
 function handleClick(event: MouseEvent) {
   const target = event.target as HTMLElement
   if (target.classList.contains('RUser')) {
@@ -24,6 +32,18 @@ function handleClick(event: MouseEvent) {
 </script>
 
 <style>
+.wallpaper-shell.has-wallpaper {
+  isolation: isolate;
+  --page-background: transparent;
+}
+.wallpaper-shell.has-wallpaper::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: var(--wallpaper-image);
+}
 html,
 body {
   height: 100dvh !important;
