@@ -1,7 +1,7 @@
 <template>
   <div id="notification_container" @click="handleReply">
     <div class="img">
-      <img id="avatar" :src="avatarUrl" @click.stop="showUserCard(message.UserID)" />
+      <UserAvatar id="avatar" :src="avatarUrl" :user="message" @click.stop="showUserCard(message.UserID)" />
     </div>
     <div id="notification" class="notification">
       <div id="notification_title" class="notification_title">
@@ -30,6 +30,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
+import UserAvatar from '../utils/UserAvatar.vue'
 import parse from '@services/pltxt2htm/advancedParser'
 import showUserCard from '@popup/userProfileDialog.ts'
 import { getAvatarUrl } from '@services/getUserCurentAvatarByID'
