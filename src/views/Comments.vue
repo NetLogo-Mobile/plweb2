@@ -38,7 +38,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, watch } from 'vue'
 import MessagesList from '../components/messages/MessageList.vue'
 import { useRoute } from 'vue-router'
 import { getRouteCategory } from '../router/category'
@@ -53,19 +53,27 @@ import { getPath } from '@services/utils'
 const { t } = useI18n()
 const route = useRoute()
 const routeCategory = computed(() => getRouteCategory(route, 'Discussion'))
-let isLoading = ref(false)
-let replyID = ref('')
-let upDate = ref(0)
+const isLoading = ref(false)
+const replyID = ref('')
+const upDate = ref(0)
 const title = ref('')
-let comment = ref('') // 输入的内容 Input content
+const comment = ref('') // 输入的内容 Input content
 
-onMounted(async () => {
-  const parsedName = await parse(route.params.name as string)
-  title.value = t('comments.title', {
-    name: parsedName,
-    category: routeCategory.value === 'User' ? t('comments.home') : t('comments.area'),
-  })
-})
+let titleRequestId = 0
+
+watch(
+  [() => route.params.name, routeCategory],
+  async ([name, category]) => {
+    const requestId = ++titleRequestId
+    const parsedName = await parse(Array.isArray(name) ? name[0] || '' : name || '')
+    if (requestId !== titleRequestId) return
+    title.value = t('comments.title', {
+      name: parsedName,
+      category: category === 'User' ? t('comments.home') : t('comments.area'),
+    })
+  },
+  { immediate: true },
+)
 
 const goBack = () => {
   window.history.back()

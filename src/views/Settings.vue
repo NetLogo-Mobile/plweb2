@@ -90,7 +90,15 @@ type SettingsSection = {
   items: SettingsItem[]
 }
 
-const settingsConfig = reactive(s as SettingsSection[])
+const settingsConfig = reactive(
+  (s as SettingsSection[]).map((section) => ({
+    ...section,
+    items: section.items.map((item) => ({
+      ...item,
+      options: item.options?.map((option) => ({ ...option })),
+    })),
+  })),
+)
 
 // Initialize settings from storage
 const savedValues = storageManager.getObj('userConfig')?.value || {}
@@ -126,32 +134,24 @@ function saveSettings() {
 function handleSelectChange(item: SettingsItem, newValue: string) {
   item.value = newValue
   saveSettings()
-  if (item.callBack) {
-    item.callBack(newValue)
-  }
+  item.callBack?.(newValue)
 }
 
 function handleToggleChange(item: SettingsItem, event: Event) {
   const target = event.target as HTMLInputElement
   item.value = target.checked ? 'on' : 'off'
   saveSettings()
-  if (item.callBack) {
-    item.callBack(target.checked ? 'on' : 'off')
-  }
+  item.callBack?.(target.checked ? 'on' : 'off')
 }
 
 function handleInputChange(item: SettingsItem, newValue: string) {
   item.value = newValue
   saveSettings()
-  if (item.callBack) {
-    item.callBack(newValue)
-  }
+  item.callBack?.(newValue)
 }
 
 function handleButtonClick(item: SettingsItem) {
-  if (item.callBack) {
-    item.callBack()
-  }
+  item.callBack?.()
 }
 
 function goBack() {
@@ -159,12 +159,10 @@ function goBack() {
 }
 
 onActivated(() => {
-  if (window.$Logger) {
-    window.$Logger.logPageView({
-      pageLink: '/s',
-      timeStamp: Date.now(),
-    })
-  }
+  window.$Logger?.logPageView({
+    pageLink: '/s',
+    timeStamp: Date.now(),
+  })
 })
 </script>
 

@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref } from 'vue'
+import { computed, nextTick, onUnmounted, ref } from 'vue'
 import { NButton, NInput } from 'naive-ui'
 import { useResponsive } from '../../layout/useResponsive'
 
@@ -62,6 +62,7 @@ const emit = defineEmits<{
 const inputRef = ref<{ $el?: HTMLElement } | null>(null)
 const { isCompact, isUltraCompact } = useResponsive()
 const isSubmitDisabled = computed(() => props.disabled || props.loading)
+let focusTimer: number | undefined
 
 function handleSubmit() {
   if (isSubmitDisabled.value) return
@@ -76,7 +77,8 @@ function handleKeydown(event: KeyboardEvent) {
 
 async function handleFocus() {
   await nextTick()
-  setTimeout(() => {
+  window.clearTimeout(focusTimer)
+  focusTimer = window.setTimeout(() => {
     inputRef.value?.$el?.scrollIntoView({
       block: 'nearest',
       inline: 'nearest',
@@ -84,6 +86,8 @@ async function handleFocus() {
     })
   }, 180)
 }
+
+onUnmounted(() => window.clearTimeout(focusTimer))
 </script>
 
 <style scoped>
