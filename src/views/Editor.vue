@@ -623,7 +623,7 @@ setupTabObserver(expSentinelRef, expListRef, 'Experiment')
 <style scoped>
 .md-editor-page {
   min-height: 100dvh;
-  background: #f4f7fb;
+  background: var(--page-background, #f4f7fb);
   color: #1f2937;
 }
 

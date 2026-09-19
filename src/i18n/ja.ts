@@ -1,4 +1,6 @@
 export default {
+  shop: {"title":"Shop","balance":"Community coin balance","coins":"coins","cached":"Cached on this device; final charges require server verification.","login":"Sign in to read the cached community balance.","profile":"Profile","unavailable":"Purchase service unavailable. Charging, delivery and inventory lookup are disabled.","goods":"Products","bag":"My backpack","purchaseClosed":"Purchases unavailable","preview":"Local preview","bagUnavailable":"Inventory service is unavailable. Owned wallpapers cannot be confirmed. Previews are excluded.","previewNotice":"Development preview only: local appearance, no charge and no ownership grant.","endPreview":"End preview"},
+  wallpapers: {"title":"サイト全体の壁紙","description":"内蔵の静止壁紙をサイト全体に適用します。このブラウザーにのみ保存され、アップロードはできません。","settings":"設定に戻る","default":"標準の背景","selected":"使用中","apply":"サイト全体に適用","tide":"潮汐 · シーブルー","dawn":"夜明け · ピーチライラック","grid":"ノート · ミント","preview":"読みやすさのプレビュー","readability":"壁紙はページの背面に表示され、コンテンツカードの背景は読みやすく保たれます。ページを切り替えても設定は維持され、いつでも元に戻せます。","saved":"このブラウザーに保存しました","error":"保存できませんでした。ブラウザーのストレージ権限を確認してください。"},
   login: {
     emailOrPhone: 'メール / 電話',
     password: 'パスワード 6~20 文字',
