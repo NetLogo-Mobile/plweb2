@@ -8,7 +8,7 @@
         }
       "
     >
-      <img id="avatar" :src="getPath(avatarUrl)" />
+      <UserAvatar id="avatar" :src="getPath(avatarUrl)" :user="avatarUser" />
     </div>
     <div id="notification" class="notification">
       <div
@@ -37,7 +37,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { computed } from 'vue'
+import UserAvatar from '../utils/UserAvatar.vue'
+import type { FramedUser } from '../../services/avatarFrames'
 import parse from '@services/pltxt2htm/advancedParser'
 import { NEllipsis } from 'naive-ui'
 import showUserCard from '@popup/userProfileDialog.ts'
@@ -46,6 +48,7 @@ import { getPath } from '@services/utils'
 import type { Message } from '@services/../pl-serve-type-main/type/main'
 
 interface NotificationItemMessage extends Message {
+  AvatarUser?: FramedUser
   msg_title: string
   msg: string
   msg_type: number
@@ -55,18 +58,24 @@ const props = defineProps<{
   notification: NotificationItemMessage
 }>()
 
-const avatarUrl = ref('/@base/assets/user/default-avatar.png')
-const fetchAvatar = async () => {
-  avatarUrl.value =
-    props.notification.msg_type === 1
-      ? '/@base/assets/messages/Message-Unread.png'
-      : await getUserUrl({
-          ID: props.notification.Users[0] ?? '',
-          Avatar: props.notification.UserAvatar,
-        })
-}
-onMounted(fetchAvatar)
-watch(() => props.notification.Users[0], fetchAvatar)
+const avatarUser = computed(() => {
+  const notification = props.notification
+  if (notification.msg_type === 1 || !notification.Users[0]) return undefined
+  const user = notification.AvatarUser
+  return user?.ID === notification.Users[0] ? user : undefined
+})
+const avatarUrl = computed(() =>
+  props.notification.msg_type === 1
+    ? '/@base/assets/messages/Message-Unread.png'
+    : getUserUrl({
+        ID: props.notification.Users[0] ?? '',
+        Avatar: props.notification.UserAvatar,
+        Verification:
+          avatarUser.value?.Verification === 'Banned' || avatarUser.value?.IsBanned
+            ? 'Banned'
+            : undefined,
+      }),
+)
 
 const msg_icon_url = computed(() => {
   switch (props.notification.msg_type) {

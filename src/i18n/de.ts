@@ -1,4 +1,5 @@
 export default {
+  avatarFrames: {"title":"Avatarrahmen","demo":"Lokale Demo: Echte Konten und Gegenstände bleiben unverändert.","error":"Laden oder Speichern fehlgeschlagen.","retry":"Erneut versuchen","banned":"Konto gesperrt: Rahmen abgelegt, Inventar erhalten. Nach Entsperrung erneut anlegen.","current":"Aktuelle Anzeige","remove":"Ablegen","equip":"Anlegen","equipped":"Angelegt","orbit":"Umlaufbahn","laurel":"Lorbeer","prism":"Prisma","banTest":"Sperre simulieren","unbanTest":"Entsperrung simulieren"},
   login: {
     emailOrPhone: 'E-Mail / Telefon',
     password: 'Passwort 6~20 Zeichen',
