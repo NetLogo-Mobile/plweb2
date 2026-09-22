@@ -1,15 +1,16 @@
 <template>
   <div class="action-sheet-mask" @click="close">
-    <div class="action-sheet-panel" @click.stop="">
-      <div
+    <div class="action-sheet-panel" @click.stop>
+      <button
         v-for="(item, idx) in options"
-        :key="idx"
+        :key="`${item.label}-${idx}`"
         class="action-sheet-option"
+        type="button"
         :style="{ color: item.color || 'rgb(4 94 229)' }"
         @click="select(idx)"
       >
         {{ item.label }}
-      </div>
+      </button>
     </div>
   </div>
 </template>
@@ -68,12 +69,17 @@ function close() {
   }
 }
 .action-sheet-option {
+  width: 100%;
   padding: 5px;
   text-align: center;
   font-size: 1.1em;
   border-bottom: 1px solid #eee;
   cursor: pointer;
   transition: background 0.2s;
+  background: transparent;
+  border-top: 0;
+  border-right: 0;
+  border-left: 0;
 }
 .action-sheet-option:last-child {
   border-bottom: none;

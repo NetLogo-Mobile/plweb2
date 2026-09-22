@@ -21,27 +21,31 @@ type EventHandlerMap = {
 class EventEmitter {
   private events: Partial<Record<Events, Set<EventHandlerMap[Events]>>> = {}
 
-  emit<K extends Events>(event: K, ...args: Parameters<EventHandlerMap[K]>) {
-    const listeners = this.events[event]
-    if (listeners) {
-      listeners.forEach((listener) => {
-        ;(listener as any)(...args)
-      })
-    }
+  private getListeners<K extends Events>(event: K) {
+    return this.events[event] as Set<EventHandlerMap[K]> | undefined
   }
 
-  on<K extends Events>(event: K, listener: EventHandlerMap[K]) {
-    if (!this.events[event]) {
-      this.events[event] = new Set()
-    }
-    this.events[event]?.add(listener)
+  emit<K extends Events>(event: K, ...args: Parameters<EventHandlerMap[K]>): void {
+    this.getListeners(event)?.forEach((listener) => {
+      const handler = listener as (...handlerArgs: Parameters<EventHandlerMap[K]>) => void
+      handler(...args)
+    })
   }
 
-  off<K extends Events>(event: K, listener: EventHandlerMap[K]) {
-    const listeners = this.events[event]
-    if (listeners) {
-      listeners.delete(listener)
+  on<K extends Events>(event: K, listener: EventHandlerMap[K]): () => void {
+    let listeners = this.getListeners(event)
+    if (!listeners) {
+      listeners = new Set()
+      this.events[event] = listeners as Set<EventHandlerMap[Events]>
     }
+    listeners.add(listener)
+    return () => this.off(event, listener)
+  }
+
+  off<K extends Events>(event: K, listener: EventHandlerMap[K]): void {
+    const listeners = this.getListeners(event)
+    listeners?.delete(listener)
+    if (listeners?.size === 0) delete this.events[event]
   }
 }
 

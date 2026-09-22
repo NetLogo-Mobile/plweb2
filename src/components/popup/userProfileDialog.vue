@@ -1,6 +1,6 @@
 <template>
   <div class="container" :style="{ zIndex: 100 }" @click="close">
-    <div class="user" @click.stop="">
+    <div class="user" @click.stop>
       <div class="user-info">
         <img :src="avatar" alt="User Avatar" class="avatar" @click="jumpToUser(props.userid)" />
         <!-- 阻止冒泡，使得只有点击遮罩才关闭 -->
@@ -59,7 +59,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { onUnmounted, ref, watch } from 'vue'
 import { getData } from '@services/api/getData.ts'
 import { copyText, getUserUrl, getPath } from '@services/utils'
 import storageManager from '@services/storage/index.ts'
@@ -126,14 +126,19 @@ function onNamePressEnd() {
   }
 }
 
+onUnmounted(onNamePressEnd)
+
 const jumpToUser = (id: string) => {
   props.close()
   window.open(`${getPath('/@root')}/u/${id}`, '_self')
 }
 
-onMounted(async () => {
+let profileRequestId = 0
+
+async function loadProfile() {
+  const requestId = ++profileRequestId
   const re = await getData('/Users/GetUser', { ID: props.userid }, { skipUserCache: true })
-  if (!re.Data || !re.Data.User) return
+  if (requestId !== profileRequestId || !re.Data?.User) return
   const data = re.Data.User
   name.value = data.Nickname
   snt.value = data.Signature
@@ -157,6 +162,11 @@ onMounted(async () => {
     pageLink: `/User/${ID}/Profile/`,
     timeStamp: Date.now(),
   })
+}
+
+watch(() => props.userid, loadProfile, { immediate: true })
+onUnmounted(() => {
+  profileRequestId += 1
 })
 
 async function followUser() {

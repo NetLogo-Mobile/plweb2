@@ -109,7 +109,7 @@ interface LoginModelProps {
 const { close } = defineProps<LoginModelProps>()
 
 async function handlePasswordLogin() {
-  let res = await login(emailOrPhone.value, loginPassword.value, false)
+  const res = await login(emailOrPhone.value, loginPassword.value, false)
   if (res.Status === 200) {
     sm.setObj('userInfo', res.Data.User)
     Emitter.emit('userLogin', res)

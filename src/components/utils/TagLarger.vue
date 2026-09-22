@@ -9,16 +9,18 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import router from '../../router'
 import { EncodeAPITargetLink } from '@services/utils'
 import getTagName from '@i18n/getTagName'
 
-const { tag, category } = defineProps<{ tag: string; category: string }>()
-const tagName = getTagName(tag)
-const APILink = `${category.toLowerCase()}://Tags/${tag}`
+const props = defineProps<{ tag: string; category: string }>()
+const tagName = computed(() => getTagName(props.tag))
+const apiLink = computed(() => `${props.category.toLowerCase()}://Tags/${props.tag}`)
+
 const jump = () => {
-  if (category === 'User') return
-  router.push(`/l/${EncodeAPITargetLink(APILink)}`)
+  if (props.category === 'User') return
+  router.push(`/l/${EncodeAPITargetLink(apiLink.value)}`)
 }
 </script>
 
