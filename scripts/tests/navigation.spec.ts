@@ -25,6 +25,7 @@ test.describe('路由与导航', () => {
     { path: '/', name: '首页' },
     { path: '/b', name: '黑洞' },
     { path: '/n', name: '通知' },
+    { path: '/d', name: '民主墙' },
     { path: '/p/Discussion/66a84559744ed757b46f8917', name: '作品详情' },
     { path: '/c/Discussion/66a84559744ed757b46f8917/test', name: '评论' },
     { path: '/u/6666ff550b5f97d6e49d12d7', name: '用户资料' },
@@ -80,5 +81,4 @@ test.describe('路由与导航', () => {
     // 应回到首页
     await assertNoWhiteScreen(page)
   })
-
 })
