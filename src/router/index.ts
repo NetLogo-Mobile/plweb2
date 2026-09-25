@@ -56,6 +56,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import('../views/Settings.vue'),
     meta: { keepAlive: false },
   },
+  {
+    path: '/oauth/authorize',
+    name: 'oauth-authorize',
+    component: () => import('../views/OAuthAuthorize.vue'),
+    meta: { keepAlive: false },
+  },
 
   // To maintain compatibility with old versions, we add some redirects for old paths
   { path: '/black-hole', redirect: '/b' },

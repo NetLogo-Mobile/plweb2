@@ -1,4 +1,15 @@
 export default {
+  oauth: {
+    title: '授权登录',
+    loginPrompt: '请先登录物实账号以继续。',
+    confirmPrompt: '应用 "{host}" 想要使用你的物实账号登录。',
+    authorize: '授权',
+    cancel: '取消',
+    close: '关闭',
+    invalidRedirect: '该登录请求不被允许。',
+    missingRedirect: '缺少回调地址。',
+    failed: '授权失败，请重试。',
+  },
   login: {
     emailOrPhone: '邮箱 / 手机',
     password: '密码 6~20 位',

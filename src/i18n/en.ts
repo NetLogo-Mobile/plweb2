@@ -1,4 +1,15 @@
 export default {
+  oauth: {
+    title: 'Authorize sign-in',
+    loginPrompt: 'Log in to your Physics Lab account to continue.',
+    confirmPrompt: 'The application "{host}" wants to sign in with your Physics Lab account.',
+    authorize: 'Authorize',
+    cancel: 'Cancel',
+    close: 'Close',
+    invalidRedirect: 'This sign-in request is not allowed.',
+    missingRedirect: 'Missing redirect address.',
+    failed: 'Authorization failed. Please try again.',
+  },
   login: {
     emailOrPhone: 'Email / Phone',
     password: 'Password 6~20 chars',
