@@ -1,0 +1,1 @@
+import{Nr as e,P as t,Qr as n,Yr as r,_r as i,mr as a,u as o,xr as s}from"./index-DwvZJlvY.js";var c={style:{"text-align":`center`,"margin-top":`50px`}},l=[`src`],u=s({__name:`NotFound`,setup(s){let{t:u}=t();return(t,s)=>(e(),i(`div`,c,[a(`h1`,null,n(r(u)(`notfound.title`)),1),a(`img`,{src:r(o)(`/@base/assets/messages/Message-Default.png`)},null,8,l)]))}});export{u as default};
