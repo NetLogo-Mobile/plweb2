@@ -1,4 +1,15 @@
 export default {
+  oauth: {
+    title: 'サインインの承認',
+    loginPrompt: '続行するには Physics Lab アカウントにログインしてください。',
+    confirmPrompt: 'アプリ「{host}」があなたの Physics Lab アカウントでサインインしようとしています。',
+    authorize: '承認',
+    cancel: 'キャンセル',
+    close: '閉じる',
+    invalidRedirect: 'このサインイン要求は許可されていません。',
+    missingRedirect: 'リダイレクト先が指定されていません。',
+    failed: '承認に失敗しました。もう一度お試しください。',
+  },
   login: {
     emailOrPhone: 'メール / 電話',
     password: 'パスワード 6~20 文字',

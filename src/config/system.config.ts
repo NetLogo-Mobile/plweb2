@@ -25,6 +25,8 @@ const sysConfig = {
     'https://physicslab.turtlesim.com',
     'https://plweb.turtlesim.com',
     'https://netlogo-mobile.github.io',
+    'https://pltown.online',
+    'https://www.pltown.online',
   ],
 }
 

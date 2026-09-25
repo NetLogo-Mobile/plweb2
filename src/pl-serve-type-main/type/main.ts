@@ -775,6 +775,7 @@ export interface Users {
   ): Promise<Result<Sync>>
   SetCover(q: Param<{ Category: string; ContentID: ID }>): Promise<Result<RelationList>>
   Unban(q: Param<{ Reason: string; TargetID: ID }>): Promise<Result<string>>
+  AuthorizeForum(q: Param<{ Redirect: string }>): Promise<Result<string>>
 }
 export interface Messages {
   // HandleInvitation(id,bool)

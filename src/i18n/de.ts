@@ -1,4 +1,15 @@
 export default {
+  oauth: {
+    title: 'Anmeldung autorisieren',
+    loginPrompt: 'Melden Sie sich mit Ihrem Physics Lab-Konto an, um fortzufahren.',
+    confirmPrompt: 'Die Anwendung „{host}" möchte sich mit Ihrem Physics Lab-Konto anmelden.',
+    authorize: 'Autorisieren',
+    cancel: 'Abbrechen',
+    close: 'Schließen',
+    invalidRedirect: 'Diese Anmeldeanfrage ist nicht zulässig.',
+    missingRedirect: 'Weiterleitungsadresse fehlt.',
+    failed: 'Autorisierung fehlgeschlagen. Bitte erneut versuchen.',
+  },
   login: {
     emailOrPhone: 'E-Mail / Telefon',
     password: 'Passwort 6~20 Zeichen',
