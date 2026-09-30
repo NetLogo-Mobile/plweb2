@@ -39,7 +39,7 @@
     "@vitejs/plugin-vue": "^6.0.7",
     "@vue/tsconfig": "^0.8.1",
     "autoprefixer": "^10.4.21",
-    "electron": "^43.2.0",
+    "electron": "^43.5.0",
     "electron-builder": "^26.15.3",
     "eslint": "^9.39.5",
     "eslint-plugin-vue": "^10.2.0",
