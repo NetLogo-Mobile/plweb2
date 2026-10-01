@@ -20,7 +20,6 @@ export interface PathMap {
   '/Users/ReceiveBonus': Users['ReceiveBonus']
   '/Users/SetCover': Users['SetCover']
   '/Users/Unban': Users['Unban']
-  '/Users/AuthorizeForum': Users['AuthorizeForum']
 
   '/Contents/QueryExperiments': Contents['QueryExperiments']
   '/Contents/GetWorkspace': Contents['GetWorkspace']
