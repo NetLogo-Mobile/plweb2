@@ -19,6 +19,8 @@ export interface PathMap {
   '/Users/Logout': Users['Logout']
   '/Users/ReceiveBonus': Users['ReceiveBonus']
   '/Users/SetCover': Users['SetCover']
+  '/Users/RequestAvatar': Users['RequestAvatar']
+  '/Users/ConfirmAvatar': Users['ConfirmAvatar']
   '/Users/Unban': Users['Unban']
 
   '/Contents/QueryExperiments': Contents['QueryExperiments']

@@ -70,6 +70,7 @@ export default {
     copyInternalLink: '复制用户链接',
     copyExternalLink: '复制分享链接',
     copyID: '复制ID',
+    changeAvatar: '更换头像',
   },
   comments: {
     placeholder: '发布一条友善的言论',
@@ -224,6 +225,8 @@ export default {
       uploadSuccess: '封面更换成功',
       uploadFailed: '上传失败',
       changeCoverFailed: '更换封面失败，请稍后再试',
+      avatarUploadSuccess: '头像更换成功',
+      avatarUploadFailed: '更换头像失败，请稍后再试',
       replyToUser: '回复 ',
       loginRequiredFirst: '请先登录',
       openLinkFailed: '打开链接失败',
