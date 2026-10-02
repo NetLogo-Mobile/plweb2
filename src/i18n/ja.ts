@@ -72,6 +72,7 @@ export default {
     copyInternalLink: '内部リンクをコピー',
     copyExternalLink: '外部リンクをコピー',
     copyID: 'IDをコピー',
+    changeAvatar: 'アバターを変更',
   },
   comments: {
     placeholder: '親切なメッセージを残してください',
@@ -228,6 +229,8 @@ export default {
       uploadSuccess: 'カバーの変更に成功しました',
       uploadFailed: 'ファイルのアップロードに失敗しました',
       changeCoverFailed: 'カバーの変更に失敗しました。しばらくしてから再試行してください',
+      avatarUploadSuccess: 'アバターの変更に成功しました',
+      avatarUploadFailed: 'アバターの変更に失敗しました。しばらくしてから再試行してください',
       replyToUser: 'に返信 ',
       loginRequiredFirst: '先にログインしてください',
       openLinkFailed: 'リンクを開けませんでした',
