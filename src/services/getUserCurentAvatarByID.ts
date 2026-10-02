@@ -3,9 +3,14 @@ import { isRequestInterruptedError } from './api/requestInterruption'
 import { getUserUrl } from './utils'
 import { getPath } from './utils'
 import storageManager from './storage'
+import type { AvatarCache } from './storage'
 import type { ResultOf, Users } from '../pl-serve-type-main/type/main'
 
-type AvatarCache = Record<string, [number, number]>
+/**
+ * 头像索引缓存有效期（72 小时）。
+ * Avatar index cache TTL (72 hours).
+ */
+const AVATAR_CACHE_TTL_MS = 72 * 60 * 60 * 1000
 
 let cache: AvatarCache = (() => {
   const result = storageManager.getObj('userIDAndAvatarIDMap')
@@ -21,12 +26,12 @@ let cache: AvatarCache = (() => {
 
 export async function getAvatarUrl(ID: string, useCache = true) {
   let avatarIndex = 0
-  // 72小时缓存, 注意，在任何getUser请求都会刷新本缓存
-  // 72-hour cache, note that any getUser request will refresh this cache
+  // 缓存 72 小时（AVATAR_CACHE_TTL_MS）；任何 getUser 请求都会刷新本缓存
+  // Cached for the TTL; any getUser request refreshes this cache
   if (
     useCache &&
     cache[ID] &&
-    Math.abs(Date.now() - cache[ID][1]) < 72 * 60 * 60 * 1000 &&
+    Math.abs(Date.now() - cache[ID][1]) < AVATAR_CACHE_TTL_MS &&
     cache[ID][0] !== undefined &&
     cache[ID][0] !== null
   ) {
@@ -47,7 +52,7 @@ export async function getAvatarUrl(ID: string, useCache = true) {
         return getPath('/@base/assets/user/default-avatar.png')
       }
       cache[ID] = [avatarIndex, Date.now()]
-      storageManager.setObj('userIDAndAvatarIDMap', cache, 72 * 60 * 60 * 1000) // 72小时 72 hours
+      storageManager.setObj('userIDAndAvatarIDMap', cache, AVATAR_CACHE_TTL_MS)
     } catch (error) {
       // A request interrupted by a navigation / another operation is benign
       // (WebKit surfaces it as `TypeError: Load failed` / `AbortError`); do not
@@ -63,5 +68,14 @@ export async function getAvatarUrl(ID: string, useCache = true) {
 }
 
 export function saveCache() {
-  storageManager.setObj('userIDAndAvatarIDMap', cache, 72 * 60 * 60 * 1000)
+  storageManager.setObj('userIDAndAvatarIDMap', cache, AVATAR_CACHE_TTL_MS)
+}
+
+/**
+ * 主动写入某用户的头像索引，用于更换头像后立即刷新缓存。
+ * Write a user's avatar index explicitly so the cache is refreshed right after an avatar change.
+ */
+export function setAvatarCache(ID: string, avatarIndex: number) {
+  cache[ID] = [avatarIndex, Date.now()]
+  storageManager.setObj('userIDAndAvatarIDMap', cache, AVATAR_CACHE_TTL_MS)
 }

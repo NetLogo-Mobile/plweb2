@@ -45,6 +45,12 @@
         <div class="userInfo">
           <!-- User name row with settings button (portrait only) -->
           <div class="user-name-row">
+            <img
+              class="user-avatar"
+              :src="userAvatarUrl"
+              :alt="userData.User.Nickname"
+              referrerpolicy="no-referrer"
+            />
             <div
               style="color: white; font-size: 2em; text-align: left; flex: 1"
               @click="copyUser()"
@@ -191,6 +197,11 @@ import '../layout/BiLayout.css'
 import { copyText, getCoverUrl, getUserUrl, getPath } from '@services/utils.ts'
 import { useI18n } from 'vue-i18n'
 import showActionSheet from '@popup/actionSheet.ts'
+import {
+  changeAvatar,
+  AVATAR_FILE_SIZE_EXCEEDED,
+  AVATAR_FILE_TYPE_INVALID,
+} from '@services/changeAvatar.ts'
 import { showMessage } from '@popup/naiveui'
 import type {
   CommentResult,
@@ -205,6 +216,7 @@ let isLoading = ref(false)
 let upDate = ref(1)
 let replyID = ref('')
 let isOwnProfile = ref(false)
+let avatarChanging = ref(false)
 
 const selectedTab = ref('Intro')
 const route = useRoute()
@@ -262,6 +274,9 @@ let expData = ref<Record<string, Summary[]>>({})
 
 // Typed entries for template iteration to avoid `unknown` element types
 const expEntries = computed<[string, Summary[]][]>(() => Object.entries(expData.value))
+
+// The avatar URL derives from the user's Avatar index, so it refreshes on change
+const userAvatarUrl = computed(() => getUserUrl(userData.value.User))
 
 async function fetchProfile() {
   const userId = Array.isArray(route.params.id) ? route.params.id[0] || '' : route.params.id
@@ -363,22 +378,60 @@ async function copy(text: string) {
 }
 
 function copyUser() {
-  showActionSheet(
-    [
-      { label: t('profile.copyID') },
-      { label: t('profile.copyInternalLink') },
-      { label: t('profile.copyExternalLink') },
-    ],
-    (idx) => {
-      if (idx === 0) {
-        copy(userData.value.User.ID)
-      } else if (idx === 1) {
-        copy(`<user=${userData.value.User.ID}>${userData.value.User.Nickname}</user>`)
-      } else if (idx === 2) {
-        copy(`<external=${window.location.href}>${userData.value.User.Nickname}[web]</external>`)
+  const list: { label: string }[] = [
+    { label: t('profile.copyID') },
+    { label: t('profile.copyInternalLink') },
+    { label: t('profile.copyExternalLink') },
+  ]
+  if (isOwnProfile.value) {
+    list.push({ label: t('profile.changeAvatar') })
+  }
+  showActionSheet(list, (idx) => {
+    // Dispatch on the stable index, not on translated labels
+    if (idx === 0) {
+      copy(userData.value.User.ID)
+    } else if (idx === 1) {
+      copy(`<user=${userData.value.User.ID}>${userData.value.User.Nickname}</user>`)
+    } else if (idx === 2) {
+      copy(`<external=${window.location.href}>${userData.value.User.Nickname}[web]</external>`)
+    } else if (idx === 3) {
+      pickAvatar()
+    }
+  })
+}
+
+function pickAvatar() {
+  if (avatarChanging.value) return
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = 'image/*'
+  input.onchange = async (e: Event) => {
+    const file = (e.target as HTMLInputElement | null)?.files?.[0]
+    if (!file) return
+    avatarChanging.value = true
+    try {
+      const updatedUser = await changeAvatar(file)
+      userData.value.User = { ...userData.value.User, ...updatedUser }
+      // Refresh the cover fallback too — without a cover image the avatar is the cover
+      coverUrl.value = userData.value.Statistic.Cover
+        ? getCoverUrl(userData.value.Statistic.Cover)
+        : getUserUrl(userData.value.User)
+      showMessage('success', t('ui.messages.avatarUploadSuccess'), { duration: 2000 })
+    } catch (err) {
+      const message = err instanceof Error ? err.message : ''
+      if (message === AVATAR_FILE_TYPE_INVALID) {
+        showMessage('error', t('ui.messages.avatarFileTypeInvalid'), { duration: 3000 })
+      } else if (message === AVATAR_FILE_SIZE_EXCEEDED) {
+        showMessage('error', t('ui.messages.avatarFileSizeExceeded'), { duration: 3000 })
+      } else {
+        showMessage('error', t('ui.messages.avatarUploadFailed'), { duration: 2000 })
       }
-    },
-  )
+      if (!message.startsWith('Avatar.File.')) console.error('Change avatar failed', err)
+    } finally {
+      avatarChanging.value = false
+    }
+  }
+  input.click()
 }
 </script>
 
@@ -394,6 +447,16 @@ function copyUser() {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
+}
+
+.user-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  flex-shrink: 0;
 }
 
 .cover-header {
@@ -541,6 +604,11 @@ function copyUser() {
 
   .user-name-row {
     justify-content: flex-start;
+  }
+
+  .user-avatar {
+    width: 52px;
+    height: 52px;
   }
 
   .settings-btn {

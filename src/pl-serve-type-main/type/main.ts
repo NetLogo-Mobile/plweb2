@@ -623,6 +623,19 @@ export interface SubmitToken {
   RequestURI: string
 }
 
+export interface UploadRequest {
+  Extension: string
+  FileSize: int32
+}
+
+export interface UploadToken {
+  AccessKey: string | null
+  Authorization: string
+  Policy: string
+  RequestHost: string | null
+  RequestURI: string
+}
+
 export interface Workspace {
   ID?: ID
   LocalizationID: ID
@@ -774,6 +787,10 @@ export interface Users {
     q: Param<{ ActivityID: ID; Index: int32; Statistic: Statistic }>,
   ): Promise<Result<Sync>>
   SetCover(q: Param<{ Category: string; ContentID: ID }>): Promise<Result<RelationList>>
+  RequestAvatar(q: Param<{ Request: UploadRequest }>): Promise<Result<UploadToken>>
+  // Returns a UserPackage (RelationList shape) with the updated User —
+  // same as Rename / ModifyInformation. Verified against the backend UserController.
+  ConfirmAvatar(q: Param<{ Avatar: int32 }>): Promise<Result<RelationList>>
   Unban(q: Param<{ Reason: string; TargetID: ID }>): Promise<Result<string>>
 }
 export interface Messages {
