@@ -191,7 +191,6 @@ import '../layout/BiLayout.css'
 import { copyText, getCoverUrl, getUserUrl, getPath } from '@services/utils.ts'
 import { useI18n } from 'vue-i18n'
 import showActionSheet from '@popup/actionSheet.ts'
-import { changeAvatar } from '@services/changeAvatar.ts'
 import { showMessage } from '@popup/naiveui'
 import type {
   CommentResult,
@@ -364,44 +363,22 @@ async function copy(text: string) {
 }
 
 function copyUser() {
-  const list: { label: string }[] = [
-    { label: t('profile.copyID') },
-    { label: t('profile.copyInternalLink') },
-    { label: t('profile.copyExternalLink') },
-  ]
-  if (isOwnProfile.value) {
-    list.push({ label: t('profile.changeAvatar') })
-  }
-  showActionSheet(list, (idx) => {
-    const action = list[idx]?.label
-    if (action === t('profile.copyID')) {
-      copy(userData.value.User.ID)
-    } else if (action === t('profile.copyInternalLink')) {
-      copy(`<user=${userData.value.User.ID}>${userData.value.User.Nickname}</user>`)
-    } else if (action === t('profile.copyExternalLink')) {
-      copy(`<external=${window.location.href}>${userData.value.User.Nickname}[web]</external>`)
-    } else if (action === t('profile.changeAvatar')) {
-      pickAvatar()
-    }
-  })
-}
-
-function pickAvatar() {
-  const input = document.createElement('input')
-  input.type = 'file'
-  input.accept = 'image/*'
-  input.onchange = async (e: Event) => {
-    const file = (e.target as HTMLInputElement | null)?.files?.[0]
-    if (!file) return
-    try {
-      const updatedUser = await changeAvatar(file)
-      userData.value.User = { ...userData.value.User, ...updatedUser }
-      showMessage('success', t('ui.messages.avatarUploadSuccess'), { duration: 2000 })
-    } catch (_err) {
-      showMessage('error', t('ui.messages.avatarUploadFailed'), { duration: 2000 })
-    }
-  }
-  input.click()
+  showActionSheet(
+    [
+      { label: t('profile.copyID') },
+      { label: t('profile.copyInternalLink') },
+      { label: t('profile.copyExternalLink') },
+    ],
+    (idx) => {
+      if (idx === 0) {
+        copy(userData.value.User.ID)
+      } else if (idx === 1) {
+        copy(`<user=${userData.value.User.ID}>${userData.value.User.Nickname}</user>`)
+      } else if (idx === 2) {
+        copy(`<external=${window.location.href}>${userData.value.User.Nickname}[web]</external>`)
+      }
+    },
+  )
 }
 </script>
 
