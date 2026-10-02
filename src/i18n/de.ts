@@ -72,7 +72,6 @@ export default {
     copyInternalLink: 'Internen Link kopieren',
     copyExternalLink: 'Externen Link kopieren',
     copyID: 'ID kopieren',
-    changeAvatar: 'Avatar ändern',
   },
   comments: {
     placeholder: 'Hinterlassen Sie eine freundliche Nachricht',
@@ -229,9 +228,6 @@ export default {
       uploadSuccess: 'Cover erfolgreich geändert',
       uploadFailed: 'Datei-Upload fehlgeschlagen',
       changeCoverFailed: 'Cover konnte nicht geändert werden, bitte später erneut versuchen',
-      avatarUploadSuccess: 'Avatar erfolgreich geändert',
-      avatarUploadFailed:
-        'Avatar konnte nicht geändert werden, bitte später erneut versuchen',
       replyToUser: 'Antwort an ',
       loginRequiredFirst: 'Bitte melden Sie sich zuerst an',
       openLinkFailed: 'Link konnte nicht geöffnet werden',

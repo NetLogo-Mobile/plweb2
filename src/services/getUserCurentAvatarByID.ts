@@ -65,12 +65,3 @@ export async function getAvatarUrl(ID: string, useCache = true) {
 export function saveCache() {
   storageManager.setObj('userIDAndAvatarIDMap', cache, 72 * 60 * 60 * 1000)
 }
-
-/**
- * 主动写入某用户的头像索引，用于更换头像后立即刷新缓存。
- * Write a user's avatar index explicitly so the cache is refreshed right after an avatar change.
- */
-export function setAvatarCache(ID: string, avatarIndex: number) {
-  cache[ID] = [avatarIndex, Date.now()]
-  storageManager.setObj('userIDAndAvatarIDMap', cache, 72 * 60 * 60 * 1000)
-}

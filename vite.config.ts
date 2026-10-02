@@ -126,7 +126,6 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       host: '0.0.0.0',
-      allowedHosts: ['.monkeycode-ai.online'],
       watch: {
         ignored: ['**/out/**', '**/dist_electron/**'],
       },
@@ -169,6 +168,7 @@ export default defineConfig(({ mode }) => {
     },
   }
 })
+
 
 
 

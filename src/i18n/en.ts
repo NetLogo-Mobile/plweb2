@@ -72,7 +72,6 @@ export default {
     copyInternalLink: 'Copy Internal Link',
     copyExternalLink: 'Copy External Link',
     copyID: 'Copy ID',
-    changeAvatar: 'Change Avatar',
   },
   comments: {
     placeholder: 'Leave a message...',
@@ -228,8 +227,6 @@ export default {
       uploadSuccess: 'Cover changed successfully',
       uploadFailed: 'Failed to upload file',
       changeCoverFailed: 'Failed to change cover, please try again later',
-      avatarUploadSuccess: 'Avatar changed successfully',
-      avatarUploadFailed: 'Failed to change avatar, please try again later',
       replyToUser: 'Reply ',
       loginRequiredFirst: 'Please login first',
       openLinkFailed: 'Failed to open link',
