@@ -50,6 +50,7 @@
               :src="userAvatarUrl"
               :alt="userData.User.Nickname"
               referrerpolicy="no-referrer"
+              @error="onAvatarError"
             />
             <div
               style="color: white; font-size: 2em; text-align: left; flex: 1"
@@ -277,6 +278,15 @@ const expEntries = computed<[string, Summary[]][]>(() => Object.entries(expData.
 
 // The avatar URL derives from the user's Avatar index, so it refreshes on change
 const userAvatarUrl = computed(() => getUserUrl(userData.value.User))
+
+// Fall back to the default avatar when the image is missing on the CDN
+// (guard: only swap once, otherwise a failing default would loop)
+function onAvatarError(e: Event) {
+  const img = e.target as HTMLImageElement
+  if (!img.src.includes('default-avatar')) {
+    img.src = getPath('/@base/assets/user/default-avatar.png')
+  }
+}
 
 async function fetchProfile() {
   const userId = Array.isArray(route.params.id) ? route.params.id[0] || '' : route.params.id

@@ -6,6 +6,10 @@ const NOISE_KEYWORDS = [
   'service-worker',
   'sw.ts',
   '404',
+  // The real static CDN occasionally answers a missing image with 424 instead
+  // of 404 (observed in CI: the same URL returned 404 on direct retry). The
+  // app is unaffected — same class of real-data noise as the 404 entry above.
+  '424',
   'CORS',
   'oss-cn-hongkong.aliyuncs.com',
   'ERR_ABORTED',
