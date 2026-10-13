@@ -4,9 +4,13 @@ import type {
   Messages,
   ParamOf,
   ResultOf,
+  Result,
 } from '../../pl-serve-type-main/type/main.ts'
+import type { AvatarFrameId, AvatarFrameInventory } from '../avatarFrames'
 
 export interface PathMap {
+  '/AvatarFrames/GetInventory': (q: Record<string, never>) => Promise<Result<AvatarFrameInventory>>
+  '/AvatarFrames/Equip': (q: { FrameID: AvatarFrameId | null; ExpectedRevision: string }) => Promise<Result<AvatarFrameInventory>>
   '/Users/Authenticate': Users['Authenticate']
   '/Users/GetUser': Users['GetUser']
   '/Users/ModifyInformation': Users['ModifyInformation']

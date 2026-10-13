@@ -43,6 +43,7 @@
           </button>
         </div>
         <div class="userInfo">
+          <router-link v-if="isOwnProfile && framesEnabled()" to="/avatar-frames" class="frames-link">{{ t('avatarFrames.title') }}</router-link>
           <!-- User name row with settings button (portrait only) -->
           <div class="user-name-row">
             <div
@@ -175,6 +176,7 @@
 </template>
 
 <script setup lang="ts">
+import { framesEnabled } from '../services/avatarFrames'
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getData } from '@services/api/getData.ts'

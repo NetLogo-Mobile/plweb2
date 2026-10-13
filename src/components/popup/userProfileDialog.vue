@@ -2,7 +2,7 @@
   <div class="container" :style="{ zIndex: 100 }" @click="close">
     <div class="user" @click.stop="">
       <div class="user-info">
-        <img :src="avatar" alt="User Avatar" class="avatar" @click="jumpToUser(props.userid)" />
+        <UserAvatar :src="avatar" :user="frameUser" alt="User Avatar" class="avatar" @click="jumpToUser(props.userid)" />
         <!-- 阻止冒泡，使得只有点击遮罩才关闭 -->
         <!-- Prevents bubbling, so that only clicking on the overlay will close it -->
         <p
@@ -60,6 +60,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import UserAvatar from '../utils/UserAvatar.vue'
+import type { FramedUser } from '../../services/avatarFrames'
 import { getData } from '@services/api/getData.ts'
 import { copyText, getUserUrl, getPath } from '@services/utils'
 import storageManager from '@services/storage/index.ts'
@@ -75,6 +77,7 @@ const { t } = useI18n()
 const name = ref(t('ui.messages.loading'))
 const snt = ref(t('ui.messages.loading'))
 const avatar = ref(getPath('/@base/assets/user/default-avatar.png'))
+const frameUser = ref<FramedUser>()
 const followingCount = ref(0)
 const followerCount = ref(0)
 const postCount = ref(0)
@@ -138,6 +141,7 @@ onMounted(async () => {
   name.value = data.Nickname
   snt.value = data.Signature
   avatar.value = getUserUrl(data)
+  frameUser.value = data
   if (re.Data.Statistic) {
     followingCount.value = re.Data.Statistic.FollowingCount
     followerCount.value = re.Data.Statistic.FollowerCount

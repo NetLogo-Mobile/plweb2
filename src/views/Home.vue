@@ -2,8 +2,9 @@
   <div id="home">
     <Header>
       <div class="user" @click="showModalFn">
-        <img
+        <UserAvatar
           class="avatar"
+          :user="frameUser"
           :src="user.avatarUrl || getPath('/@base/assets/user/default-avatar.png')"
           alt="Avatar"
         />
@@ -54,6 +55,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onActivated } from 'vue'
+import UserAvatar from '../components/utils/UserAvatar.vue'
 import { NGi, NGrid } from 'naive-ui'
 import router from '../router'
 import { checkLogin, getPath, getUserUrl } from '@services/utils'
@@ -89,6 +91,7 @@ function getBlockKey(block: ListBlock | TopicBlockType) {
 }
 
 const _user = sm.getObj('userInfo')?.value
+const frameUser = ref(_user ?? undefined)
 const user =
   _user?.Avatar >= 1
     ? ref({
@@ -172,6 +175,7 @@ async function loadPageData(response: ResultOf<Users['Authenticate']>) {
   }
   blocks.value = [...(response.Data.Library?.Blocks ?? [])]
   const userData = response.Data.User
+  frameUser.value = userData
 
   // Both null-null-login or real-login can get user data,but the previous one is fake
   // The nickName is null in fake user data
