@@ -23,24 +23,14 @@ import type { Summary } from '@services/../pl-serve-type-main/type/main'
 import parse from '@services/pltxt2htm/commonParser'
 import { getCoverUrl, formatDate } from '@services/utils.ts'
 
-declare global {
-  interface Window {
-    formtDate: typeof formatDate
-  }
-}
-
-window.formtDate = formatDate
-
-const { data } = defineProps<{
+const props = defineProps<{
   data: Summary
 }>()
 
 const type = 'Experiment'
 
-const imgUrl = getCoverUrl(data)
-const formattedDate = computed(() => {
-  return formatDate(data.ID)
-})
+const imgUrl = computed(() => getCoverUrl(props.data))
+const formattedDate = computed(() => formatDate(props.data.ID))
 </script>
 
 <style scoped>

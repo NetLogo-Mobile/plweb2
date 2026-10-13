@@ -11,9 +11,10 @@ const { message, notification, dialog, loadingBar, modal } = createDiscreteApi([
   'loadingBar',
   'modal',
 ])
+let loadingBarTimer: ReturnType<typeof setTimeout> | null = null
 
 export function showMessage(
-  type: 'loading' | 'info' | 'success' | 'warning' | 'error' | 'info',
+  type: 'loading' | 'info' | 'success' | 'warning' | 'error',
   content: string,
   config?: MessageOptions,
 ) {
@@ -33,8 +34,10 @@ export function showModal(config: ModalOptions) {
 }
 
 export function showLoadingBar(duration: number) {
+  if (loadingBarTimer) clearTimeout(loadingBarTimer)
   loadingBar.start()
-  setTimeout(() => {
+  loadingBarTimer = setTimeout(() => {
     loadingBar.finish()
+    loadingBarTimer = null
   }, duration)
 }

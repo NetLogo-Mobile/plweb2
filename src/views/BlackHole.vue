@@ -14,10 +14,7 @@
       ></div>
       <div v-show="!loading" class="block-container">
         <n-grid :x-gap="12" :y-gap="12" :cols="blockItemsPerRow">
-          <n-gi
-            v-for="block in blocks.filter((i) => i.Summaries.length > 0)"
-            :key="getBlockKey(block)"
-          >
+          <n-gi v-for="block in visibleBlocks" :key="getBlockKey(block)">
             <div class="block" style="height: 100%">
               <TopicBlock
                 v-if="isTopicBlock(block)"
@@ -40,7 +37,7 @@
 
 <script setup lang="ts">
 import { useResponsive } from '../layout/useResponsive'
-import { ref, onMounted, onActivated } from 'vue'
+import { computed, onActivated, onMounted, onUnmounted, ref } from 'vue'
 import Header from '../components/utils/Header.vue'
 import TopicBlock from '../components/blocks/TopicBlock.vue'
 import Block from '../components/blocks/Block.vue'
@@ -61,6 +58,7 @@ import '../layout/startPage.css'
 
 const loading = ref(true)
 const blocks = ref<Array<ListBlock | TopicBlockType>>([])
+const visibleBlocks = computed(() => blocks.value.filter((block) => block.Summaries.length > 0))
 
 function isTopicBlock(block: ListBlock | TopicBlockType): block is TopicBlockType {
   return block.$type === 'Quantum.Models.Contents.TopicBlock, Quantum Models'
@@ -111,11 +109,15 @@ const { blockItemsPerRow, maxProjectsPerBlock } = useResponsive()
 
 const { t } = useI18n()
 
+let libraryRequestId = 0
+
 async function fetchLibrary() {
+  const requestId = ++libraryRequestId
   const getLibraryResponse = await getData('/Contents/GetLibrary', {
     Identifier: 'Discussions',
     Language: 'Chinese',
   })
+  if (requestId !== libraryRequestId) return
 
   if (getLibraryResponse.Status !== 200 || !getLibraryResponse.Data) {
     showAPiError(
@@ -147,7 +149,11 @@ async function fetchLibrary() {
 }
 
 onMounted(() => {
-  fetchLibrary()
+  void fetchLibrary()
+})
+
+onUnmounted(() => {
+  libraryRequestId++
 })
 
 onActivated(() => {

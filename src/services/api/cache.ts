@@ -19,9 +19,11 @@ const OFFLINE_MAX_AGE = 15 * 24 * 60 * 60 * 1000
 
 const USER_CACHE_MAX_AGE = 5 * 60 * 1000
 
-// One-time cleanup of the old localStorage-based cache.
-if (localStorage.getItem('apiResponseCache')) {
-  localStorage.removeItem('apiResponseCache')
+try {
+  if (localStorage.getItem('apiResponseCache')) {
+    localStorage.removeItem('apiResponseCache')
+  }
+} catch {
 }
 
 let dbPromise: Promise<IDBDatabase> | null = null
@@ -31,7 +33,10 @@ function openDB(): Promise<IDBDatabase> {
   dbPromise = new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION)
     request.onerror = () => reject(request.error)
-    request.onsuccess = () => resolve(request.result)
+    request.onsuccess = () => {
+      request.result.onversionchange = () => request.result.close()
+      resolve(request.result)
+    }
     request.onupgradeneeded = () => {
       const db = request.result
       if (db.objectStoreNames.contains('entries')) {
@@ -46,6 +51,9 @@ function openDB(): Promise<IDBDatabase> {
         store.createIndex('timestamp', 'timestamp', { unique: false })
       }
     }
+  })
+  dbPromise.catch(() => {
+    dbPromise = null
   })
   return dbPromise
 }
@@ -173,7 +181,7 @@ export async function writeOfflineCache(path: string, body: unknown, value: unkn
     const store = transaction.objectStore(OFFLINE_STORE)
     store.put(entry)
     transaction.oncomplete = () => {
-      evictOfflineEntries(key)
+      void evictOfflineEntries(key).catch(() => undefined)
       resolve()
     }
     transaction.onerror = () => resolve()

@@ -1,19 +1,18 @@
 <template>
-  <div id="notification_container" @click="handleReply">
+  <div class="notification_container" @click="handleReply">
     <div class="img">
-      <img id="avatar" :src="avatarUrl" @click.stop="showUserCard(message.UserID)" />
+      <img class="avatar" :src="avatarUrl" alt="" @click.stop="showUserCard(message.UserID)" />
     </div>
-    <div id="notification" class="notification">
-      <div id="notification_title" class="notification_title">
+    <div class="notification">
+      <div class="notification_title">
         <div class="name">{{ message.Nickname }}</div>
         <div class="time">{{ formatDate(message.ID, true) }}</div>
         <div v-if="currentUserId === message.UserID" class="delete" @click.stop="deleteMsg">
           {{ t('messagesI18n.delete') }}
         </div>
       </div>
-      <div id="notification_message" class="notification_message">
+      <div class="notification_message">
         <div
-          id="notification_text"
           v-richText="
             () =>
               parse(message.Content, {
@@ -29,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, watch } from 'vue'
 import parse from '@services/pltxt2htm/advancedParser'
 import showUserCard from '@popup/userProfileDialog.ts'
 import { getAvatarUrl } from '@services/getUserCurentAvatarByID'
@@ -43,26 +42,36 @@ const props = defineProps<{
   message: CommentResult
 }>()
 
-const emit = defineEmits(['msgClick', 'deleteMsg'])
+const emit = defineEmits<{
+  msgClick: [message: CommentResult]
+  deleteMsg: [message: CommentResult]
+}>()
 const currentUserId = storageManager.getObj('userInfo')?.value?.ID || ''
 const avatarUrl = ref(getPath('/@base/assets/user/default-avatar.png'))
 
+let avatarRequestId = 0
+
 const setCurrentAvatar = async () => {
+  const requestId = ++avatarRequestId
   const isAnonymous = props.message.Flags?.includes('Anonymous')
+  let nextAvatar = getPath('/@base/assets/user/default-avatar.png')
 
   if (!isAnonymous && props.message.UserID !== '') {
     // 有些地方是匿名的，所以userID为空，不设置心得头像就会沿用默认头像
     // Some places are anonymous, so if userID is empty, the default avatar will be used.
-    avatarUrl.value = await getAvatarUrl(props.message.UserID)
+    nextAvatar = await getAvatarUrl(props.message.UserID)
   } else if (/^\d{4}$/.test(props.message.Nickname)) {
-    avatarUrl.value = getAnonymousAvatarByNickname(props.message.Nickname)
-  } else {
-    avatarUrl.value = getPath('/@base/assets/user/default-avatar.png')
+    nextAvatar = getAnonymousAvatarByNickname(props.message.Nickname)
   }
+
+  if (requestId === avatarRequestId) avatarUrl.value = nextAvatar
 }
 
-onMounted(setCurrentAvatar)
-watch(() => [props.message.UserID, props.message.Nickname, props.message.Flags], setCurrentAvatar)
+watch(
+  () => [props.message.UserID, props.message.Nickname, props.message.Flags],
+  setCurrentAvatar,
+  { immediate: true },
+)
 
 function handleReply() {
   emit('msgClick', props.message)
@@ -76,7 +85,7 @@ function deleteMsg() {
 </script>
 
 <style scoped>
-#notification_container {
+.notification_container {
   height: fit-content;
   width: calc(100% - 5px);
   margin-left: 5px;
@@ -90,37 +99,29 @@ function deleteMsg() {
   word-break: break-all;
 }
 
-#notification_container:hover {
+.notification_container:hover {
   background-color: #f0f0f0;
 }
 
-#avatar {
+.avatar {
   height: 60px;
   width: 60px;
   border-radius: 50%;
 }
 
-#avatar::after {
+.avatar::after {
   content: '';
   mix-blend-mode: luminosity;
 }
 
-#notification {
+.notification {
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 5px;
 }
 
-#notification_icon {
-  width: 20px;
-  height: 20px;
-  top: 2px;
-  background-color: transparent;
-  display: flex;
-}
-
-#notification_title {
+.notification_title {
   display: flex;
   width: 100%;
   flex-direction: row;
@@ -137,7 +138,7 @@ function deleteMsg() {
   font-weight: lighter;
 }
 
-#notification_message {
+.notification_message {
   width: 100%;
   height: fit-content;
   display: flex;
@@ -145,7 +146,7 @@ function deleteMsg() {
   gap: 5px;
 }
 
-#notification_text {
+.notification_text {
   font-size: 1em;
   text-align: left;
   height: fit-content;
@@ -154,15 +155,6 @@ function deleteMsg() {
   white-space: wrap;
   overflow: hidden;
   text-overflow: hidden;
-}
-
-#icon {
-  height: 16px;
-  width: 16px;
-}
-
-#notification_container:hover {
-  background-color: #f0f0f0;
 }
 
 .time {
@@ -175,7 +167,7 @@ div {
   box-sizing: border-box;
 }
 
-#notification_message :deep(img) {
+.notification_message :deep(img) {
   max-width: 90%;
   height: auto;
 }

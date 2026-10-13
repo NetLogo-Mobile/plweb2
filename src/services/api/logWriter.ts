@@ -33,6 +33,69 @@ export type LogEvent = {
 
 export type LogItem = LogSession | LogPage | LogEvent
 
+class BinaryWriter {
+  private buffer: number[] = []
+
+  writeByte(value: number) {
+    this.buffer.push(value & 0xff)
+  }
+
+  writeSignedByte(value: number) {
+    this.buffer.push(value < 0 ? 256 + value : value)
+  }
+
+  writeUInt32(value: number) {
+    for (let index = 0; index < 4; index++) {
+      this.buffer.push((value >> (index * 8)) & 0xff)
+    }
+  }
+
+  writeString(value: string) {
+    const utf8 = new TextEncoder().encode(value)
+    this.writeUInt32(utf8.length)
+    this.buffer.push(...utf8)
+  }
+
+  toUint8Array() {
+    return new Uint8Array(this.buffer)
+  }
+}
+
+function writeSession(writer: BinaryWriter, log: LogSession) {
+  writer.writeString(log.userID ?? '')
+  writer.writeString(log.deviceID ?? '')
+  writer.writeSignedByte(log.timezone ?? 0)
+  writer.writeString(log.language ?? '')
+  writer.writeSignedByte(4)
+  writer.writeString(log.version ?? '')
+  writer.writeUInt32(Math.round((log.screenSize ?? 0) * 10))
+}
+
+function writePage(writer: BinaryWriter, log: LogPage) {
+  writer.writeUInt32(log.relativeTime ?? 0)
+  writer.writeString(log.pageLink ?? '')
+}
+
+function writeEvent(writer: BinaryWriter, log: LogEvent) {
+  writer.writeUInt32(log.relativeTime ?? 0)
+  writer.writeString(log.category ?? '*')
+  writer.writeString(log.action ?? '*')
+  writer.writeString(log.label ?? '*')
+  const entries = Object.entries(log.extra ?? {})
+  writer.writeSignedByte(entries.length)
+  for (const [key, value] of entries) {
+    writer.writeString(key)
+    writer.writeString(value)
+  }
+}
+
+function writeLog(writer: BinaryWriter, log: LogItem) {
+  writer.writeByte(log.type)
+  if (log.type === 0) writeSession(writer, log)
+  else if (log.type === 1) writePage(writer, log)
+  else writeEvent(writer, log)
+}
+
 /**
  * Logger class for collecting, formatting, and sending user interaction logs.
  *
@@ -48,16 +111,14 @@ export type LogItem = LogSession | LogPage | LogEvent
 class Logger {
   logs: LogItem[] = []
   private startTime = Date.now()
+  private uploadTimer: ReturnType<typeof setInterval> | null = null
+  private sending = false
+
   logSession(session: Omit<LogSession, 'type' | 'relativeTime'>) {
     const now = Date.now()
     this.logs.push({ type: 0, ...session, relativeTime: 0 })
     this.startTime = now
-    setInterval(
-      async () => {
-        await this.sendLogs()
-      },
-      1000 * 60 * 3,
-    )
+    this.startUploadTimer()
   }
   logPageView(page: Omit<LogPage, 'type' | 'relativeTime'>) {
     const now = Date.now()
@@ -96,62 +157,47 @@ class Logger {
       })
       .join('\n')
   }
-  // eslint-disable-next-line complexity
   getBinary(): Uint8Array {
-    const buffer: number[] = []
-    const writeByte = (v: number) => buffer.push(v & 0xff)
-    const writeSByte = (v: number) => buffer.push(v < 0 ? 256 + v : v)
-    const writeUInt32 = (v: number) => {
-      for (let i = 0; i < 4; i++) buffer.push((v >> (i * 8)) & 0xff)
-    }
-    const writeString = (str: string) => {
-      const utf8 = new TextEncoder().encode(str)
-      writeUInt32(utf8.length)
-      buffer.push(...utf8)
-    }
-    for (const log of this.logs) {
-      writeByte(log.type)
-      if (log.type === 0) {
-        writeString(log.userID || '')
-        writeString(log.deviceID || '')
-        writeSByte(log.timezone || 0)
-        writeString(log.language || '')
-        writeSByte(4)
-        writeString(log.version || '')
-        writeUInt32(Math.round((log.screenSize || 0) * 10))
-      } else if (log.type === 1) {
-        writeUInt32(log.relativeTime || 0)
-        writeString(log.pageLink || '')
-      } else if (log.type === 2) {
-        writeUInt32(log.relativeTime || 0)
-        writeString(log.category || '*')
-        writeString(log.action || '*')
-        writeString(log.label || '*')
-        const keys = Object.keys(log.extra || {})
-        writeSByte(keys.length)
-        for (const k of keys) {
-          writeString(k)
-          const val: string = (log.extra && log.extra[k]) ?? ''
-          writeString(val)
-        }
-      }
-    }
-    return new Uint8Array(buffer)
+    const writer = new BinaryWriter()
+    this.logs.forEach((log) => writeLog(writer, log))
+    return writer.toUint8Array()
   }
+
+  stop() {
+    if (!this.uploadTimer) return
+    clearInterval(this.uploadTimer)
+    this.uploadTimer = null
+  }
+
+  private startUploadTimer() {
+    if (this.uploadTimer) return
+    this.uploadTimer = setInterval(() => {
+      void this.sendLogs()
+    }, 1000 * 60 * 3)
+  }
+
   private async sendLogs() {
+    if (this.sending || this.logs.length === 0) return
+    this.sending = true
     const binary = this.getBinary()
     const arrayBuffer = new Uint8Array(binary).buffer
-    const response = await fetch('https://plogger.plweb.cloud/logs', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/octet-stream',
-      },
-      body: new Blob([arrayBuffer]),
-    })
-    if (!response.ok && response.status !== 200) {
-      console.error('Failed to send logs:', response)
-    } else {
-      this.logs = []
+    try {
+      const response = await fetch('https://plogger.plweb.cloud/logs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/octet-stream',
+        },
+        body: new Blob([arrayBuffer]),
+      })
+      if (!response.ok) {
+        console.error('Failed to send logs:', response)
+      } else {
+        this.logs = []
+      }
+    } catch (error) {
+      console.error('Failed to send logs:', error)
+    } finally {
+      this.sending = false
     }
   }
 }

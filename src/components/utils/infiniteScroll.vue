@@ -6,7 +6,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" generic="T">
 // 通过观察哨兵元素触发加载事件 To trigger load events by observing sentinel elements
 // <template>
 //   <InfiniteScroll
@@ -27,10 +27,10 @@
 //   </InfiniteScroll>
 // </template>
 
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
 
 interface Props {
-  initialItems?: unknown[]
+  initialItems?: T[]
   hasMore: boolean
   scrollTarget?: string | null
   marginTop?: number
@@ -42,15 +42,22 @@ const props = withDefaults(defineProps<Props>(), {
   marginTop: -800,
 })
 
-const emit = defineEmits(['load'])
+const emit = defineEmits<{
+  load: []
+}>()
+
+defineSlots<{
+  default(props: { items: T[] }): unknown
+}>()
 
 const sentinel = ref<HTMLElement>()
-const items = ref([...props.initialItems])
+const items = shallowRef<T[]>([...props.initialItems])
 const loading = ref(false)
 const noMore = ref(!props.hasMore)
-let observer: IntersectionObserver
+let observer: IntersectionObserver | undefined
 
 const initObserver = () => {
+  observer?.disconnect()
   observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
