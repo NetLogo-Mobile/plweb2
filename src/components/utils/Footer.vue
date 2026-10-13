@@ -33,6 +33,22 @@
         </svg>
         <span>{{ $t('footer.blackHole') }}</span>
       </router-link>
+      <router-link v-if="democracyVisible" to="/d">
+        <svg
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M4 4h16v14H7l-3 3V4zm4 5h8M8 13h5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+          ></path>
+        </svg>
+        <span>{{ $t('footer.democracy') }}</span>
+      </router-link>
       <!-- <router-link to="/my-lab">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round"
@@ -84,8 +100,10 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import Emitter from '@services/eventEmitter'
 import { hasUnreadNotifications } from '@services/notificationUnread'
+import { isDemocracyWallVisible } from '@services/democracyWallFeature'
 
 const hasUnreadNotification = ref(hasUnreadNotifications())
+const democracyVisible = isDemocracyWallVisible()
 
 function handleNotificationUnreadChanged(hasUnread: boolean) {
   hasUnreadNotification.value = hasUnread
