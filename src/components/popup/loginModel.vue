@@ -1,7 +1,7 @@
 <template>
   <div class="container" @click="close">
     <div class="card" @click.stop>
-      <n-card>
+      <n-card class="login-surface" :style="{ backgroundImage: wallpaper?.background }">
         <n-tabs
           class="card-tabs"
           default-value="signin"
@@ -93,6 +93,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { wallpaper } from '../../services/wallpapers'
 import { login } from '@api/getData.ts'
 import sm from '@storage/index'
 import { getPath } from '@services/utils'

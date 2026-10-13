@@ -1,4 +1,6 @@
 export default {
+  shop: {"title":"商城","balance":"主站金币余额","coins":"金币","cached":"本机缓存余额，仅供参考；最终扣款以服务端为准。","login":"请先登录，登录后可读取本机缓存的主站余额。","profile":"个人页面","unavailable":"购买服务暂未开放：当前无法扣款、发货或读取已购商品。","goods":"商品","bag":"我的背包","purchaseClosed":"购买暂未开放","preview":"本地试用","bagUnavailable":"背包服务尚未接入，暂时无法确认你拥有的壁纸。本地试用不会计入背包。","previewNotice":"开发预览：全站试用效果，仅保存在本机，不扣金币、不代表已购买。","endPreview":"结束试用"},
+  wallpapers: {"title":"全站壁纸","description":"内置静态壁纸，给整个社区换一种心情。仅保存在当前浏览器，无需上传。","settings":"返回设置","default":"默认背景","selected":"正在使用","apply":"应用到全站","tide":"潮汐 · 海盐蓝","dawn":"晨曦 · 杏桃紫","grid":"手稿 · 薄荷绿","preview":"阅读效果预览","readability":"壁纸铺在页面底层，内容卡片保持清晰底色。切换页面后依然生效，也可以随时恢复默认。","saved":"已保存到当前浏览器","error":"保存失败，请检查浏览器是否允许本地存储"},
   login: {
     emailOrPhone: '邮箱 / 手机',
     password: '密码 6~20 位',

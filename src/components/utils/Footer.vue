@@ -108,7 +108,7 @@ footer {
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: white;
+  background-color: var(--page-background, white);
   border-top: 1px solid #e5e7eb;
   box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.1);
   z-index: 50;

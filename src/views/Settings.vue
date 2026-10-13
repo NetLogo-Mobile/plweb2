@@ -12,6 +12,7 @@
       </div>
 
       <div class="settings-content">
+        <router-link class="setting-item" to="/wallpapers">{{ $t('wallpapers.title') }} →</router-link>
         <div v-for="section in settingsConfig" :key="section.title" class="settings-section">
           <h2 class="section-title">{{ $t(`settings.${section.title}`) }}</h2>
           <div class="section-items">
@@ -174,7 +175,7 @@ onActivated(() => {
   height: 100dvh;
   box-sizing: border-box;
   overflow-y: auto;
-  background-color: #f5f5f5;
+  background-color: var(--page-background, #f5f5f5);
   padding: 20px 0;
   touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
