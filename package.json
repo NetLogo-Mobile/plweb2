@@ -42,7 +42,7 @@
     "electron": "^43.5.0",
     "electron-builder": "^26.15.3",
     "eslint": "^9.39.5",
-    "eslint-plugin-vue": "^10.2.0",
+    "eslint-plugin-vue": "^10.11.1",
     "naive-ui": "^2.43.1",
     "playwright": "^1.60.0",
     "typescript": "~5.9.3",
