@@ -232,7 +232,7 @@ export default {
       avatarUploadSuccess: 'Avatar modifié avec succès',
       avatarUploadFailed: "Échec du changement d'avatar, veuillez réessayer plus tard",
       avatarFileTypeInvalid: 'Seuls les fichiers image sont pris en charge',
-      avatarFileSizeExceeded: "L'image doit être inférieure à 1 Mo",
+      avatarFileSizeExceeded: "L'image doit faire au plus 1 Mo",
       replyToUser: 'Répondre à : ',
       loginRequiredFirst: 'Veuillez d’abord vous connecter',
       openLinkFailed: "Échec de l'ouverture du lien",

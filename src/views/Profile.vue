@@ -47,10 +47,13 @@
           <div class="user-name-row">
             <img
               class="user-avatar"
+              :class="{ 'user-avatar-editable': isOwnProfile }"
               :src="userAvatarUrl"
               :alt="userData.User.Nickname"
+              :title="isOwnProfile ? t('profile.changeAvatar') : ''"
               referrerpolicy="no-referrer"
               @error="onAvatarError"
+              @click="onAvatarClick"
             />
             <div
               style="color: white; font-size: 2em; text-align: left; flex: 1"
@@ -216,6 +219,9 @@ let comment = ref('')
 let isLoading = ref(false)
 let upDate = ref(1)
 let replyID = ref('')
+// Only ever set to true: App.vue remounts this page per route via
+// `:key="$route.fullPath"`, so navigating to another user's profile recreates
+// the component — there is no reset path to maintain.
 let isOwnProfile = ref(false)
 let avatarChanging = ref(false)
 
@@ -286,6 +292,12 @@ function onAvatarError(e: Event) {
   if (!img.src.includes('default-avatar')) {
     img.src = getPath('/@base/assets/user/default-avatar.png')
   }
+}
+
+// The avatar itself is the natural affordance for changing one's picture —
+// it opens the same action sheet as the nickname on one's own profile.
+function onAvatarClick() {
+  if (isOwnProfile.value) copyUser()
 }
 
 async function fetchProfile() {
@@ -414,11 +426,25 @@ function pickAvatar() {
   if (avatarChanging.value) return
   const input = document.createElement('input')
   input.type = 'file'
-  input.accept = 'image/*'
+  input.accept = 'image/jpeg, image/png, image/webp'
+  // Guard from here on — the picker itself can take a while, and without a
+  // guard two sheets opened quickly in a row would double-trigger uploads.
+  avatarChanging.value = true
+  // A dismissed native file picker fires no event at all (file inputs have no
+  // 'cancel'), so reset the guard when the window regains focus without a
+  // chosen file. One-shot: when a file IS chosen, input.files is already
+  // populated and the upload's finally clause does the reset instead.
+  const resetIfDismissed = () => {
+    window.removeEventListener('focus', resetIfDismissed)
+    if (!input.files?.length) avatarChanging.value = false
+  }
+  window.addEventListener('focus', resetIfDismissed)
   input.onchange = async (e: Event) => {
     const file = (e.target as HTMLInputElement | null)?.files?.[0]
     if (!file) return
-    avatarChanging.value = true
+    // Make the in-flight upload visible: three network round trips plus the
+    // object-storage upload can take several seconds on a slow connection.
+    const loading = showMessage('loading', t('ui.messages.loading'), { duration: 30000 })
     try {
       const updatedUser = await changeAvatar(file)
       userData.value.User = { ...userData.value.User, ...updatedUser }
@@ -438,6 +464,7 @@ function pickAvatar() {
       }
       if (!message.startsWith('Avatar.File.')) console.error('Change avatar failed', err)
     } finally {
+      loading.destroy()
       avatarChanging.value = false
     }
   }
@@ -467,6 +494,10 @@ function pickAvatar() {
   border: 2px solid rgba(255, 255, 255, 0.7);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
   flex-shrink: 0;
+}
+
+.user-avatar-editable {
+  cursor: pointer;
 }
 
 .cover-header {

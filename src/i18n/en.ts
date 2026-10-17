@@ -231,7 +231,7 @@ export default {
       avatarUploadSuccess: 'Avatar changed successfully',
       avatarUploadFailed: 'Failed to change avatar, please try again later',
       avatarFileTypeInvalid: 'Only image files are supported',
-      avatarFileSizeExceeded: 'Image must be smaller than 1MB',
+      avatarFileSizeExceeded: 'Image must be 1MB or smaller',
       replyToUser: 'Reply ',
       loginRequiredFirst: 'Please login first',
       openLinkFailed: 'Failed to open link',

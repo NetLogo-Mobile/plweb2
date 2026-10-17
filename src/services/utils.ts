@@ -373,24 +373,32 @@ export function formatDate(id: string, showRelative?: boolean, type?: string): s
 }
 
 /**
- * To remove or mask token/authcode in an object.Not clearing it from localStorage
- * @param obj Incoming obkect which may contains key "token|authcode"
+ * To remove or mask token/authcode (and upload credentials) in an object.
+ * Not clearing it from localStorage
+ * @param obj Incoming object which may contain key "token|authCode" or
+ *   upload credentials (AccessKey/Authorization/Policy/Signature)
  * @returns any
  */
+const SENSITIVE_KEYS = new Set([
+  'token',
+  'authCode',
+  'Token',
+  'AuthCode',
+  'AccessKey',
+  'Authorization',
+  'Policy',
+  'Signature',
+])
+
 export function removeToken<T>(obj: T): T {
-  if (obj && typeof obj === 'object') {
-    const record = obj as Record<string, unknown>
-    for (const key in record) {
-      if (Object.prototype.hasOwnProperty.call(record, key)) {
-        if (key === 'token' || key === 'authCode' || key === 'Token' || key === 'AuthCode') {
-          const value = record[key]
-          if (typeof value === 'string') {
-            record[key] = `${value.slice(0, 6)}******`
-          }
-        } else if (typeof record[key] === 'object') {
-          removeToken(record[key])
-        }
-      }
+  if (!obj || typeof obj !== 'object') return obj
+  const record = obj as Record<string, unknown>
+  for (const key of Object.keys(record)) {
+    const value = record[key]
+    if (typeof value === 'string' && SENSITIVE_KEYS.has(key)) {
+      record[key] = `${value.slice(0, 6)}******`
+    } else if (value && typeof value === 'object') {
+      removeToken(value)
     }
   }
   return obj

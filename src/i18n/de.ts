@@ -233,7 +233,7 @@ export default {
       avatarUploadFailed:
         'Avatar konnte nicht geändert werden, bitte später erneut versuchen',
       avatarFileTypeInvalid: 'Es werden nur Bilddateien unterstützt',
-      avatarFileSizeExceeded: 'Das Bild muss kleiner als 1MB sein',
+      avatarFileSizeExceeded: 'Das Bild darf höchstens 1MB groß sein',
       replyToUser: 'Antwort an ',
       loginRequiredFirst: 'Bitte melden Sie sich zuerst an',
       openLinkFailed: 'Link konnte nicht geöffnet werden',

@@ -9,7 +9,10 @@ const NOISE_KEYWORDS = [
   // The real static CDN occasionally answers a missing image with 424 instead
   // of 404 (observed in CI: the same URL returned 404 on direct retry). The
   // app is unaffected — same class of real-data noise as the 404 entry above.
-  '424',
+  // Match the full console phrase, NOT bare '424': a bare substring would
+  // also swallow the app's own upload failures ("Avatar upload returned 424").
+  'status of 424',
+  'Failed Dependency',
   'CORS',
   'oss-cn-hongkong.aliyuncs.com',
   'ERR_ABORTED',

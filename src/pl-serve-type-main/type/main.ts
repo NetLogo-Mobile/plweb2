@@ -628,13 +628,10 @@ export interface UploadRequest {
   FileSize: int32
 }
 
-export interface UploadToken {
-  AccessKey: string | null
-  Authorization: string
-  Policy: string
-  RequestHost: string | null
-  RequestURI: string
-}
+// Users/RequestAvatar returns the same credential shape as
+// Contents/SubmitExperiment (backend: AliyunUtility / UpyunUtility
+// .AuthorizeUpload). Aliased so the RPC-specific name stays discoverable.
+export type UploadToken = SubmitToken
 
 export interface Workspace {
   ID?: ID
@@ -720,7 +717,7 @@ export interface Contents {
   GetLibrary(q: Param<{ Identifier: string; Language: string }>): Promise<Result<Library>>
   SubmitExperiment(
     q: Param<{
-      Request: { Extension: string; FileSize: int32 }
+      Request: UploadRequest
       Summary: ContentSubmitSummary
     }>,
   ): Promise<Result<SubmitExperiment>>
