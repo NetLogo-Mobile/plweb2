@@ -155,6 +155,11 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
+    // `vite preview` reads preview.allowedHosts (not server.allowedHosts) —
+    // this unblocks preview deployments on *.monkeycode-ai.online.
+    preview: {
+      allowedHosts: ['.monkeycode-ai.online'],
+    },
     build: {
       rollupOptions: {
         output: {
@@ -168,7 +173,6 @@ export default defineConfig(({ mode }) => {
     },
   }
 })
-
 
 
 

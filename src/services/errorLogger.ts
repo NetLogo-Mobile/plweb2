@@ -8,6 +8,46 @@ import { isRequestInterruptedError, isRequestInterruptedMessage } from './api/re
  * 记录详细的错误信息和上下文，便于调试
  */
 
+/**
+ * 写入 localStorage 前遮盖响应/请求体中的敏感字段（登录凭证与上传凭证）。
+ * getData 会把原始响应直接传进 captureApiError（如 Result<UploadToken>），
+ * 调用方的 removeToken 只覆盖自己包过的对象，兜底脱敏必须在这里做。
+ * Mask credential-shaped fields (login and upload) before an API error is
+ * persisted to localStorage. getData passes the RAW response here (e.g.
+ * Result<UploadToken>); per-call-site removeToken cannot cover that path,
+ * so the belt-and-braces redaction has to live in this file.
+ */
+const SENSITIVE_LOG_KEYS = new Set([
+  'token',
+  'authCode',
+  'Token',
+  'AuthCode',
+  'AccessKey',
+  'Authorization',
+  'Policy',
+  'Signature',
+])
+
+function redactSecrets(value: unknown, depth = 0, seen: Set<object> = new Set()): unknown {
+  if (!value || typeof value !== 'object' || depth > 8) return value
+  if (seen.has(value as object)) return '[Circular]'
+  seen.add(value as object)
+  if (Array.isArray(value)) {
+    return value.map((item) => redactSecrets(item, depth + 1, seen))
+  }
+  const record = value as Record<string, unknown>
+  const result: Record<string, unknown> = {}
+  for (const key of Object.keys(record)) {
+    const entry = record[key]
+    result[key] =
+      typeof entry === 'string' && SENSITIVE_LOG_KEYS.has(key)
+        ? `${entry.slice(0, 6)}******`
+        : redactSecrets(entry, depth + 1, seen)
+  }
+  return result
+}
+
+
 export interface ErrorContext {
   type: 'vue' | 'window' | 'promise' | 'custom' | 'api' | 'network'
   message: string
@@ -376,8 +416,11 @@ class ErrorLogger {
       method,
       url: path,
       statusCode,
-      responseData: responseData ? this.limitJsonDepth(responseData) : undefined,
-      requestData: requestData ? this.limitJsonDepth(requestData) : undefined,
+      // redactSecrets 克隆并遮盖凭证；limitJsonDepth 再截断深度/键数。
+      // redactSecrets clones and masks credentials first; limitJsonDepth
+      // then bounds the depth and key count for storage.
+      responseData: responseData ? this.limitJsonDepth(redactSecrets(responseData)) : undefined,
+      requestData: requestData ? this.limitJsonDepth(redactSecrets(requestData)) : undefined,
       breadcrumbs: [...this.breadcrumbs],
     })
   }

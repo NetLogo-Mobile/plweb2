@@ -623,6 +623,16 @@ export interface SubmitToken {
   RequestURI: string
 }
 
+export interface UploadRequest {
+  Extension: string
+  FileSize: int32
+}
+
+// Users/RequestAvatar returns the same credential shape as
+// Contents/SubmitExperiment (backend: AliyunUtility / UpyunUtility
+// .AuthorizeUpload). Aliased so the RPC-specific name stays discoverable.
+export type UploadToken = SubmitToken
+
 export interface Workspace {
   ID?: ID
   LocalizationID: ID
@@ -707,7 +717,7 @@ export interface Contents {
   GetLibrary(q: Param<{ Identifier: string; Language: string }>): Promise<Result<Library>>
   SubmitExperiment(
     q: Param<{
-      Request: { Extension: string; FileSize: int32 }
+      Request: UploadRequest
       Summary: ContentSubmitSummary
     }>,
   ): Promise<Result<SubmitExperiment>>
@@ -774,6 +784,10 @@ export interface Users {
     q: Param<{ ActivityID: ID; Index: int32; Statistic: Statistic }>,
   ): Promise<Result<Sync>>
   SetCover(q: Param<{ Category: string; ContentID: ID }>): Promise<Result<RelationList>>
+  RequestAvatar(q: Param<{ Request: UploadRequest }>): Promise<Result<UploadToken>>
+  // Returns a UserPackage (RelationList shape) with the updated User —
+  // same as Rename / ModifyInformation. Verified against the backend UserController.
+  ConfirmAvatar(q: Param<{ Avatar: int32 }>): Promise<Result<RelationList>>
   Unban(q: Param<{ Reason: string; TargetID: ID }>): Promise<Result<string>>
 }
 export interface Messages {
