@@ -54,3 +54,8 @@ src/composables/useDragAndDrop.ts
 .agents/
 .claude/
 dist-electron/
+
+# Playwright run output (reports + test artifacts); a nested run from
+# scripts/tests repeats the same tree, ignore that copy as well
+scripts/tests/reports/
+scripts/tests/scripts/
