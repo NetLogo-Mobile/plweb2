@@ -3,6 +3,7 @@
     <slot></slot>
     <!-- @see https://icomoon.io/app/ -->
     <div class="buttons">
+      <WallpaperPicker />
       <div class="logout" @click="logout">
         <svg width="25" height="25" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -33,6 +34,7 @@
 <script setup lang="ts">
 import router from '../../router/index'
 import { ref } from 'vue'
+import WallpaperPicker from './WallpaperPicker.vue'
 let isFullScreen = ref(false)
 
 function toggleFullScreen() {
@@ -69,7 +71,7 @@ function logout() {
   top: 0;
   padding: 0 0 0 20px;
   font-size: small;
-  background-color: white;
+  background-color: var(--page-background, white);
   width: 100%;
   z-index: 100;
   display: flex;

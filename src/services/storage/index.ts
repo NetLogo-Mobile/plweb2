@@ -2,6 +2,7 @@
 // If you don't need to raise a notification when storage.status!=success, try `sm.getObj("key").value?.a?.b?.c`
 
 import type { AppLanguage } from '@i18n/index'
+import type { WallpaperId } from '../wallpapers'
 import type { ContentTag, UserInfo } from '../../pl-serve-type-main/type/main'
 
 export type StorageStatus = 'success' | 'expired' | 'empty'
@@ -34,6 +35,7 @@ export interface RequestHistoryPayload {
 export type AvatarCache = Record<string, [avatarId: number, updatedAt: number]>
 
 export interface StorageSchema {
+  siteWallpaper: WallpaperId
   userInfo: UserInfo
   tagConfig: ContentTag[]
   userConfig: UserConfig

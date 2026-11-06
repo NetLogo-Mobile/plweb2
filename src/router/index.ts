@@ -2,6 +2,13 @@ import { createRouter, createWebHashHistory, type RouteRecordRaw } from 'vue-rou
 import Home from '../views/Home.vue'
 
 const routes: RouteRecordRaw[] = [
+  { path: '/shop', name: 'shop', component: () => import('../views/Shop.vue'), meta: { keepAlive: false } },
+  {
+    path: '/wallpapers',
+    name: 'wallpapers',
+    component: () => import('../views/Wallpapers.vue'),
+    meta: { keepAlive: false },
+  },
   {
     path: '/',
     name: 'Home',
