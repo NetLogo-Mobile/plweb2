@@ -5,8 +5,32 @@ import type {
   ParamOf,
   ResultOf,
 } from '../../pl-serve-type-main/type/main.ts'
+import type { DemocracyApi } from '@services/democracyWallContract'
 
 export interface PathMap {
+  '/Democracy/GetContext': DemocracyApi['GetContext']
+  '/Democracy/QueryMatters': DemocracyApi['QueryMatters']
+  '/Democracy/GetMatter': DemocracyApi['GetMatter']
+  '/Democracy/SubmitMatter': DemocracyApi['SubmitMatter']
+  '/Democracy/UpdateMatter': DemocracyApi['UpdateMatter']
+  '/Democracy/ModeratePublisher': DemocracyApi['ModeratePublisher']
+  '/Democracy/ModerateAccount': DemocracyApi['ModerateAccount']
+  '/Democracy/DeleteMatter': DemocracyApi['DeleteMatter']
+  '/Democracy/TracePublisher': DemocracyApi['TracePublisher']
+  '/Democracy/TraceContribution': DemocracyApi['TraceContribution']
+  '/Democracy/DiscloseContribution': DemocracyApi['DiscloseContribution']
+  '/Democracy/ModerateContributionAuthor': DemocracyApi['ModerateContributionAuthor']
+  '/Democracy/QueryAudit': DemocracyApi['QueryAudit']
+  '/Democracy/QueryInvestigationTeam': DemocracyApi['QueryInvestigationTeam']
+  '/Democracy/InviteInvestigator': DemocracyApi['InviteInvestigator']
+  '/Democracy/GetInvestigationInvite': DemocracyApi['GetInvestigationInvite']
+  '/Democracy/RespondInvestigationInvite': DemocracyApi['RespondInvestigationInvite']
+  '/Democracy/QueryContributions': DemocracyApi['QueryContributions']
+  '/Democracy/SubmitContribution': DemocracyApi['SubmitContribution']
+  '/Democracy/ReportMatter': DemocracyApi['ReportMatter']
+  '/Democracy/TransitionMatter': DemocracyApi['TransitionMatter']
+  '/Democracy/CreateVote': DemocracyApi['CreateVote']
+
   '/Users/Authenticate': Users['Authenticate']
   '/Users/GetUser': Users['GetUser']
   '/Users/ModifyInformation': Users['ModifyInformation']

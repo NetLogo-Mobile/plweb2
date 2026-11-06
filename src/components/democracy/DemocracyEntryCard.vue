@@ -1,0 +1,291 @@
+<template>
+  <article class="entry-card">
+    <div class="entry-topline">
+      <span class="entry-kind" :class="entry.kind">
+        {{
+          entry.anonymousSuggestion
+            ? t('democracy.kinds.suggestion')
+            : entry.kind === 'case'
+              ? t('democracy.kinds.case')
+              : t('democracy.kinds.proposal')
+        }}
+      </span>
+      <span class="entry-status" :class="entry.status">
+        {{
+          entry.status === 'resolved' ? t('democracy.status.resolved') : t('democracy.status.open')
+        }}
+      </span>
+      <time>{{ formatDate(entry.summary.ID, false, 'date') }}</time>
+    </div>
+
+    <router-link class="entry-title" :to="targetPath">
+      {{ localizedSubject }}
+    </router-link>
+
+    <p v-if="description" class="entry-description">{{ description }}</p>
+
+    <div class="entry-tags">
+      <Tag v-for="tag in visibleTags" :key="tag" category="Discussion" :tag="tag" />
+    </div>
+
+    <footer class="entry-footer">
+      <component
+        :is="demoMode || entry.anonymousAuthor ? 'div' : 'router-link'"
+        class="author"
+        :to="demoMode || entry.anonymousAuthor ? undefined : `/u/${entry.summary.User.ID}`"
+      >
+        <img v-if="!entry.anonymousAuthor" :src="avatarUrl" alt="" />
+        <span>{{ authorName }}</span>
+        <Tag
+          v-if="entry.summary.User.Verification && !entry.anonymousAuthor"
+          category="User"
+          :tag="`C-${entry.summary.User.Verification}`"
+        />
+      </component>
+      <div class="metrics" :aria-label="t('democracy.metrics')">
+        <span v-if="readOnly">{{
+          t('democracy.comments', { count: entry.summary.Comments })
+        }}</span>
+        <router-link v-else :to="targetPath">
+          {{ t('democracy.comments', { count: entry.summary.Comments }) }}
+        </router-link>
+        <span>{{ t('democracy.visits', { count: entry.summary.Visits }) }}</span>
+      </div>
+    </footer>
+
+    <div class="entry-actions">
+      <router-link :to="targetPath">{{ t('democracy.actions.view') }}</router-link>
+    </div>
+  </article>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
+import Tag from '@components/utils/TagLarger.vue'
+import { formatDate, getUserUrl } from '@services/utils'
+import type { DemocracyEntry } from '@services/democracyWall'
+
+const props = defineProps<{
+  demoAdminMode?: boolean
+  demoMode?: boolean
+  entry: DemocracyEntry
+  readOnly?: boolean
+}>()
+const { t, locale } = useI18n()
+const route = useRoute()
+
+const targetPath = computed(() => ({
+  name: 'democracy-matter-detail',
+  params: { id: props.entry.summary.ID },
+  query: {
+    ...(props.demoMode ? { demo: '1' } : {}),
+    ...(props.demoMode && route.query.developer === '1' ? { developer: '1' } : {}),
+    ...(props.demoMode && props.demoAdminMode ? { admin: '1' } : {}),
+    ...(props.readOnly ? { scope: 'history' } : {}),
+  },
+}))
+const avatarUrl = computed(() => getUserUrl(props.entry.summary.User))
+const authorName = computed(
+  () => props.entry.summary.User.Nickname || t('democracy.create.anonymousAuthor'),
+)
+const localizedSubject = computed(
+  () =>
+    props.entry.summary.LocalizedSubject?.[locale.value] ||
+    props.entry.summary.LocalizedSubject?.Chinese ||
+    props.entry.summary.Subject ||
+    t('democracy.untitled'),
+)
+const description = computed(() => {
+  const localized =
+    props.entry.summary.LocalizedDescription?.[locale.value] ||
+    props.entry.summary.LocalizedDescription?.Chinese
+  const source = localized || props.entry.summary.Description?.[0] || ''
+  return source
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 180)
+})
+const visibleTags = computed(() =>
+  (props.entry.summary.Tags ?? []).filter((tag) => tag !== '民主墙').slice(0, 5),
+)
+</script>
+
+<style scoped>
+.entry-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 14px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  background: #fff;
+  transition:
+    border-color 0.15s,
+    background-color 0.15s;
+}
+
+.entry-card:hover {
+  border-color: #cce5f1;
+  background: #fafcfd;
+}
+
+.entry-topline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+  color: #75808b;
+  font-size: 0.78rem;
+}
+
+.entry-topline time {
+  margin-left: auto;
+}
+
+.entry-kind,
+.entry-status {
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  font-weight: 650;
+}
+
+.entry-kind.case {
+  background: #fff0e4;
+  color: #a84c13;
+}
+
+.entry-kind.proposal {
+  background: #e7f1ff;
+  color: #1766ad;
+}
+
+.entry-status.open {
+  background: #e7f7ee;
+  color: #187448;
+}
+
+.entry-status.resolved {
+  background: #edf0f4;
+  color: #606b76;
+}
+
+.entry-title {
+  color: #333;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-decoration: none;
+}
+
+.entry-title:hover {
+  color: #2563eb;
+}
+
+.entry-description {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: #666;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.entry-tags {
+  display: flex;
+  min-height: 1.6rem;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.entry-footer {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.7rem;
+  border-top: 1px solid #edf1f5;
+}
+
+.author {
+  display: flex;
+  min-width: 0;
+  gap: 0.45rem;
+  align-items: center;
+  color: #34485a;
+  text-decoration: none;
+}
+
+.author img {
+  width: 1.8rem;
+  height: 1.8rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.author > span {
+  max-width: 9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.metrics {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.7rem;
+  color: #7b858e;
+  font-size: 0.78rem;
+}
+
+.metrics a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.metrics a:hover {
+  color: #2563eb;
+}
+
+.entry-actions {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: flex-end;
+}
+
+.entry-actions a {
+  padding: 0.38rem 0.75rem;
+  border: 1px solid #d7dce1;
+  border-radius: 0.35rem;
+  color: #555;
+  font-size: 0.8rem;
+  text-decoration: none;
+}
+
+.entry-actions a:last-child {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.entry-actions a:hover {
+  background: #f2f7fa;
+}
+
+@media (max-width: 420px) {
+  .entry-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .metrics {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+</style>

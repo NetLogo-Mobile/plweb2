@@ -38,12 +38,14 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import parse from '@services/pltxt2htm/advancedParser'
 import { NEllipsis } from 'naive-ui'
 import showUserCard from '@popup/userProfileDialog.ts'
 import { getUserUrl } from '@services/utils.ts'
 import { getPath } from '@services/utils'
 import type { Message } from '@services/../pl-serve-type-main/type/main'
+import { getDemocracyNotificationTarget } from '@services/democracyNotification'
 
 interface NotificationItemMessage extends Message {
   msg_title: string
@@ -54,6 +56,7 @@ interface NotificationItemMessage extends Message {
 const props = defineProps<{
   notification: NotificationItemMessage
 }>()
+const router = useRouter()
 
 const avatarUrl = ref('/@base/assets/user/default-avatar.png')
 const fetchAvatar = async () => {
@@ -87,27 +90,37 @@ const msg_icon_url = computed(() => {
 
 // 跳转到对话上下文，以后会直接跳转到这句对话的索引所在
 // Jump to the context of the conversation, and later it will directly jump to the index where this sentence is located
-function showComment() {
-  if (props.notification.msg_type === 3) {
-    window.open(
-      `${getPath('/@root')}/c/${
-        props.notification.Fields?.Discussion
-          ? 'Discussion'
-          : props.notification.Fields?.Experiment
-            ? 'Experiment'
-            : 'User'
-      }/${
-        props.notification.Fields?.ExperimentID ||
-        props.notification.Fields?.DiscussionID ||
-        props.notification.Fields?.UserID
-      }/${
-        props.notification.Fields?.Discussion ||
-        props.notification.Fields?.Experiment ||
-        props.notification.Fields.User
-      }`,
-      '_self',
-    )
+function getCommentTarget(notification: NotificationItemMessage) {
+  if (notification.msg_type !== 3) return undefined
+
+  const fields = notification.Fields
+  if (!fields) return undefined
+
+  let resource: 'Discussion' | 'Experiment' | 'User' = 'User'
+  if (fields.Discussion) resource = 'Discussion'
+  else if (fields.Experiment) resource = 'Experiment'
+
+  const targets = {
+    Discussion: { id: fields.DiscussionID, slug: fields.Discussion },
+    Experiment: { id: fields.ExperimentID, slug: fields.Experiment },
+    User: { id: fields.UserID, slug: fields.User },
   }
+  const target = targets[resource]
+
+  return `${getPath('/@root')}/c/${resource}/${target.id}/${target.slug}`
+}
+
+async function showComment() {
+  const democracyTarget = getDemocracyNotificationTarget(
+    props.notification.Fields as unknown as Record<string, unknown>,
+  )
+  if (democracyTarget) {
+    await router.push(democracyTarget)
+    return
+  }
+
+  const commentTarget = getCommentTarget(props.notification)
+  if (commentTarget) window.open(commentTarget, '_self')
 }
 </script>
 
