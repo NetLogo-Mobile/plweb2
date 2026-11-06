@@ -10,6 +10,7 @@ import type {
   UserInfo,
   Workspace,
 } from '@services/../pl-serve-type-main/type/main'
+import type { APIParam } from '@services/api/types'
 
 export type EditorWork = {
   id: string
@@ -46,7 +47,7 @@ function t(key: string, params?: Record<string, unknown>): string {
 }
 
 function getCurrentUser(): UserInfo | null {
-  return storageManager.getObj('userInfo').value as UserInfo | null
+  return storageManager.getObj('userInfo').value
 }
 
 export function getCurrentUserId(): string {
@@ -204,7 +205,7 @@ export async function publishEditorWork(
 
   const response = (await getData(
     '/Contents/SubmitExperiment',
-    requestBody as any,
+    requestBody as unknown as APIParam<'/Contents/SubmitExperiment'>,
   )) as unknown as Result<Summary>
   if (response.Status !== 200) {
     throw new Error(response.Message || t('mdEditor.saveWorkFailed', { status: response.Status }))

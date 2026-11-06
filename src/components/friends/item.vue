@@ -16,20 +16,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { User } from '@services/../pl-serve-type-main/type/main'
 import showUserCard from '@popup/userProfileDialog.ts'
 import { getPath } from '@services/utils'
 import { getData } from '@services/api/getData'
 import { getUserUrl } from '@services/utils'
-const { user } = defineProps<{
+const props = defineProps<{
   user: User
 }>()
 const iconPath = ref(getPath('/@base/assets/user/Status-None.png'))
-const avararUrl = getUserUrl(user)
+const avararUrl = computed(() => getUserUrl(props.user))
 
 async function getIconPath() {
-  const re = await getData('/Users/GetUser', { ID: user.ID })
+  const re = await getData('/Users/GetUser', { ID: props.user.ID })
   if (!re.Data) return '/@base/assets/user/Status-None.png'
   return getIcon(Number(re.Data.Relation))
 }
@@ -47,10 +47,17 @@ function getIcon(relation: number) {
   }
 }
 
-onMounted(async () => {
-  const p = await getIconPath()
-  iconPath.value = getPath(p)
-})
+let iconRequestId = 0
+
+watch(
+  () => props.user.ID,
+  async () => {
+    const requestId = ++iconRequestId
+    const p = await getIconPath()
+    if (requestId === iconRequestId) iconPath.value = getPath(p)
+  },
+  { immediate: true },
+)
 </script>
 
 <style scoped>

@@ -25,22 +25,23 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import router from '../../router'
 import type { Summary } from '@services/../pl-serve-type-main/type/main'
 import { getCoverUrl, getUserUrl, formatDate } from '@services/utils'
 import { useResponsive } from '../../layout/useResponsive'
 
 const { projectsHeight, fontSizeS } = useResponsive()
-const { item } = defineProps<{
+const props = defineProps<{
   item: Summary
   showName?: boolean
 }>()
 
-const imgUrl = getCoverUrl(item)
-const avartarUrl = getUserUrl(item.User)
+const imgUrl = computed(() => getCoverUrl(props.item))
+const avartarUrl = computed(() => getUserUrl(props.item.User))
 
 const handleClick = () => {
-  router.push(`/p/${item.Category}/${item.ID}`)
+  router.push(`/p/${props.item.Category}/${props.item.ID}`)
 }
 </script>
 

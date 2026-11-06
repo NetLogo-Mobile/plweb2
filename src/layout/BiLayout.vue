@@ -4,17 +4,16 @@
   <div class="basic-layout">
     <!-- 封面区域  cover area -->
     <div class="layout-left">
-      <slot name="left"></slot>
+      <slot name="left" />
     </div>
 
     <!-- 作品介绍或者个人作品列表  Experiment introduction or personal work list -->
     <div class="layout-right">
-      <slot name="right"></slot>
+      <slot name="right" />
     </div>
   </div>
 </template>
 
-<script setup lang="ts"></script>
 <style scoped>
 .basic-layout {
   position: relative;
