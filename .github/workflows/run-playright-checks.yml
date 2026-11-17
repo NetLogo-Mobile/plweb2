@@ -19,7 +19,8 @@ env:
 jobs:
   test:
     name: run playwright checks
-    runs-on: ubuntu-latest
+    # Playwright 1.60 does not support the Ubuntu 26.04 image used by ubuntu-latest.
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
